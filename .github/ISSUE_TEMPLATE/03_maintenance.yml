@@ -1,0 +1,33 @@
+name: 開発・運用タスク
+description: 開発基盤、CI、文書、依存更新などの改善を扱います。
+title: "[開発運用]: "
+body:
+  - type: markdown
+    attributes:
+      value: 作成前に同じ目的の Open Issue を検索してください。作業一覧だけでなく、変更後の状態と確認方法を書きます。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 現状の問題と目的
+      description: 現在の不便やリスクと、今変更する目的を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 変更後の状態と維持する条件
+      description: 実現する状態と、維持する振る舞いや制約を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件・検証方法
+      description: 観測可能な完了条件と、それを確認するコマンド・手順を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 影響・依存関係・関連資料
+      description: CI、配布、権限などへの影響と、先に完了が必要な作業があれば記載します。

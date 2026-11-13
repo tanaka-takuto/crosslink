@@ -1,0 +1,43 @@
+name: 不具合報告
+description: 観測した問題、再現条件、期待する結果を共有します。
+title: "[不具合]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        作成前に同じ問題の Open Issue を検索してください。
+        観測した事実と原因の仮説を分け、ログの認証情報・個人情報は除いてください。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 問題と影響
+      description: 実際に起きたことと、誰のどの作業に影響するかを書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 再現と証拠
+      description: 正確なコマンド、入力・設定、実行前の状態、実際の出力・終了コードを記載します。未再現なら発生条件と確認できた証拠を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する結果と完了条件
+      description: 本来の振る舞いと、どの確認が通れば修正済みと判断できるかを書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: バージョン・インストール方法・OS を記載し、必要に応じてシェルやアーキテクチャを加えます。不明な項目は不明と記載します。
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 補足・仮説・未確認事項
+      description: 発生頻度、以前動作した版、原因の仮説、関連資料など必要な情報だけを記載します。

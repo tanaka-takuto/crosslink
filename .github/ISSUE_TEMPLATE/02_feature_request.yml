@@ -1,0 +1,34 @@
+name: 機能・改善提案
+description: 利用場面の問題と、実現したい結果を共有します。
+title: "[提案]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: 作成前に同じ目的の Open Issue を検索してください。実装手順だけでなく、解決する問題と期待する結果を書きます。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 問題と実現したい状態
+      description: 誰のどの利用場面で困っていて、解決後に何ができるようになるかを書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 提案する振る舞いと境界
+      description: 外部から観測できる振る舞い、具体的な入出力例、必要な制約を書きます。未決定の実装方法は固定しません。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件
+      description: どの条件で何を確認できれば、問題が解決したと判断できるかを書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 根拠・代替案・関連資料
+      description: 根拠となる事実、実際に検討した代替案、関連する判断記録があれば記載します。

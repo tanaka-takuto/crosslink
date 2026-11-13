@@ -13,23 +13,22 @@ case "$message" in
     ;;
 esac
 
-# Git が作るメッセージも、上の1行制限を満たす場合だけ許可する。
-pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([A-Za-z0-9._/#-]+\))?!?: [^[:space:]](.*[^[:space:]])?$'
-case "$message" in
-  Merge\ *|Revert\ \"*\"|fixup!\ *|squash!\ *|amend!\ *) ;;
-  *)
-    if ! printf '%s\n' "$message" | LC_ALL=C grep -Eq "$pattern"; then
-      cat >&2 <<'EOF'
-commit-msg: Conventional Commits の形式で入力してください。
-形式: type(scope): 説明（scope は省略可、破壊的変更は ! を使用）
-例: chore: Git の開発設定を追加する
-例: fix(cli): 引数の検証を修正する
-Issue 番号は必須ではありません。本文・フッターは使用できません。
-EOF
-      exit 1
-    fi
-    ;;
+# fixup 等でも元の件名に Issue 番号を要求する。merge・revert の例外は作らない。
+subject=$message
+case "$subject" in
+  fixup!\ *|squash!\ *|amend!\ *) subject=${subject#* } ;;
 esac
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)\(#[1-9][0-9]*\)!?: [^[:space:]](.*[^[:space:]])?$'
+if ! printf '%s\n' "$subject" | LC_ALL=C grep -Eq "$pattern"; then
+  cat >&2 <<'EOF'
+commit-msg: Issue 番号付きの Conventional Commits 形式で入力してください。
+形式: type(#123): 説明（破壊的変更は ! を使用）
+例: chore(#123): Git の開発設定を追加する
+例: fix(#123): 引数の検証を修正する
+本文・フッターは使用できません。PR の Development に同じ Issue を紐づけてください。
+EOF
+  exit 1
+fi
 
 # cleanup=verbatim でもテンプレートのコメントが履歴に残らないようにする。
 printf '%s\n' "$message" > "$message_file"
