@@ -2,8 +2,19 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { inspectGroup, readGroup, type Group } from "./core.js";
-import { confirmGroups, createGroup, updateGroup } from "./store.js";
+import type { Group } from "../domain/group.js";
+import { inspectGroup as inspect } from "./inspect-group.js";
+import { readGroup } from "../infrastructure/filesystem/management-file.js";
+import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
+import { defaults } from "../infrastructure/filesystem/settings.js";
+import * as operations from "./group-operations.js";
+const inspectGroup = (file: string) => inspect(file, filesystemPorts, defaults);
+const confirmGroups = (files: string[], expected: Map<string, string>) =>
+  operations.confirmGroups(files, expected, filesystemPorts, defaults);
+const createGroup = (file: string, group: Group) =>
+  operations.createGroup(file, group, filesystemPorts, defaults);
+const updateGroup = (file: string, update: (group: Group) => Group) =>
+  operations.updateGroup(file, update, filesystemPorts, defaults);
 
 const roots: string[] = [];
 function fixture() {
@@ -13,8 +24,8 @@ function fixture() {
   writeFileSync(join(root, "a"), "a");
   writeFileSync(join(root, "b"), "b");
   const file = join(root, ".crosslink", "group.json");
-  const group: Group = { version: 1, name: "group", reason: "一緒に確認", files: ["../a", "../b"] };
-  writeFileSync(file, JSON.stringify(group));
+  const group: Group = { name: "group", reason: "一緒に確認", files: ["../a", "../b"] };
+  writeFileSync(file, JSON.stringify({ version: 1, ...group }));
   return { root, file, group };
 }
 function confirm(file: string) {
@@ -44,7 +55,7 @@ it("refuses stale file contents without changing the record", () => {
 it("refuses stale group definitions and metadata-only changes", () => {
   const { file, group } = fixture();
   const snapshot = inspectGroup(file).snapshot!;
-  writeFileSync(file, JSON.stringify({ ...group, reason: "別の理由" }));
+  writeFileSync(file, JSON.stringify({ version: 1, ...group, reason: "別の理由" }));
   expect(() => confirmGroups([file], new Map([[file, snapshot]]))).toThrow();
 });
 it("supports 1/0 member drafts and invalidates previous confirmation on every membership edit", () => {
@@ -62,7 +73,7 @@ it("creates groups without replacing an existing file", () => {
   const { root, group } = fixture();
   const file = join(root, ".crosslink", "new.json");
   createGroup(file, group);
-  expect(readGroup(file).group).toEqual({ kind: "crosslink-group", ...group });
+  expect(readGroup(file).group).toEqual({ kind: "crosslink-group", version: 1, ...group });
   expect(() => createGroup(file, group)).toThrow();
 });
 it("refuses confirmation files in create and update operations", () => {
@@ -81,7 +92,7 @@ it("rejects a busy group instead of overwriting another writer", () => {
 it("preflights all explicitly selected groups before batch confirmation", () => {
   const { root, file, group } = fixture();
   const other = join(root, ".crosslink", "other.json");
-  writeFileSync(other, JSON.stringify({ ...group, name: "other" }));
+  writeFileSync(other, JSON.stringify({ version: 1, ...group, name: "other" }));
   const before = readFileSync(file, "utf8");
   expect(() =>
     confirmGroups(

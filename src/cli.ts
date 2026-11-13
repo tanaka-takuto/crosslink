@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { human, run } from "./commands.js";
+import { human, run } from "./bootstrap.js";
 
 const args = process.argv.slice(2);
 const result = run(args, process.cwd());

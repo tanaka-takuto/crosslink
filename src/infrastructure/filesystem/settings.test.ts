@@ -2,8 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { defaults } from "./core.js";
-import { findGroups, groupFile, loadSettings } from "./settings.js";
+import { defaults, findGroups, groupFile, loadSettings } from "./settings.js";
 
 const roots: string[] = [];
 function fixture() {

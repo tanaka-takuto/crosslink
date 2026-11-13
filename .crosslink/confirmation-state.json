@@ -7,21 +7,29 @@
     "../docs/requirements/confirmation-state.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/core.test.ts",
-    "../src/core.ts",
-    "../src/store.test.ts",
-    "../src/store.ts"
+    "../src/application/group-operations.test.ts",
+    "../src/application/group-operations.ts",
+    "../src/application/inspect-group.test.ts",
+    "../src/application/inspect-group.ts",
+    "../src/domain/confirmation.test.ts",
+    "../src/domain/confirmation.ts",
+    "../src/domain/group.test.ts",
+    "../src/domain/group.ts"
   ],
   "confirmation": {
-    "definition": "c14db0c6148d15fd34041732b76aa4cc083fb7a8b1738393e86a0f3a50127d64",
+    "definition": "47a01cb85e8a4cf9509c7aa09392ded303acfa11a5735d47c4591b4f0523304c",
     "hashes": {
       "../docs/requirements/confirmation-state.md": "6c8dae8e7888dd51b022517ee46b71de256b9c850fc80ca5a234cf2752ce4d76",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/core.test.ts": "237c0a19e53163808c525e295fe38531e1378026b5042c1fcfbe7eac435c5818",
-      "../src/core.ts": "0d3f693cdef3819caf566a97c97ac8cec9c4ab45d475ccd8cb83c062760be4df",
-      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
-      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
+      "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
+      "../src/application/group-operations.ts": "54ffeddee191c68ebd18f226af3a7678cbf53549f689ad033a0012f6ef8fdc54",
+      "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
+      "../src/application/inspect-group.ts": "102b14042254a32a8d52164133fc7d956cacf57982c31ddcdd273d2a827cb6d5",
+      "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
+      "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a",
+      "../src/domain/group.test.ts": "9ca2d812aac16e934e36f0a13ed30ca39e2fbf57f049555b27c46c2f50d69458",
+      "../src/domain/group.ts": "425fdf97739fb8023ac1839803c762a390f27ab4a4a511fe220a141dcd5dddb2"
     }
   }
 }

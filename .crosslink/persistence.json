@@ -7,21 +7,33 @@
     "../docs/requirements/persistence.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/commands.test.ts",
-    "../src/commands.ts",
-    "../src/store.test.ts",
-    "../src/store.ts"
+    "../src/application/group-operations.test.ts",
+    "../src/application/group-operations.ts",
+    "../src/infrastructure/filesystem/group-format.test.ts",
+    "../src/infrastructure/filesystem/group-format.ts",
+    "../src/infrastructure/filesystem/group-storage.test.ts",
+    "../src/infrastructure/filesystem/group-storage.ts",
+    "../src/infrastructure/filesystem/management-file.test.ts",
+    "../src/infrastructure/filesystem/management-file.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "dffc725ace1da01d74520b27032e3923f050e5e091e52b877c561c7b7da58802",
+    "definition": "686bbbe0b7fdf390e13358bdac1a82e91b23d397af995f4dffc000503e406e7f",
     "hashes": {
       "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/commands.test.ts": "51f6ed95f74d53cc08c9fac287f6684ec60cafb0d4db1b78eed64177a0c6525a",
-      "../src/commands.ts": "d098d9bda27ade95c843deb31ff46a26dc5ce1ad0c49cd307e0f85e45d129761",
-      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
-      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
+      "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
+      "../src/application/group-operations.ts": "54ffeddee191c68ebd18f226af3a7678cbf53549f689ad033a0012f6ef8fdc54",
+      "../src/infrastructure/filesystem/group-format.test.ts": "d2fe0b9444b31b26b92625b9fffe3393a155cb53c1521e02b1fbfbf4c45ab2d2",
+      "../src/infrastructure/filesystem/group-format.ts": "bc719ba1b570bb929e3d369a9dbef8bc523283a0e1292f557321f0ec0c68cf3a",
+      "../src/infrastructure/filesystem/group-storage.test.ts": "8f4a572ed8d4aaaadf12d7b98520e96ab358c88d29b140ad3fbbd55b27e9b578",
+      "../src/infrastructure/filesystem/group-storage.ts": "e36d5191596a7bc02e4d73937599c04b3825bd87350438e44c598a851a268eea",
+      "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
+      "../src/infrastructure/filesystem/management-file.ts": "dde45b4d49cfdb7a9c279d3c376db868b1afc0ce82c92fd9ef406d0ccb9fd580",
+      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
+      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
     }
   }
 }

@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { run } from "./commands.js";
+import { run } from "../../bootstrap.js";
 
 const roots: string[] = [];
 function fixture() {

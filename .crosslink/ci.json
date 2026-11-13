@@ -8,16 +8,24 @@
     "../.github/workflows/cli-policy.yml",
     "../docs/requirements/ci.md",
     "../docs/specifications/cli.md",
-    "../docs/specifications/storage.md"
+    "../docs/specifications/storage.md",
+    "../src/cli.test.ts",
+    "../src/cli.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "e6645d4e59e628cb470f7105fb3ab1e02be421bd232f4579a657a607f22f8bda",
+    "definition": "6cc6012644070ecde6757f644f86f522a682851dbc3f26aafc2ca119ad79c503",
     "hashes": {
       "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
       "../.github/workflows/cli-policy.yml": "14f2d24e60f6e803f23ed86ef933e6c9e2f9088de6ad272a81bd5693b85ab5e5",
       "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
-      "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494"
+      "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
+      "../src/cli.test.ts": "3f97c4afab218be434b4cf345852a2551c64d8c1bf5081f11eb63ebf8b2c94da",
+      "../src/cli.ts": "010bb061bcdb2839ef01ac68722f15f568baf089a1257be272d009aedf78ea3e",
+      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
+      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
     }
   }
 }

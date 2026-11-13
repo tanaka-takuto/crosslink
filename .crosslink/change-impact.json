@@ -7,21 +7,25 @@
     "../docs/requirements/change-impact.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/commands.test.ts",
-    "../src/commands.ts",
-    "../src/core.test.ts",
-    "../src/core.ts"
+    "../src/application/inspect-group.test.ts",
+    "../src/application/inspect-group.ts",
+    "../src/domain/confirmation.test.ts",
+    "../src/domain/confirmation.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "1a410947f6bdccdbd6add90d50698d10e25597a667c853c736032c13d6ee6708",
+    "definition": "d25cbf0760fce5ee6346527564ddf2c160a22ea86628da0178be90e62db89159",
     "hashes": {
       "../docs/requirements/change-impact.md": "a24a0f6769eb1ccd4ba465a83c72f31b029858d6e8fc638f59bedce92c8ec390",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/commands.test.ts": "51f6ed95f74d53cc08c9fac287f6684ec60cafb0d4db1b78eed64177a0c6525a",
-      "../src/commands.ts": "d098d9bda27ade95c843deb31ff46a26dc5ce1ad0c49cd307e0f85e45d129761",
-      "../src/core.test.ts": "237c0a19e53163808c525e295fe38531e1378026b5042c1fcfbe7eac435c5818",
-      "../src/core.ts": "0d3f693cdef3819caf566a97c97ac8cec9c4ab45d475ccd8cb83c062760be4df"
+      "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
+      "../src/application/inspect-group.ts": "102b14042254a32a8d52164133fc7d956cacf57982c31ddcdd273d2a827cb6d5",
+      "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
+      "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a",
+      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
+      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
     }
   }
 }

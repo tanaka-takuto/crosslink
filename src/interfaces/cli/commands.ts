@@ -1,16 +1,15 @@
-import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
+import { CrosslinkError, problem, type Problem } from "../../domain/errors.js";
+import type { Group } from "../../domain/group.js";
+import { inspectGroup, type Inspection } from "../../application/inspect-group.js";
 import {
-  CrosslinkError,
-  inspectGroup,
-  problem,
-  type Group,
-  type Inspection,
-  type Problem,
-} from "./core.js";
-import { findGroups, groupFile, loadSettings } from "./settings.js";
-import { confirmGroups, createGroup, deleteGroup, updateGroup } from "./store.js";
+  confirmGroups,
+  createGroup,
+  deleteGroup,
+  updateGroup,
+} from "../../application/group-operations.js";
+import type { CrosslinkPorts } from "../../application/ports.js";
 
 export interface Report {
   version: 1;
@@ -49,18 +48,14 @@ function inspect(operation: string, groups: Inspection[]): RunResult {
   };
 }
 
-function canonical(file: string): string {
-  return existsSync(file) ? realpathSync(file) : resolve(file);
-}
-
 function stored(member: string, file: string, cwd: string): string {
   return isAbsolute(member)
     ? member
     : relative(dirname(file), resolve(cwd, member)).split(sep).join("/");
 }
 
-function snapshot(file: string): Map<string, string> {
-  const value: unknown = JSON.parse(readFileSync(file, "utf8"));
+function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
+  const value: unknown = JSON.parse(ports.groups.readRaw(file));
   if (
     !value ||
     typeof value !== "object" ||
@@ -105,7 +100,7 @@ const help = [
   "共通: --config <設定.json>, --json, --help",
 ];
 
-export function run(args: string[], cwd: string): RunResult {
+export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResult {
   let operation = "unknown";
   try {
     const { values, positionals } = parseArgs({
@@ -151,20 +146,23 @@ export function run(args: string[], cwd: string): RunResult {
     for (const key of Object.keys(values))
       if (!["config", "json", "help", ...allowed[operation]!].includes(key))
         throw new CrosslinkError("INVALID_ARGUMENT", `このコマンドでは--${key}を使えません`);
-    const settings = loadSettings(cwd, values.config);
+    const settings = ports.configuration.load(cwd, values.config);
     const positional = positionals.slice(1);
     if (operation === "check" || operation === "related") {
       if (positional.length !== (operation === "related" ? 1 : 0))
         throw new CrosslinkError("INVALID_ARGUMENT", "対象ファイルの指定を確認してください");
-      const files = values.file?.map((file) => resolve(cwd, file)) ?? findGroups(cwd, settings);
-      let groups = [...new Set(files)].sort().map((file) => inspectGroup(file, settings));
+      const files =
+        values.file?.map((file) => resolve(cwd, file)) ??
+        ports.configuration.findGroups(cwd, settings);
+      let groups = [...new Set(files)].sort().map((file) => inspectGroup(file, ports, settings));
       if (operation === "related") {
-        const target = canonical(resolve(cwd, positional[0]!));
+        const target = ports.files.canonical(resolve(cwd, positional[0]!));
         groups = groups.filter(
           (group) =>
             group.errors.length ||
             group.files.some(
-              (member) => canonical(resolve(dirname(group.file), member.path)) === target,
+              (member) =>
+                ports.files.canonical(resolve(dirname(group.file), member.path)) === target,
             ),
         );
       }
@@ -176,12 +174,12 @@ export function run(args: string[], cwd: string): RunResult {
           "INVALID_ARGUMENT",
           "対象を一つ指定するか--allを使い、--snapshotで検査結果を渡してください",
         );
-      const expected = snapshot(resolve(cwd, values.snapshot));
+      const expected = snapshot(resolve(cwd, values.snapshot), ports);
       const files = values.all ? [...expected.keys()] : [resolve(cwd, positional[0]!)];
-      confirmGroups(files, expected, settings);
+      confirmGroups(files, expected, ports, settings);
       return inspect(
         operation,
-        files.map((file) => inspectGroup(file, settings)),
+        files.map((file) => inspectGroup(file, ports, settings)),
       );
     }
     if (!positional[0])
@@ -198,14 +196,13 @@ export function run(args: string[], cwd: string): RunResult {
         );
       file = values.file?.[0]
         ? resolve(cwd, values.file[0])
-        : groupFile(positional[0], cwd, settings);
+        : ports.configuration.groupFile(positional[0], cwd, settings);
       const group: Group = {
-        version: 1,
         name: positional[0],
         reason: values.reason,
         files: positional.slice(1).map((member) => stored(member, file, cwd)),
       };
-      createGroup(file, group, settings);
+      createGroup(file, group, ports, settings);
     } else {
       file = resolve(cwd, positional[0]);
       if (operation === "delete") {
@@ -214,7 +211,7 @@ export function run(args: string[], cwd: string): RunResult {
             "INVALID_ARGUMENT",
             "削除する管理ファイルを一つ指定してください",
           );
-        deleteGroup(file);
+        deleteGroup(file, ports);
         return {
           code: 0,
           report: {
@@ -252,21 +249,28 @@ export function run(args: string[], cwd: string): RunResult {
               ...group,
               files: [...group.files, ...members.map((member) => stored(member, file, cwd))],
             };
-          const targets = new Set(members.map((member) => canonical(resolve(cwd, member))));
+          const targets = new Set(
+            members.map((member) => ports.files.canonical(resolve(cwd, member))),
+          );
           for (const target of targets)
-            if (!group.files.some((member) => canonical(resolve(dirname(file), member)) === target))
+            if (
+              !group.files.some(
+                (member) => ports.files.canonical(resolve(dirname(file), member)) === target,
+              )
+            )
               throw new CrosslinkError("NOT_A_MEMBER", `登録されていません: ${target}`);
           return {
             ...group,
             files: group.files.filter(
-              (member) => !targets.has(canonical(resolve(dirname(file), member))),
+              (member) => !targets.has(ports.files.canonical(resolve(dirname(file), member))),
             ),
           };
         },
+        ports,
         settings,
       );
     }
-    const current = inspectGroup(file, settings);
+    const current = inspectGroup(file, ports, settings);
     return {
       code: 0,
       report: {

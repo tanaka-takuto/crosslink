@@ -2,7 +2,10 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { inspectGroup } from "./core.js";
+import { inspectGroup as inspect } from "./inspect-group.js";
+import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
+import { defaults } from "../infrastructure/filesystem/settings.js";
+const inspectGroup = (file: string) => inspect(file, filesystemPorts, defaults);
 
 const roots: string[] = [];
 
@@ -61,58 +64,5 @@ describe("inspection", () => {
     writeFileSync(file, "{");
     expect(inspectGroup(file).errors.length).toBeGreaterThan(0);
     expect(inspectGroup(file).status).toBe("unconfirmed");
-  });
-
-  it("refuses explicitly marked management JSON outside the default directory", () => {
-    const { root, file } = fixture(["../a", "../outside.json"]);
-    writeFileSync(
-      join(root, "outside.json"),
-      JSON.stringify({
-        kind: "crosslink-group",
-        version: 1,
-        name: "outside",
-        reason: "関連",
-        files: ["a", "b"],
-      }),
-    );
-    expect(inspectGroup(file).errors).toEqual(
-      expect.arrayContaining([expect.objectContaining({ code: "MANAGEMENT_FILE" })]),
-    );
-  });
-
-  it("accepts ordinary JSON resembling a legacy group definition", () => {
-    const { root, file } = fixture(["../a", "../example.json"]);
-    writeFileSync(
-      join(root, "example.json"),
-      JSON.stringify({ version: 1, name: "example", reason: "サンプルデータ", files: ["a", "b"] }),
-    );
-    expect(inspectGroup(file).errors).toEqual([]);
-    expect(inspectGroup(file).files).toHaveLength(2);
-  });
-
-  it.each([
-    { value: { kind: "example", version: 1, name: "sample", reason: "data", files: ["a", "b"] } },
-    { value: { sample: { kind: "crosslink-group" } } },
-    { value: [{ kind: "crosslink-group" }] },
-  ])(
-    "does not infer a top-level management role from unrelated or nested markers: $value",
-    ({ value }) => {
-      const { root, file } = fixture(["../a", "../sample.data"]);
-      writeFileSync(join(root, "sample.data"), JSON.stringify(value));
-      expect(inspectGroup(file).errors).toEqual([]);
-    },
-  );
-
-  it("detects a declared kind after whitespace, a BOM and reordered fields without relying on extension", () => {
-    const { root, file } = fixture(["../a", "../record"]);
-    writeFileSync(
-      join(root, "record"),
-      "\uFEFF" +
-        " ".repeat(5000) +
-        JSON.stringify({ version: 999, note: "x".repeat(5000), kind: "crosslink-group" }),
-    );
-    expect(inspectGroup(file).errors).toEqual(
-      expect.arrayContaining([expect.objectContaining({ code: "MANAGEMENT_FILE" })]),
-    );
   });
 });

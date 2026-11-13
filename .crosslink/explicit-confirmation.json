@@ -7,21 +7,29 @@
     "../docs/requirements/explicit-confirmation.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/commands.test.ts",
-    "../src/commands.ts",
-    "../src/store.test.ts",
-    "../src/store.ts"
+    "../src/application/group-operations.test.ts",
+    "../src/application/group-operations.ts",
+    "../src/application/inspect-group.test.ts",
+    "../src/application/inspect-group.ts",
+    "../src/infrastructure/filesystem/group-storage.test.ts",
+    "../src/infrastructure/filesystem/group-storage.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "10b53bc94e778bc0b0fc3b75443af15c318ee34c2e7b5a7dc7e5b20300121188",
+    "definition": "8aa2b2fc6fe22fa50b6445e1881853c5a4ef6cae779299731c7e71ee902d6ece",
     "hashes": {
       "../docs/requirements/explicit-confirmation.md": "aff07bf117669566e699b59749dea6def57952dd3a464e02ab7aa573e0c0917e",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/commands.test.ts": "51f6ed95f74d53cc08c9fac287f6684ec60cafb0d4db1b78eed64177a0c6525a",
-      "../src/commands.ts": "d098d9bda27ade95c843deb31ff46a26dc5ce1ad0c49cd307e0f85e45d129761",
-      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
-      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
+      "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
+      "../src/application/group-operations.ts": "54ffeddee191c68ebd18f226af3a7678cbf53549f689ad033a0012f6ef8fdc54",
+      "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
+      "../src/application/inspect-group.ts": "102b14042254a32a8d52164133fc7d956cacf57982c31ddcdd273d2a827cb6d5",
+      "../src/infrastructure/filesystem/group-storage.test.ts": "8f4a572ed8d4aaaadf12d7b98520e96ab358c88d29b140ad3fbbd55b27e9b578",
+      "../src/infrastructure/filesystem/group-storage.ts": "e36d5191596a7bc02e4d73937599c04b3825bd87350438e44c598a851a268eea",
+      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
+      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
     }
   }
 }

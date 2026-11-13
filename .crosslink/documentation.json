@@ -7,16 +7,18 @@
     "../AGENTS.md",
     "../CONTRIBUTING.md",
     "../README.md",
+    "../docs/development/architecture.md",
     "../docs/development/documentation.md",
     "../docs/requirements.md"
   ],
   "confirmation": {
-    "definition": "e33f6b8f2fea0c741e49f3c68c17e8e2b332398096f146845c10fbb80ed0e35c",
+    "definition": "97176b342c8122f3d6a44998e27d20ddd1289b5a8382d8187b2cfdc2b3a2b5ff",
     "hashes": {
       "../AGENTS.md": "329f5a933a31bc8c7210fa4bc9a88dce0f5e4fc2d03197bb8a94822019b7a4d0",
       "../CONTRIBUTING.md": "7209dd3a006405244365a5804d9b366919c2c5e379f02c4f0565863488dcf6aa",
-      "../README.md": "78e345bdb5be9f2ecbeeff6b377cb571fcd0ede5569745f15fddb1f06b48b635",
-      "../docs/development/documentation.md": "6cac35e450db8c282d9a2b5c799d22dcbaff8125c17e9231f0403c2a2bac0344",
+      "../README.md": "5307892c2121963f8d12fb2e4497ddea369484e33be50075eb38b489f48e2aca",
+      "../docs/development/architecture.md": "5175ac8741e81d903ef9b285e8f1dc7396a0db20e6a64284b26d04250ac59d3a",
+      "../docs/development/documentation.md": "a833a664492cca4e26d59a4e8fa5b802590efadfc4f5c8c6a7ee193a87485861",
       "../docs/requirements.md": "dfc0ac7656e80f84020c24582c12d87b646d190b7387930c33242d8f43588679"
     }
   }
