@@ -7,17 +7,21 @@
     "../docs/requirements/change-and-confirmation.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/store.test.ts",
-    "../src/store.ts"
+    "../src/application/group-operations.test.ts",
+    "../src/application/group-operations.ts",
+    "../src/domain/confirmation.test.ts",
+    "../src/domain/confirmation.ts"
   ],
   "confirmation": {
-    "definition": "d265c5b2496754f4691165cd95f4ba3ef3f18ba25596b98ba2d8cfb29fa4ed5f",
+    "definition": "6b052ab11d39bde3ce6cd4d7b774638e11f55878e329a8f6030dee884ba6e929",
     "hashes": {
       "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
-      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
+      "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
+      "../src/application/group-operations.ts": "54ffeddee191c68ebd18f226af3a7678cbf53549f689ad033a0012f6ef8fdc54",
+      "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
+      "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a"
     }
   }
 }

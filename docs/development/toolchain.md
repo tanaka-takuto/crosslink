@@ -1,7 +1,7 @@
 # 開発ツールと実行環境
 
 実装はTypeScript、テストはVitest、パッケージ管理はpnpm、整形はoxfmt、lintはoxlintを使う。
-テストは対応する実装の隣へ `core.ts`・`core.test.ts` のように置く。
+テストは対応する実装の隣へ `domain/group.ts`・`domain/group.test.ts` のように置く。
 TypeScriptで型検査し、JavaScriptのES Modulesへビルドする。テストは実行用ビルドから除外する。
 
 ビルド後のCLIに実行時の外部パッケージはない。Node.js 24以上の標準機能だけを使用する。
@@ -29,4 +29,4 @@ JSONを保存形式とすることで、実行時のパーサー依存を追加�
 引数解析、SHA-256、ファイル操作もNode.js標準機能を使う。
 TypeScriptをビルドして実行するため、Node.jsのTypeScript直接実行に対応する構文へ制限する必要がない。
 
-関連：[利用方法](../../README.md)、[文書の管理方針](documentation.md)。
+関連：[利用方法](../../README.md)、[文書の管理方針](documentation.md)、[実装の責務](architecture.md)。

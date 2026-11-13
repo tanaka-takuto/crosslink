@@ -7,25 +7,33 @@
     "../docs/requirements/determinism.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
-    "../src/commands.test.ts",
-    "../src/commands.ts",
-    "../src/core.test.ts",
-    "../src/core.ts",
-    "../src/settings.test.ts",
-    "../src/settings.ts"
+    "../src/application/inspect-group.test.ts",
+    "../src/application/inspect-group.ts",
+    "../src/domain/group.test.ts",
+    "../src/domain/group.ts",
+    "../src/infrastructure/filesystem/content-hash.test.ts",
+    "../src/infrastructure/filesystem/content-hash.ts",
+    "../src/infrastructure/filesystem/settings.test.ts",
+    "../src/infrastructure/filesystem/settings.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "690520fdcaf6e4f94b077e5d3e27fc2778eef1576145ef6bf033c54b8cfc8952",
+    "definition": "7017b806cd7850a708739f8f4dd4b6533a300e9639502549e2b6feea5aaacc60",
     "hashes": {
       "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/commands.test.ts": "51f6ed95f74d53cc08c9fac287f6684ec60cafb0d4db1b78eed64177a0c6525a",
-      "../src/commands.ts": "d098d9bda27ade95c843deb31ff46a26dc5ce1ad0c49cd307e0f85e45d129761",
-      "../src/core.test.ts": "237c0a19e53163808c525e295fe38531e1378026b5042c1fcfbe7eac435c5818",
-      "../src/core.ts": "0d3f693cdef3819caf566a97c97ac8cec9c4ab45d475ccd8cb83c062760be4df",
-      "../src/settings.test.ts": "2f022e0da559bc8e03976e500250e51466ed962ae83e13564bb98e07b63c2c97",
-      "../src/settings.ts": "b1838f8aff13abb21d087061ff7cd3d59d6ae7c72f84cf3896bb220e32aa518e"
+      "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
+      "../src/application/inspect-group.ts": "102b14042254a32a8d52164133fc7d956cacf57982c31ddcdd273d2a827cb6d5",
+      "../src/domain/group.test.ts": "9ca2d812aac16e934e36f0a13ed30ca39e2fbf57f049555b27c46c2f50d69458",
+      "../src/domain/group.ts": "425fdf97739fb8023ac1839803c762a390f27ab4a4a511fe220a141dcd5dddb2",
+      "../src/infrastructure/filesystem/content-hash.test.ts": "48edd19864c6b9d7b012190e68dbeb777dcbc70a1308b406342aa0a8cc0cb370",
+      "../src/infrastructure/filesystem/content-hash.ts": "1af9ca63ec925f3afd7e28066dafe24db16a121935309cd94dfecc759b558794",
+      "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
+      "../src/infrastructure/filesystem/settings.ts": "27bb0b270e53b6a5a196bdfadd7f99f72c9d7f40c4e4e1a358c46f8ff9ab6fab",
+      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
+      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
     }
   }
 }

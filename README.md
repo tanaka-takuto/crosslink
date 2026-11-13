@@ -107,4 +107,4 @@ pnpm check
 型検査、整形検査、lint、テスト、ビルド、自身の関連グループの検査を実行します。
 製品の検査はCIでLinux・macOS・Windows、Node.js 24・26を対象に実行します。
 
-詳細：[要件一覧](docs/requirements.md)、[CLI仕様](docs/specifications/cli.md)、[保存形式](docs/specifications/storage.md)、[開発ツール](docs/development/toolchain.md)。
+詳細：[要件一覧](docs/requirements.md)、[CLI仕様](docs/specifications/cli.md)、[保存形式](docs/specifications/storage.md)、[開発ツール](docs/development/toolchain.md)、[実装の責務と依存方向](docs/development/architecture.md)。

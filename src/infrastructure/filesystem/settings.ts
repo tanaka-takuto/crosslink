@@ -1,6 +1,9 @@
+import type { Settings } from "../../application/ports.js";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
-import { CrosslinkError, defaults, type Settings } from "./core.js";
+import { CrosslinkError } from "../../domain/errors.js";
+
+export const defaults: Settings = { directoryName: ".crosslink", fileNameTemplate: "{name}.json" };
 
 function safeName(name: string): boolean {
   return (
