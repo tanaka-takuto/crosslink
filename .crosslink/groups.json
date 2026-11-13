@@ -1,4 +1,5 @@
 {
+  "kind": "crosslink-group",
   "version": 1,
   "name": "groups",
   "reason": "groups の要件・仕様・実装・テストの整合性を確認するため",
@@ -6,21 +7,29 @@
     "../docs/requirements/groups.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
+    "../src/cli.test.ts",
+    "../src/cli.ts",
     "../src/commands.test.ts",
     "../src/commands.ts",
+    "../src/core.test.ts",
+    "../src/core.ts",
     "../src/store.test.ts",
     "../src/store.ts"
   ],
   "confirmation": {
-    "definition": "f30e80ab156ee43c10148d41f9a1623f843025a685d2ac70cf306ec4acc3cab3",
+    "definition": "e9a313d89fbbace7992d6dbb69e22ec65d0b178a65302830aa2d3a80dc15ef57",
     "hashes": {
-      "../docs/requirements/groups.md": "6ddc928b5248577a1995e27716a0f687089f046cb0f21728084901a0e4335181",
-      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
-      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
-      "../src/commands.test.ts": "7852a77e831b71d5a6e92e300df84e3e8b9c194244d293fb4c42612b0db8caf2",
-      "../src/commands.ts": "19aa227fe5ed53f19933f1f488ae95ed4b9b1700e82d2f411e8825083125adf7",
-      "../src/store.test.ts": "db99929cecf6b8cf15db547d40de456ddc772fdd66f3072d9b9375204f53dca8",
-      "../src/store.ts": "04c4d7b7cbc445ab3c2b16a534ea9bc3cbc5b5278154a328af76f93075eedc06"
+      "../docs/requirements/groups.md": "006bb61462db329c43a9c0ea0be8a6b57ce09751ddbe4e17a3f147075db86a12",
+      "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
+      "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
+      "../src/cli.test.ts": "3f97c4afab218be434b4cf345852a2551c64d8c1bf5081f11eb63ebf8b2c94da",
+      "../src/cli.ts": "cf09dce3e8c46039c6077ff05b332807a2176db873e6697470e1d65bf5d1a2f2",
+      "../src/commands.test.ts": "51f6ed95f74d53cc08c9fac287f6684ec60cafb0d4db1b78eed64177a0c6525a",
+      "../src/commands.ts": "d098d9bda27ade95c843deb31ff46a26dc5ce1ad0c49cd307e0f85e45d129761",
+      "../src/core.test.ts": "237c0a19e53163808c525e295fe38531e1378026b5042c1fcfbe7eac435c5818",
+      "../src/core.ts": "0d3f693cdef3819caf566a97c97ac8cec9c4ab45d475ccd8cb83c062760be4df",
+      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
+      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
     }
   }
 }

@@ -62,7 +62,7 @@ it("creates groups without replacing an existing file", () => {
   const { root, group } = fixture();
   const file = join(root, ".crosslink", "new.json");
   createGroup(file, group);
-  expect(readGroup(file).group).toEqual(group);
+  expect(readGroup(file).group).toEqual({ kind: "crosslink-group", ...group });
   expect(() => createGroup(file, group)).toThrow();
 });
 it("refuses confirmation files in create and update operations", () => {
@@ -101,4 +101,27 @@ it("reproduces confirmation in a fresh copy without Git state", () => {
   roots.push(copy);
   cpSync(root, copy, { recursive: true });
   expect(inspectGroup(join(copy, ".crosslink", "group.json")).status).toBe("confirmed");
+});
+
+it("detects changes from every member of a three-file group", () => {
+  const { root, file } = fixture();
+  writeFileSync(join(root, "c"), "c");
+  updateGroup(file, (group) => ({ ...group, files: ["../a", "../b", "../c"] }));
+  confirm(file);
+  for (const name of ["a", "b", "c"]) {
+    writeFileSync(join(root, name), "changed");
+    expect(inspectGroup(file).status).toBe("unconfirmed");
+    writeFileSync(join(root, name), name);
+    expect(inspectGroup(file).status).toBe("confirmed");
+  }
+});
+
+it("does not automatically confirm even when every related file was edited", () => {
+  const { root, file } = fixture();
+  confirm(file);
+  const before = readFileSync(file, "utf8");
+  writeFileSync(join(root, "a"), "new a");
+  writeFileSync(join(root, "b"), "new b");
+  expect(inspectGroup(file).status).toBe("unconfirmed");
+  expect(readFileSync(file, "utf8")).toBe(before);
 });

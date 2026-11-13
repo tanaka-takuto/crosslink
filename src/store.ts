@@ -20,6 +20,7 @@ import {
   defaults,
   definition,
   digest,
+  groupKind,
   inspectGroup,
   isManagementFile,
   parseGroup,
@@ -88,7 +89,15 @@ function save(file: string, group: Group, create = false): void {
   const fd = openSync(temporary, "wx", existsSync(file) ? statSync(file).mode & 0o777 : 0o644);
   try {
     try {
-      writeFileSync(fd, JSON.stringify(group, null, 2) + "\n");
+      const stored: Group = {
+        kind: groupKind,
+        version: 1,
+        name: group.name,
+        reason: group.reason,
+        files: group.files,
+      };
+      if (group.confirmation) stored.confirmation = group.confirmation;
+      writeFileSync(fd, JSON.stringify(stored, null, 2) + "\n");
       fsyncSync(fd);
     } finally {
       closeSync(fd);

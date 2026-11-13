@@ -1,4 +1,5 @@
 {
+  "kind": "crosslink-group",
   "version": 1,
   "name": "change-and-confirmation",
   "reason": "change-and-confirmation の要件・仕様・実装・テストの整合性を確認するため",
@@ -13,10 +14,10 @@
     "definition": "d265c5b2496754f4691165cd95f4ba3ef3f18ba25596b98ba2d8cfb29fa4ed5f",
     "hashes": {
       "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
-      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
-      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
-      "../src/store.test.ts": "db99929cecf6b8cf15db547d40de456ddc772fdd66f3072d9b9375204f53dca8",
-      "../src/store.ts": "04c4d7b7cbc445ab3c2b16a534ea9bc3cbc5b5278154a328af76f93075eedc06"
+      "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
+      "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
+      "../src/store.test.ts": "0627c6a44f3ad2cb34f25e5981804e9d3538778eac0ee1fa94b7373ec6b39bec",
+      "../src/store.ts": "7fbbb91bbb3e54c5effc5fcc3ab5d58a0d9013abdcdfbb74ddef79ffab805ffd"
     }
   }
 }
