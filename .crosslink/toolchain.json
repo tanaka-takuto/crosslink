@@ -1,4 +1,5 @@
 {
+  "kind": "crosslink-group",
   "version": 1,
   "name": "toolchain",
   "reason": "開発・文書管理の説明と実際の設定を一緒に確認するため",

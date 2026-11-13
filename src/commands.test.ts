@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
@@ -99,4 +107,140 @@ it("distinguishes no related group from no registered groups", () => {
   expect(run(["related", "c"], root).report.messages).toContain(
     "このファイルに関連するグループはありません",
   );
+});
+
+// file-formats.md: 保存先に使っていないサンプルJSONは通常データとして扱う。
+it("registers and adds an ordinary JSON sample without inferring its role from common fields", () => {
+  const root = fixture();
+  writeFileSync(
+    join(root, "example.json"),
+    JSON.stringify({ version: 1, name: "example", reason: "サンプル", files: ["a", "b"] }),
+  );
+  expect(
+    run(["create", "sample", "a", "example.json", "--reason", "データと利用元"], root).code,
+  ).toBe(0);
+  expect(run(["create", "another", "a", "b", "--reason", "データと利用元"], root).code).toBe(0);
+  expect(run(["add", ".crosslink/another.json", "example.json"], root).code).toBe(0);
+  expect(run(["check", "--file", ".crosslink/sample.json"], root).code).toBe(1);
+});
+
+// groups.md: 実際に保存・確認した管理ファイルは名前によらず関連対象にできない。
+it.each(
+  ["outside.json", "outside.record", "outside", "outside.JSON"].flatMap((file) =>
+    ["create", "add", "check"].map((operation) => ({ file, operation })),
+  ),
+)("rejects an actual record $file during $operation", ({ file, operation }) => {
+  const root = fixture();
+  expect(run(["create", "record", "a", "b", "--reason", "記録", "--file", file], root).code).toBe(
+    0,
+  );
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check", "--file", file], root).report));
+  expect(run(["confirm", file, "--snapshot", review], root).code).toBe(0);
+  expect(run(["create", "target", "a", "c", "--reason", "対象"], root).code).toBe(0);
+  if (operation === "create") {
+    expect(run(["create", "new", "c", file, "--reason", "対象"], root).code).toBe(2);
+  } else if (operation === "add") {
+    const target = join(root, ".crosslink/target.json");
+    const before = readFileSync(target, "utf8");
+    expect(run(["add", ".crosslink/target.json", file], root).code).toBe(2);
+    expect(readFileSync(target, "utf8")).toBe(before);
+  } else {
+    const target = join(root, ".crosslink/target.json");
+    const group = JSON.parse(readFileSync(target, "utf8"));
+    group.files.push("../" + file);
+    writeFileSync(target, JSON.stringify(group));
+    expect(run(["check", "--file", ".crosslink/target.json"], root).code).toBe(2);
+  }
+});
+
+it("reads legacy groups without mutation and explicitly migrates their identity", () => {
+  const root = fixture();
+  const file = join(root, "legacy.record");
+  const original = JSON.stringify({
+    version: 1,
+    name: "legacy",
+    reason: "旧形式",
+    files: ["a", "b"],
+  });
+  writeFileSync(file, original);
+  expect(run(["check", "--file", file], root).code).toBe(1);
+  expect(readFileSync(file, "utf8")).toBe(original);
+  expect(run(["migrate", file], root).code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).kind).toBe("crosslink-group");
+});
+
+it("migration preserves the old confirmation rather than approving later content changes", () => {
+  const root = fixture();
+  const file = join(root, "legacy.record");
+  run(["create", "legacy", "a", "b", "--reason", "旧形式", "--file", file], root);
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check", "--file", file], root).report));
+  expect(run(["confirm", file, "--snapshot", review], root).code).toBe(0);
+  const legacy = JSON.parse(readFileSync(file, "utf8"));
+  delete legacy.kind;
+  writeFileSync(file, JSON.stringify(legacy));
+  expect(run(["check", "--file", file], root).code).toBe(0);
+  writeFileSync(join(root, "a"), "new content");
+  expect(run(["migrate", file], root).code).toBe(0);
+  const migrated = JSON.parse(readFileSync(file, "utf8"));
+  expect(migrated.kind).toBe("crosslink-group");
+  expect(migrated.confirmation).toEqual(legacy.confirmation);
+  expect(run(["check", "--file", file], root).code).toBe(1);
+});
+
+it("resolves absolute and relative targets from the management file regardless of invocation directory", () => {
+  const root = fixture();
+  const other = fixture();
+  run(["create", "paths", join(root, "a"), "b", "--reason", "パスの確認"], root);
+  const expected = run(["check"], root).report.groups;
+  expect(
+    run(["check", "--file", join(root, ".crosslink/paths.json")], other).report.groups,
+  ).toEqual(expected);
+});
+
+it("keeps inspection deterministic and read-only and ignores unregistered changes", () => {
+  const root = fixture();
+  run(["create", "api", "a", "b", "--reason", "理由"], root);
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check"], root).report));
+  run(["confirm", "--all", "--snapshot", review], root);
+  const file = join(root, ".crosslink/api.json");
+  const before = readFileSync(file, "utf8");
+  const report = run(["check"], root).report;
+  run(["related", "a"], root);
+  writeFileSync(join(root, "c"), "unrelated change");
+  expect(run(["check"], root).report).toEqual(report);
+  expect(readFileSync(file, "utf8")).toBe(before);
+  expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+});
+
+it("requires separate confirmations for every group containing a shared changed file", () => {
+  const root = fixture();
+  run(["create", "first", "a", "b", "--reason", "AとB"], root);
+  run(["create", "second", "b", "c", "--reason", "BとC"], root);
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check"], root).report));
+  run(["confirm", "--all", "--snapshot", review], root);
+  writeFileSync(join(root, "b"), "shared change");
+  expect(
+    run(["check"], root).report.groups.filter((group) => group.status === "unconfirmed"),
+  ).toHaveLength(2);
+  writeFileSync(review, JSON.stringify(run(["check"], root).report));
+  expect(run(["confirm", ".crosslink/first.json", "--snapshot", review], root).code).toBe(0);
+  expect(run(["check", "--file", ".crosslink/second.json"], root).code).toBe(1);
+});
+
+it("recognizes declared management files after renaming and copying them", () => {
+  const root = fixture();
+  run(["create", "record", "a", "b", "--reason", "記録", "--file", "original.json"], root);
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check", "--file", "original.json"], root).report));
+  expect(run(["confirm", "original.json", "--snapshot", review], root).code).toBe(0);
+  renameSync(join(root, "original.json"), join(root, "renamed.data"));
+  cpSync(join(root, "renamed.data"), join(root, "copied"));
+  for (const file of ["renamed.data", "copied"]) {
+    expect(run(["check", "--file", file], root).code).toBe(0);
+    expect(run(["create", "other", "c", file, "--reason", "対象"], root).code).toBe(2);
+  }
 });

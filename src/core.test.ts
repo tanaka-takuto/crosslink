@@ -63,11 +63,53 @@ describe("inspection", () => {
     expect(inspectGroup(file).status).toBe("unconfirmed");
   });
 
-  it("also refuses a group JSON explicitly stored outside the default directory", () => {
+  it("refuses explicitly marked management JSON outside the default directory", () => {
     const { root, file } = fixture(["../a", "../outside.json"]);
     writeFileSync(
       join(root, "outside.json"),
-      JSON.stringify({ version: 1, name: "outside", reason: "関連", files: ["a", "b"] }),
+      JSON.stringify({
+        kind: "crosslink-group",
+        version: 1,
+        name: "outside",
+        reason: "関連",
+        files: ["a", "b"],
+      }),
+    );
+    expect(inspectGroup(file).errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: "MANAGEMENT_FILE" })]),
+    );
+  });
+
+  it("accepts ordinary JSON resembling a legacy group definition", () => {
+    const { root, file } = fixture(["../a", "../example.json"]);
+    writeFileSync(
+      join(root, "example.json"),
+      JSON.stringify({ version: 1, name: "example", reason: "サンプルデータ", files: ["a", "b"] }),
+    );
+    expect(inspectGroup(file).errors).toEqual([]);
+    expect(inspectGroup(file).files).toHaveLength(2);
+  });
+
+  it.each([
+    { value: { kind: "example", version: 1, name: "sample", reason: "data", files: ["a", "b"] } },
+    { value: { sample: { kind: "crosslink-group" } } },
+    { value: [{ kind: "crosslink-group" }] },
+  ])(
+    "does not infer a top-level management role from unrelated or nested markers: $value",
+    ({ value }) => {
+      const { root, file } = fixture(["../a", "../sample.data"]);
+      writeFileSync(join(root, "sample.data"), JSON.stringify(value));
+      expect(inspectGroup(file).errors).toEqual([]);
+    },
+  );
+
+  it("detects a declared kind after whitespace, a BOM and reordered fields without relying on extension", () => {
+    const { root, file } = fixture(["../a", "../record"]);
+    writeFileSync(
+      join(root, "record"),
+      "\uFEFF" +
+        " ".repeat(5000) +
+        JSON.stringify({ version: 999, note: "x".repeat(5000), kind: "crosslink-group" }),
     );
     expect(inspectGroup(file).errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ code: "MANAGEMENT_FILE" })]),

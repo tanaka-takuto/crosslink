@@ -97,6 +97,7 @@ const help = [
   "crosslink add|remove <管理ファイル> <files...>",
   "crosslink set <管理ファイル> [--name <名前>] [--reason <理由>]",
   "crosslink delete <管理ファイル>",
+  "crosslink migrate <旧形式の管理ファイル>",
   "crosslink check [--file <管理ファイル>] [--json]",
   "crosslink related <対象ファイル> [--file <管理ファイル>] [--json]",
   "crosslink confirm <管理ファイル> --snapshot <検査結果.json>",
@@ -140,6 +141,7 @@ export function run(args: string[], cwd: string): RunResult {
       remove: [],
       set: ["name", "reason"],
       delete: [],
+      migrate: [],
       check: ["file"],
       related: ["file"],
       confirm: ["all", "snapshot"],
@@ -225,6 +227,8 @@ export function run(args: string[], cwd: string): RunResult {
           },
         };
       }
+      if (operation === "migrate" && positional.length !== 1)
+        throw new CrosslinkError("INVALID_ARGUMENT", "移行する管理ファイルを一つ指定してください");
       if (
         operation === "set" &&
         (positional.length !== 1 || (values.name === undefined && values.reason === undefined))
@@ -235,6 +239,7 @@ export function run(args: string[], cwd: string): RunResult {
       updateGroup(
         file,
         (group) => {
+          if (operation === "migrate") return group;
           if (operation === "set")
             return {
               ...group,

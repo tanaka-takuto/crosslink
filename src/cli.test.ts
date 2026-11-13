@@ -83,3 +83,21 @@ it("refuses two concurrent confirmation processes from the same snapshot", async
   expect(results.sort()).toEqual([0, 2]);
   expect(call("check").status).toBe(0);
 });
+
+it("accepts ordinary JSON data and rejects a declared record with a custom suffix in the built CLI", () => {
+  const { root, call } = fixture();
+  writeFileSync(
+    join(root, "example.json"),
+    JSON.stringify({ version: 1, name: "example", reason: "サンプル", files: ["a", "b"] }),
+  );
+  expect(call("create", "sample", "a", "example.json", "--reason", "通常データ").status).toBe(0);
+  expect(
+    call("create", "record", "a", "b", "--reason", "記録", "--file", "outside.record").status,
+  ).toBe(0);
+  const review = join(root, "review.json");
+  writeFileSync(review, call("check", "--file", "outside.record", "--json").stdout);
+  expect(call("confirm", "outside.record", "--snapshot", review).status).toBe(0);
+  const rejected = call("add", ".crosslink/sample.json", "outside.record", "--json");
+  expect(rejected.status).toBe(2);
+  expect(JSON.parse(rejected.stdout).errors[0].code).toBe("MANAGEMENT_FILE");
+});

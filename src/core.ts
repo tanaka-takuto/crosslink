@@ -18,8 +18,10 @@ export interface Settings {
 }
 
 export const defaults: Settings = { directoryName: ".crosslink", fileNameTemplate: "{name}.json" };
+export const groupKind = "crosslink-group";
 
 export interface Group {
+  kind?: typeof groupKind;
   version: 1;
   name: string;
   reason: string;
@@ -75,13 +77,15 @@ function fields(value: Record<string, unknown>, allowed: string[]): void {
 export function parseGroup(text: string): Group {
   let value: unknown;
   try {
-    value = JSON.parse(text);
+    value = JSON.parse(withoutBom(text));
   } catch {
     throw new CrosslinkError("INVALID_JSON", "管理ファイルのJSONが壊れています");
   }
   if (!object(value))
     throw new CrosslinkError("INVALID_DEFINITION", "管理ファイルはオブジェクトにしてください");
-  fields(value, ["version", "name", "reason", "files", "confirmation"]);
+  fields(value, ["kind", "version", "name", "reason", "files", "confirmation"]);
+  if (value.kind !== undefined && value.kind !== groupKind)
+    throw new CrosslinkError("INVALID_DEFINITION", "管理ファイルのkindが不正です");
   if (value.version !== 1)
     throw new CrosslinkError("UNSUPPORTED_VERSION", "管理ファイルのversionは1のみ対応しています");
   if (
@@ -143,15 +147,51 @@ export function isManagementFile(member: string, file: string, settings: Setting
       b = statSync(file);
     if (a.dev === b.dev && a.ino === b.ino) return true;
   }
-  if (canonical.endsWith(".json") && existsSync(canonical) && statSync(canonical).isFile()) {
-    try {
-      parseGroup(readFileSync(canonical, "utf8"));
-      return true;
-    } catch {
-      return false;
+  return existsSync(canonical) && statSync(canonical).isFile() && declaresManagementKind(canonical);
+}
+
+function withoutBom(text: string): string {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
+function declaresManagementKind(file: string): boolean {
+  // バイナリや通常のソースを全文デコードせず、JSONオブジェクト候補だけ種別を見る。
+  const fd = openSync(file, "r");
+  const buffer = Buffer.alloc(4096);
+  let firstChunk = true;
+  let objectCandidate = false;
+  try {
+    search: while (true) {
+      const length = readSync(fd, buffer, 0, buffer.length, null);
+      if (length === 0) return false;
+      let start = 0;
+      if (
+        firstChunk &&
+        length >= 3 &&
+        buffer[0] === 0xef &&
+        buffer[1] === 0xbb &&
+        buffer[2] === 0xbf
+      )
+        start = 3;
+      firstChunk = false;
+      for (let i = start; i < length; i++) {
+        const byte = buffer[i];
+        if (byte === 0x20 || byte === 0x09 || byte === 0x0a || byte === 0x0d) continue;
+        objectCandidate = byte === 0x7b;
+        break search;
+      }
     }
+  } finally {
+    closeSync(fd);
   }
-  return false;
+  if (!objectCandidate) return false;
+  try {
+    const value: unknown = JSON.parse(withoutBom(readFileSync(file, "utf8")));
+    return object(value) && value.kind === groupKind;
+  } catch (error) {
+    if (error instanceof SyntaxError) return false;
+    throw error;
+  }
 }
 
 function hashFile(file: string): { hash: string; identity: string } {
