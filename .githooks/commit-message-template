@@ -2,8 +2,8 @@
 #
 # type: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
 # scope は省略可。Issue 番号は必須ではありません。
-# 日本語・本文・フッターを使用できます。
-# 破壊的変更は type(scope)!: 説明 または BREAKING CHANGE フッターで示します。
+# 日本語を使用できます。必ず1行とし、本文・フッターは使用できません。
+# 破壊的変更は type(scope)!: 説明 で示します。詳細は PR に記載します。
 #
 # chore: Git の開発設定を追加する
 # fix(cli): 引数の検証を修正する

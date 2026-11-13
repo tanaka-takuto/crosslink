@@ -41,13 +41,35 @@ expect() {
 # Git 自身からフックを呼び、メッセージの受理・拒否を確認する。
 expect failure '形式のないコミットを拒否' git commit --allow-empty -m 'invalid message'
 expect success 'Issue なし・日本語のコミットを許可' git commit --allow-empty -m 'chore: 開発設定を追加する'
-expect success 'scope と本文・フッターを許可' git commit --allow-empty -m 'fix(git): 検査を修正する' -m '理由を本文に記録する。' -m 'Refs: #123'
-expect success '破壊的変更の記法を許可' git commit --allow-empty -m 'feat(cli)!: change output format' -m 'BREAKING CHANGE: output format changed'
+expect failure '本文・フッター付きのコミットを拒否' git commit --allow-empty -m 'fix(git): 検査を修正する' -m '理由を本文に記録する。' -m 'Refs: #123'
+expect success 'scope 付きの1行コミットを許可' git commit --allow-empty -m 'fix(git): 検査を修正する'
+expect success '1行の破壊的変更の記法を許可' git commit --allow-empty -m 'feat(cli)!: change output format'
+expect failure 'BREAKING CHANGE フッターも拒否' git commit --allow-empty -m 'feat(cli)!: change output format' -m 'BREAKING CHANGE: output format changed'
 expect success '日本語をバイト数で制限しない' git commit --allow-empty -m 'docs: 日本語でもバイト数の違いでコミットできなくならないことを確認するための説明を追加する'
 expect failure '説明が空なら拒否' git commit --allow-empty -m 'fix: '
 expect failure '未定義の type を拒否' git commit --allow-empty -m 'unknown: message'
 expect success 'Git の merge メッセージを許可' git commit --allow-empty -m "Merge branch 'setup/git-github'"
 expect success 'fixup を許可' git commit --allow-empty -m 'fixup! chore: 開発設定を追加する'
+expect failure 'merge でも複数行を拒否' git commit --allow-empty -m "Merge branch 'setup/git-github'" -m 'extra body'
+expect failure 'revert でも複数行を拒否' git commit --allow-empty -m 'Revert "change"' -m 'This reverts commit abcdef.'
+expect failure 'fixup でも複数行を拒否' git commit --allow-empty -m 'fixup! chore: 開発設定を追加する' -m 'extra body'
+
+# コメントを含むエディター入力も、保存されるメッセージは1行にする。
+expect success 'テンプレートのコメントを除去' git commit --allow-empty --cleanup=verbatim -m 'chore: コメントを除去する
+# エディター用のコメント'
+message=$(git log -1 --format=%B)
+expect success '実際に保存されるメッセージも1行' test "$message" = 'chore: コメントを除去する'
+
+# bot や --no-verify で作られたコミットも CI の検査では拒否する。
+base_commit=$(git rev-parse HEAD)
+git commit --quiet --allow-empty -m 'test: 1行コミットを検査する'
+expect success 'CI は1行のコミットを許可' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+git -c core.hooksPath=/dev/null commit --quiet --allow-empty -m 'ci(deps): update dependency' -m 'bot-generated body'
+bad_commit=$(git rev-parse HEAD)
+expect failure 'CI はフックを通さない複数行コミットも拒否' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+git commit --quiet --allow-empty -m 'test: 後続の1行コミットを追加する'
+expect failure 'CI は最新だけでなく範囲内の全コミットを検査' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+expect success 'CI はすでに取り込まれた履歴を対象外にする' sh "$repo_root/script/check-commit-messages.sh" "$bad_commit" HEAD
 
 # 部分ステージでは index を検査し、作業ツリーと index を書き換えない。
 printf 'staged content\n' > 'partial file.txt'
