@@ -1,9 +1,9 @@
-# type(scope): 説明
+# type(#Issue番号): 説明
 #
 # type: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
-# scope は省略可。Issue 番号は必須ではありません。
+# 正の整数の Issue 番号を scope に必ず記載します。
 # 日本語を使用できます。必ず1行とし、本文・フッターは使用できません。
-# 破壊的変更は type(scope)!: 説明 で示します。詳細は PR に記載します。
+# 破壊的変更は type(#123)!: 説明 で示します。詳細は PR に記載します。
 #
-# chore: Git の開発設定を追加する
-# fix(cli): 引数の検証を修正する
+# chore(#123): Git の開発設定を追加する
+# fix(#123): 引数の検証を修正する

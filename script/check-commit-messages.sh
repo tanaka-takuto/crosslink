@@ -2,6 +2,11 @@
 
 set -eu
 
+script_root=$(CDPATH='' cd -- "$(dirname "$0")" && pwd)
+check_dir=$(mktemp -d "${TMPDIR:-/tmp}/crosslink-commit-messages.XXXXXX")
+trap 'rm -rf "$check_dir"' EXIT
+trap 'exit 1' HUP INT TERM
+
 base=${1:?usage: check-commit-messages.sh BASE HEAD}
 head=$(git rev-parse --verify --end-of-options "${2:?usage: check-commit-messages.sh BASE HEAD}^{commit}")
 
@@ -25,8 +30,14 @@ for commit in $commits; do
 '*)
       printf 'commit-message: %s は1行ではありません。本文・フッターを削除してください。\n' "$commit" >&2
       status=1
+      continue
       ;;
   esac
+  printf '%s\n' "$message" > "$check_dir/message"
+  if ! sh "$script_root/../.githooks/commit-msg" "$check_dir/message" > "$check_dir/output" 2>&1; then
+    printf 'commit-message: %s は Issue 番号付きの1行形式ではありません。\n' "$commit" >&2
+    status=1
+  fi
 done
 
 if [ "$status" -eq 0 ]; then

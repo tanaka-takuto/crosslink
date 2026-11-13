@@ -15,4 +15,5 @@ git diff --check "$empty_tree" HEAD
 git diff --check
 git diff --cached --check
 sh script/test-githooks.sh
+node --test script/pr-policy.test.mjs
 printf '%s\n' 'Git checks passed'

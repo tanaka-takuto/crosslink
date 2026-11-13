@@ -1,0 +1,34 @@
+name: 調査・検討
+description: 判断に必要な問い、既知の事実、調査方法を共有します。
+title: "[調査]: "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: 作成前に同じ問いの Open Issue を検索してください。事実、未検証の仮説、まだ分からないことを分けて記載します。
+  - type: textarea
+    id: question
+    attributes:
+      label: 決めたい問いと判断先
+      description: 何を明らかにして、その結果をどの判断や更新に使うかを書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: known
+    attributes:
+      label: 既知の事実と制約
+      description: 確認済みの事実、根拠、確定している制約を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: investigation
+    attributes:
+      label: 調査方法と完了条件
+      description: 調べる候補・情報源、比較や検証の方法、結論を出せる条件を書きます。
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 仮説・候補・関連資料
+      description: 未検証の仮説や追加の背景があれば記載します。

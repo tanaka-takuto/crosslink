@@ -40,43 +40,51 @@ expect() {
 
 # Git 自身からフックを呼び、メッセージの受理・拒否を確認する。
 expect failure '形式のないコミットを拒否' git commit --allow-empty -m 'invalid message'
-expect success 'Issue なし・日本語のコミットを許可' git commit --allow-empty -m 'chore: 開発設定を追加する'
-expect failure '本文・フッター付きのコミットを拒否' git commit --allow-empty -m 'fix(git): 検査を修正する' -m '理由を本文に記録する。' -m 'Refs: #123'
-expect success 'scope 付きの1行コミットを許可' git commit --allow-empty -m 'fix(git): 検査を修正する'
-expect success '1行の破壊的変更の記法を許可' git commit --allow-empty -m 'feat(cli)!: change output format'
-expect failure 'BREAKING CHANGE フッターも拒否' git commit --allow-empty -m 'feat(cli)!: change output format' -m 'BREAKING CHANGE: output format changed'
-expect success '日本語をバイト数で制限しない' git commit --allow-empty -m 'docs: 日本語でもバイト数の違いでコミットできなくならないことを確認するための説明を追加する'
-expect failure '説明が空なら拒否' git commit --allow-empty -m 'fix: '
-expect failure '未定義の type を拒否' git commit --allow-empty -m 'unknown: message'
-expect success 'Git の merge メッセージを許可' git commit --allow-empty -m "Merge branch 'setup/git-github'"
-expect success 'fixup を許可' git commit --allow-empty -m 'fixup! chore: 開発設定を追加する'
+expect failure 'Issue 番号のないコミットを拒否' git commit --allow-empty -m 'chore: Issue 番号なし'
+expect success 'Issue 番号・日本語のコミットを許可' git commit --allow-empty -m 'chore(#123): 開発設定を追加する'
+expect failure '本文・フッター付きのコミットを拒否' git commit --allow-empty -m 'fix(#123): 検査を修正する' -m '理由を本文に記録する。' -m 'Refs: #123'
+expect success 'Issue 番号付きの1行コミットを許可' git commit --allow-empty -m 'fix(#123): 検査を修正する'
+expect success '1行の破壊的変更の記法を許可' git commit --allow-empty -m 'feat(#123)!: change output format'
+expect failure 'BREAKING CHANGE フッターも拒否' git commit --allow-empty -m 'feat(#123)!: change output format' -m 'BREAKING CHANGE: output format changed'
+expect success '日本語をバイト数で制限しない' git commit --allow-empty -m 'docs(#123): 日本語でもバイト数の違いでコミットできなくならないことを確認するための説明を追加する'
+expect failure '説明が空なら拒否' git commit --allow-empty -m 'fix(#123): '
+expect failure '未定義の type を拒否' git commit --allow-empty -m 'unknown(#123): message'
+expect failure 'Issue 番号のない merge メッセージを拒否' git commit --allow-empty -m "Merge branch 'setup/git-github'"
+expect success 'Issue を指定した merge 用の件名を許可' git commit --allow-empty -m 'chore(#123): main を統合する'
+expect success 'fixup にも Issue 番号を要求' git commit --allow-empty -m 'fixup! chore(#123): 開発設定を追加する'
+expect failure 'Issue 番号なしの fixup を拒否' git commit --allow-empty -m 'fixup! chore: 開発設定を追加する'
+expect failure 'Issue 番号 0 を拒否' git commit --allow-empty -m 'fix(#0): 不正な番号'
+expect failure '先頭ゼロの Issue 番号を拒否' git commit --allow-empty -m 'fix(#01): 不正な番号'
 expect failure 'merge でも複数行を拒否' git commit --allow-empty -m "Merge branch 'setup/git-github'" -m 'extra body'
 expect failure 'revert でも複数行を拒否' git commit --allow-empty -m 'Revert "change"' -m 'This reverts commit abcdef.'
-expect failure 'fixup でも複数行を拒否' git commit --allow-empty -m 'fixup! chore: 開発設定を追加する' -m 'extra body'
+expect failure 'fixup でも複数行を拒否' git commit --allow-empty -m 'fixup! chore(#123): 開発設定を追加する' -m 'extra body'
 
 # コメントを含むエディター入力も、保存されるメッセージは1行にする。
-expect success 'テンプレートのコメントを除去' git commit --allow-empty --cleanup=verbatim -m 'chore: コメントを除去する
+expect success 'テンプレートのコメントを除去' git commit --allow-empty --cleanup=verbatim -m 'chore(#123): コメントを除去する
 # エディター用のコメント'
 message=$(git log -1 --format=%B)
-expect success '実際に保存されるメッセージも1行' test "$message" = 'chore: コメントを除去する'
+expect success '実際に保存されるメッセージも1行' test "$message" = 'chore(#123): コメントを除去する'
 
 # bot や --no-verify で作られたコミットも CI の検査では拒否する。
 base_commit=$(git rev-parse HEAD)
-git commit --quiet --allow-empty -m 'test: 1行コミットを検査する'
+git commit --quiet --allow-empty -m 'test(#123): 1行コミットを検査する'
 expect success 'CI は1行のコミットを許可' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
-git -c core.hooksPath=/dev/null commit --quiet --allow-empty -m 'ci(deps): update dependency' -m 'bot-generated body'
+git -c core.hooksPath=/dev/null commit --quiet --allow-empty -m 'ci(#123): update dependency' -m 'bot-generated body'
 bad_commit=$(git rev-parse HEAD)
 expect failure 'CI はフックを通さない複数行コミットも拒否' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
-git commit --quiet --allow-empty -m 'test: 後続の1行コミットを追加する'
+git commit --quiet --allow-empty -m 'test(#123): 後続の1行コミットを追加する'
 expect failure 'CI は最新だけでなく範囲内の全コミットを検査' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
 expect success 'CI はすでに取り込まれた履歴を対象外にする' sh "$repo_root/script/check-commit-messages.sh" "$bad_commit" HEAD
+base_commit=$(git rev-parse HEAD)
+git -c core.hooksPath=/dev/null commit --quiet --allow-empty -m 'ci: Issue 番号なし'
+expect failure 'CI も番号なしの1行コミットを拒否' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
 
 # 部分ステージでは index を検査し、作業ツリーと index を書き換えない。
 printf 'staged content\n' > 'partial file.txt'
 git add -- 'partial file.txt'
 printf 'unstaged content  \n' > 'partial file.txt'
 cp 'partial file.txt' "$test_dir/working-before"
-expect success '未ステージの空白エラーは対象外' git commit -m 'test: 部分ステージを保持する'
+expect success '未ステージの空白エラーは対象外' git commit -m 'test(#123): 部分ステージを保持する'
 expect success '作業ツリーを変更しない' cmp 'partial file.txt' "$test_dir/working-before"
 printf 'staged content\n' > "$test_dir/staged-expected"
 git show 'HEAD:partial file.txt' > "$test_dir/staged-actual"
@@ -87,7 +95,7 @@ git add -- 'bad file.txt'
 printf 'different working content\n' > 'bad file.txt'
 cp 'bad file.txt' "$test_dir/bad-working-before"
 git show ':bad file.txt' > "$test_dir/bad-index-before"
-expect failure 'ステージ済みの空白エラーを拒否' git commit -m 'test: 空白エラーを検出する'
+expect failure 'ステージ済みの空白エラーを拒否' git commit -m 'test(#123): 空白エラーを検出する'
 expect success '拒否時も作業ツリーを保持' cmp 'bad file.txt' "$test_dir/bad-working-before"
 git show ':bad file.txt' > "$test_dir/bad-index-after"
 expect success '拒否時も index を保持' cmp "$test_dir/bad-index-before" "$test_dir/bad-index-after"
