@@ -60,6 +60,17 @@ expect success 'テンプレートのコメントを除去' git commit --allow-e
 message=$(git log -1 --format=%B)
 expect success '実際に保存されるメッセージも1行' test "$message" = 'chore: コメントを除去する'
 
+# bot や --no-verify で作られたコミットも CI の検査では拒否する。
+base_commit=$(git rev-parse HEAD)
+git commit --quiet --allow-empty -m 'test: 1行コミットを検査する'
+expect success 'CI は1行のコミットを許可' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+git -c core.hooksPath=/dev/null commit --quiet --allow-empty -m 'ci(deps): update dependency' -m 'bot-generated body'
+bad_commit=$(git rev-parse HEAD)
+expect failure 'CI はフックを通さない複数行コミットも拒否' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+git commit --quiet --allow-empty -m 'test: 後続の1行コミットを追加する'
+expect failure 'CI は最新だけでなく範囲内の全コミットを検査' sh "$repo_root/script/check-commit-messages.sh" "$base_commit" HEAD
+expect success 'CI はすでに取り込まれた履歴を対象外にする' sh "$repo_root/script/check-commit-messages.sh" "$bad_commit" HEAD
+
 # 部分ステージでは index を検査し、作業ツリーと index を書き換えない。
 printf 'staged content\n' > 'partial file.txt'
 git add -- 'partial file.txt'

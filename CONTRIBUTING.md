@@ -56,6 +56,10 @@ Dependabot の `dependabot/...` ブランチも許可します。
 - `sh script/check-git.sh`: shell 構文、空白エラー、実際の Git 操作を使うフックテストを実行します。
 
 GitHub Actions も同じ検査入口を Linux と macOS で実行します。
+PR では分岐点以降、main への push では追加された全コミットのメッセージを検査します。
+フックを通さず作られたコミットや Dependabot のコミットも、本文・フッターがあれば拒否します。
+更新 PR に複数行のコミットがある場合は、1行のコミットへ作り直してから取り込みます。
+ローカルでは `sh script/check-commit-messages.sh BASE HEAD` で同じ検査を実行できます。
 全 OS の成功を集約する `Git policy` を main の必須チェックとします。
 これは Git の開発運用の検査です。CLI 本体の品質検査は、本体の実装に合わせて追加します。
 
@@ -73,6 +77,8 @@ major は個別に扱います。自動マージは使用しません。
 - 通常の merge commit を使い、squash merge・rebase merge・auto-merge は無効にします。
 - GitHub の merge commit は PR タイトルを件名にし、既定の本文を空にします。
   PR タイトルも1行の Conventional Commits 形式にし、マージ時に本文を追加しないでください。
+- このリポジトリでは GitHub の commit metadata rules を利用できないため、
+  PR 内のコミットは必須 CI、マージメッセージは本文なしの既定設定とマージ時の確認で管理します。
 - マージ済みの作業ブランチは自動削除します。
 
 初回の設定導入だけは、検査 workflow を main へ push して成功を確認した後に保護を有効にします。
