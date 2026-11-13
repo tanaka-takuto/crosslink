@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "confirmation-state",
+  "reason": "confirmation-state の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../docs/requirements/confirmation-state.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../src/core.test.ts",
+    "../src/core.ts",
+    "../src/store.test.ts",
+    "../src/store.ts"
+  ],
+  "confirmation": {
+    "definition": "c14db0c6148d15fd34041732b76aa4cc083fb7a8b1738393e86a0f3a50127d64",
+    "hashes": {
+      "../docs/requirements/confirmation-state.md": "6c8dae8e7888dd51b022517ee46b71de256b9c850fc80ca5a234cf2752ce4d76",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../src/core.test.ts": "d8ab1d8f0e3fb43d60a1b6755e02d582f41815d3f87c9a23cca4a538d4b96ed5",
+      "../src/core.ts": "f4362c6664c17ef3f5ab99b050e939140e81cd9b25b854c8418d02794038e7d2",
+      "../src/store.test.ts": "db99929cecf6b8cf15db547d40de456ddc772fdd66f3072d9b9375204f53dca8",
+      "../src/store.ts": "04c4d7b7cbc445ab3c2b16a534ea9bc3cbc5b5278154a328af76f93075eedc06"
+    }
+  }
+}

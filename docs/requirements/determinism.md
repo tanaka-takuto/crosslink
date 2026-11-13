@@ -20,3 +20,5 @@
 - 管理ファイルと対象ファイルの配置が同じなら、相対パスの参照先がCLIを起動したディレクトリによって変わらない。
 
 関連：[確認状態](confirmation-state.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

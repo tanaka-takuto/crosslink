@@ -12,47 +12,47 @@
 文書の分け方と識別方法は[文書の管理方針](development/documentation.md)を参照する。
 文書化の背景と完了条件は[Issue #5](https://github.com/tanaka-takuto/crosslink/issues/5)を参照する。
 
-| 要件 |
-| --- |
-| [ファイル形式に依存しない](requirements/file-formats.md) |
-| [任意のファイル間の関連付け](requirements/groups.md) |
-| [双方向・非方向性の変更検知](requirements/change-impact.md) |
-| [変更と確認の区別](requirements/change-and-confirmation.md) |
-| [明示的な確認操作](requirements/explicit-confirmation.md) |
-| [内容に基づく確認状態](requirements/confirmation-state.md) |
-| [変更影響の可視化](requirements/impact-output.md) |
-| [整合性確認の自動検査](requirements/check.md) |
-| [CI/CDとの統合](requirements/ci.md) |
-| [関連性と確認記録の永続化](requirements/persistence.md) |
-| [再現性と決定性](requirements/determinism.md) |
+| 要件                                                                     |
+| ------------------------------------------------------------------------ |
+| [ファイル形式に依存しない](requirements/file-formats.md)                 |
+| [任意のファイル間の関連付け](requirements/groups.md)                     |
+| [双方向・非方向性の変更検知](requirements/change-impact.md)              |
+| [変更と確認の区別](requirements/change-and-confirmation.md)              |
+| [明示的な確認操作](requirements/explicit-confirmation.md)                |
+| [内容に基づく確認状態](requirements/confirmation-state.md)               |
+| [変更影響の可視化](requirements/impact-output.md)                        |
+| [整合性確認の自動検査](requirements/check.md)                            |
+| [CI/CDとの統合](requirements/ci.md)                                      |
+| [関連性と確認記録の永続化](requirements/persistence.md)                  |
+| [再現性と決定性](requirements/determinism.md)                            |
 | [対象の消失・定義の不整合・構成変更](requirements/invalid-references.md) |
-| [非破壊的な動作](requirements/non-destructive.md) |
-| [AIエージェントによる利用](requirements/agent-usage.md) |
-| [軽量な導入・運用](requirements/adoption.md) |
+| [非破壊的な動作](requirements/non-destructive.md)                        |
+| [AIエージェントによる利用](requirements/agent-usage.md)                  |
+| [軽量な導入・運用](requirements/adoption.md)                             |
 
 - [ユースケース](requirements/use-cases.md)
 
 ## 共通の用語
 
-| 用語 | 意味 |
-| --- | --- |
-| 関連グループ | 整合性を一緒に確認するために明示的に関連付けるファイルの集合。固定の親子関係・依存方向を持たない |
-| 構成ファイル | グループに属するファイル。同一ファイルは複数グループに所属できる |
-| 管理ファイル | グループの定義や確認記録を保存するファイル |
-| ファイルハッシュ | ファイル内容の一致を判定するための値。更新日時やGitの状態を判定基準にしない |
-| 確認操作 | グループ全体について確認した事実と、その時点の内容の組み合わせを明示的に記録する操作 |
-| 確認が必要な理由 | なぜそのファイル群の整合性を一緒に確認する必要があるかという、グループの関連性の説明 |
-| 確認対象 | 変更されたファイルと、未変更の関連ファイルを含むグループ全体 |
+| 用語             | 意味                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| 関連グループ     | 整合性を一緒に確認するために明示的に関連付けるファイルの集合。固定の親子関係・依存方向を持たない |
+| 構成ファイル     | グループに属するファイル。同一ファイルは複数グループに所属できる                                 |
+| 管理ファイル     | グループの定義や確認記録を保存するファイル                                                       |
+| ファイルハッシュ | ファイル内容の一致を判定するための値。更新日時やGitの状態を判定基準にしない                      |
+| 確認操作         | グループ全体について確認した事実と、その時点の内容の組み合わせを明示的に記録する操作             |
+| 確認が必要な理由 | なぜそのファイル群の整合性を一緒に確認する必要があるかという、グループの関連性の説明             |
+| 確認対象         | 変更されたファイルと、未変更の関連ファイルを含むグループ全体                                     |
 
 プロジェクトの登録や初期化は前提にしない。実在するファイルの内容を検査し、Gitなしでも利用できる。
 登録パスは管理ファイルの位置を基準とする相対パス、または絶対パスで扱う。
 
 ## 確認状態
 
-| 状態 | 意味 |
-| --- | --- |
-| 確認済み | 検査上有効な構成について確認記録があり、全ファイルのハッシュが一致している |
-| 未確認 | 新規登録、内容の変更、構成変更などにより、現在の組み合わせを確認済みと扱えない |
+| 状態     | 意味                                                                           |
+| -------- | ------------------------------------------------------------------------------ |
+| 確認済み | 検査上有効な構成について確認記録があり、全ファイルのハッシュが一致している     |
+| 未確認   | 新規登録、内容の変更、構成変更などにより、現在の組み合わせを確認済みと扱えない |
 
 「新規で未確認」と「変更後に再確認が必要」は同じ未確認状態とする。
 対象の消失・読取不能・定義破損などは検査不能のエラーとして区別し、検査を失敗させる。

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "name": "ci",
+  "reason": "ci の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../.github/rulesets/default-branch.json",
+    "../.github/workflows/cli-policy.yml",
+    "../docs/requirements/ci.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md"
+  ],
+  "confirmation": {
+    "definition": "e6645d4e59e628cb470f7105fb3ab1e02be421bd232f4579a657a607f22f8bda",
+    "hashes": {
+      "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
+      "../.github/workflows/cli-policy.yml": "14f2d24e60f6e803f23ed86ef933e6c9e2f9088de6ad272a81bd5693b85ab5e5",
+      "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a"
+    }
+  }
+}

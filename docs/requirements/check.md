@@ -23,3 +23,5 @@ CLIで確認状態を検査し、未確認や検査不能をCI等から検出で
 - ファイル読取不能や定義破損を、確認済みや単なる対象0件として扱わず、検査不能として失敗する。
 
 関連：[グループの編集](groups.md)、[出力する情報](impact-output.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

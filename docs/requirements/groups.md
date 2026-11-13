@@ -29,3 +29,5 @@
 - 0件・1件のグループにファイルを追加して2件以上にすると、ファイル数による不正は解消する。ただし、構成変更後の確認は別途必要である。
 
 関連：[明示的な確認操作](explicit-confirmation.md)、[検査時の判定](check.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

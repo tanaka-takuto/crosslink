@@ -18,3 +18,5 @@ GitHub Actionsなどから非対話で検査し、未確認の変更をマージ
 - CI環境に一つでも未確認が残っていれば検査は失敗し、すべて確認済みなら成功する。
 
 関連：[UC-007](use-cases.md#uc-007-ciでのマージ防止)、[自動検査](check.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

@@ -23,3 +23,5 @@
 - 検査でA・Bを提示した後、確認操作までにAの内容やグループ構成が変わると、確認操作が失敗し、そのグループの確認記録は変わらない。
 
 関連：[内容に基づく確認状態](confirmation-state.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

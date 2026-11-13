@@ -19,3 +19,5 @@
 - 変更グループと構成ファイルを特定でき、ファイルからグループ・関連ファイルを逆引きできる。
 
 関連：[変更影響の範囲](change-impact.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

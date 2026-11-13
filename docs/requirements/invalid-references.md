@@ -23,3 +23,5 @@
 - A・BからBを外して一時的にAだけにし、その後Cを追加する操作を保存できる。Aだけの時点では検査が不正として失敗し、A・Cになった後は構成変更後の確認を必要とする。
 
 関連：[確認状態](confirmation-state.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

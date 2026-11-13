@@ -18,3 +18,5 @@
 - 相対パスで共有した定義・記録・対象ファイルを新しいcloneへ取得し、内容が同じなら同じ判定を再現できる。
 
 関連：[再現性と決定性](determinism.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

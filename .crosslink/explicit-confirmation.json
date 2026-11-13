@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "explicit-confirmation",
+  "reason": "explicit-confirmation の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../docs/requirements/explicit-confirmation.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../src/commands.test.ts",
+    "../src/commands.ts",
+    "../src/store.test.ts",
+    "../src/store.ts"
+  ],
+  "confirmation": {
+    "definition": "10b53bc94e778bc0b0fc3b75443af15c318ee34c2e7b5a7dc7e5b20300121188",
+    "hashes": {
+      "../docs/requirements/explicit-confirmation.md": "aff07bf117669566e699b59749dea6def57952dd3a464e02ab7aa573e0c0917e",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../src/commands.test.ts": "7852a77e831b71d5a6e92e300df84e3e8b9c194244d293fb4c42612b0db8caf2",
+      "../src/commands.ts": "19aa227fe5ed53f19933f1f488ae95ed4b9b1700e82d2f411e8825083125adf7",
+      "../src/store.test.ts": "db99929cecf6b8cf15db547d40de456ddc772fdd66f3072d9b9375204f53dca8",
+      "../src/store.ts": "04c4d7b7cbc445ab3c2b16a534ea9bc3cbc5b5278154a328af76f93075eedc06"
+    }
+  }
+}

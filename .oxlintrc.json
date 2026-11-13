@@ -1,0 +1,4 @@
+{
+  "plugins": ["typescript", "unicorn", "node"],
+  "ignorePatterns": ["dist/**", "coverage/**"]
+}
