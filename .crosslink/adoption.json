@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "adoption",
+  "reason": "adoption の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../README.md",
+    "../docs/requirements/adoption.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../package.json",
+    "../src/settings.test.ts",
+    "../src/settings.ts"
+  ],
+  "confirmation": {
+    "definition": "cd6de101ae0ce72fa6d61a45d721486dfd277b4ac41f0175bbcfe712ff787f7b",
+    "hashes": {
+      "../README.md": "51a3fdee06d7c6f4b36f0d9f8932374d76ddd3bec4f927efee5ece9232f37559",
+      "../docs/requirements/adoption.md": "a4b78e2327e0de04c76c7b573635240e520d53d9f7a06855e4a8e3cf6038566d",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../package.json": "f5c5457016cf5b4c0275b00c85031d788e45b734dc83842502d2db29b4eeb34e",
+      "../src/settings.test.ts": "2f022e0da559bc8e03976e500250e51466ed962ae83e13564bb98e07b63c2c97",
+      "../src/settings.ts": "b1838f8aff13abb21d087061ff7cd3d59d6ae7c72f84cf3896bb220e32aa518e"
+    }
+  }
+}

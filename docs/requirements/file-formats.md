@@ -18,3 +18,5 @@
 - バイナリを含むグループでも、内容の変更検知と明示確認が成立する。
 
 関連：[再現性と決定性](determinism.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

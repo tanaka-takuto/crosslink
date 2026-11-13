@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "name": "file-formats",
+  "reason": "file-formats の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../docs/requirements/file-formats.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../src/core.test.ts",
+    "../src/core.ts"
+  ],
+  "confirmation": {
+    "definition": "adcea6dbbbece0d4acd7b0c4e36ca900f20039433cf562caca80d22e4fa4b750",
+    "hashes": {
+      "../docs/requirements/file-formats.md": "1fc4ce4ee4dad1c8a815d66f7da875bcffa8bdcb5fe39e6f98a78f3c474c917e",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../src/core.test.ts": "d8ab1d8f0e3fb43d60a1b6755e02d582f41815d3f87c9a23cca4a538d4b96ed5",
+      "../src/core.ts": "f4362c6664c17ef3f5ab99b050e939140e81cd9b25b854c8418d02794038e7d2"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "name": "invalid-references",
+  "reason": "invalid-references の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../docs/requirements/invalid-references.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../src/core.test.ts",
+    "../src/core.ts",
+    "../src/settings.test.ts",
+    "../src/settings.ts",
+    "../src/store.test.ts",
+    "../src/store.ts"
+  ],
+  "confirmation": {
+    "definition": "f91675800250d134bf574db6b3dae98d879f0b55d890ac64c0191b5842173fed",
+    "hashes": {
+      "../docs/requirements/invalid-references.md": "5a5224eb6e1e66fce8e7fba896d3fc9155e5b4d987fd213459507d53a56372c6",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../src/core.test.ts": "d8ab1d8f0e3fb43d60a1b6755e02d582f41815d3f87c9a23cca4a538d4b96ed5",
+      "../src/core.ts": "f4362c6664c17ef3f5ab99b050e939140e81cd9b25b854c8418d02794038e7d2",
+      "../src/settings.test.ts": "2f022e0da559bc8e03976e500250e51466ed962ae83e13564bb98e07b63c2c97",
+      "../src/settings.ts": "b1838f8aff13abb21d087061ff7cd3d59d6ae7c72f84cf3896bb220e32aa518e",
+      "../src/store.test.ts": "db99929cecf6b8cf15db547d40de456ddc772fdd66f3072d9b9375204f53dca8",
+      "../src/store.ts": "04c4d7b7cbc445ab3c2b16a534ea9bc3cbc5b5278154a328af76f93075eedc06"
+    }
+  }
+}

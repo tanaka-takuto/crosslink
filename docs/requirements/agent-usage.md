@@ -22,3 +22,5 @@
 - 機械処理とAIの双方から、同じJSON形式で関連性・変更影響・確認状態を取得できる。
 
 関連：[出力する情報](impact-output.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

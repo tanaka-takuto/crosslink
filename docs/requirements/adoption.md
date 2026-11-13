@@ -18,3 +18,5 @@
 - 一部のファイルだけを登録し、未登録ファイルの変更によって確認を要求しない。
 
 関連：[グループ0件](check.md)、[文書への自己適用](../development/documentation.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

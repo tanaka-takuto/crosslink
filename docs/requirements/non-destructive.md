@@ -16,3 +16,5 @@
 - 検査と逆引きの前後で、対象ファイル、定義、確認記録の内容が変わらない。
 
 関連：[決定性](determinism.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

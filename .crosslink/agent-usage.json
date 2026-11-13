@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "agent-usage",
+  "reason": "agent-usage の要件・仕様・実装・テストの整合性を確認するため",
+  "files": [
+    "../docs/requirements/agent-usage.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/storage.md",
+    "../src/cli.test.ts",
+    "../src/cli.ts",
+    "../src/commands.test.ts",
+    "../src/commands.ts"
+  ],
+  "confirmation": {
+    "definition": "94af688ac73eaa1461649dbd7faf00f1f150d66c9d9dd3b02887dc73e3f04345",
+    "hashes": {
+      "../docs/requirements/agent-usage.md": "3e2448adfae344c13e714db99530ce9f8dfcbf568e0a32cfda8cc00e22565d93",
+      "../docs/specifications/cli.md": "5b922f61c239b678f02578452667971530fe0651d69f5a9aae802aaa050ca508",
+      "../docs/specifications/storage.md": "35744ff6ea2c9e4b8afa9105a2e34d5cce601c83b1d853cb47e6254d1dba4a4a",
+      "../src/cli.test.ts": "eb6fb69fbe750f3d110acba2b1f59de17798b61b1b47f582473c6bbee0f357bc",
+      "../src/cli.ts": "cf09dce3e8c46039c6077ff05b332807a2176db873e6697470e1d65bf5d1a2f2",
+      "../src/commands.test.ts": "7852a77e831b71d5a6e92e300df84e3e8b9c194244d293fb4c42612b0db8caf2",
+      "../src/commands.ts": "19aa227fe5ed53f19933f1f488ae95ed4b9b1700e82d2f411e8825083125adf7"
+    }
+  }
+}

@@ -17,3 +17,5 @@
 - Group-1＝A・B、Group-2＝B・Cが確認済みのとき、Aだけを変更してもGroup-2の確認状態は変わらない。Bも変更した場合は両グループが未確認になる。
 
 関連：[UC-005](use-cases.md#uc-005-複数グループに所属するファイル)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

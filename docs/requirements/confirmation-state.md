@@ -22,3 +22,5 @@
 - 確認後にAを編集し、再確認する前に全構成ファイルを最後に確認した内容へ戻すと、確認済みになる。
 
 関連：[明示的な確認操作](explicit-confirmation.md)、[構成変更](invalid-references.md)、[要件一覧](../requirements.md)。
+
+詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。

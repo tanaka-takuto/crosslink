@@ -1,0 +1,37 @@
+{
+  "name": "@tanaka-takuto/crosslink",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Track explicit consistency checks across related files",
+  "license": "MIT",
+  "bin": {
+    "crosslink": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings src vitest.config.ts",
+    "test": "pnpm build && vitest run",
+    "self:check": "node dist/cli.js check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm self:check"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.18.0"
+}

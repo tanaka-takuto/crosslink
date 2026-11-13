@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    "dist/**",
+    "coverage/**",
+    "pnpm-lock.yaml",
+    ".crosslink/**",
+    "script/**",
+    ".githooks/**"
+  ]
+}

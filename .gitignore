@@ -4,3 +4,9 @@
 .env.*
 !.env.example
 !.env.*.example
+
+# 開発ツールとビルドの生成物。
+node_modules/
+dist/
+coverage/
+.vitest/

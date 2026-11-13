@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "name": "documentation",
+  "reason": "開発・文書管理の説明と実際の設定を一緒に確認するため",
+  "files": [
+    "../AGENTS.md",
+    "../CONTRIBUTING.md",
+    "../README.md",
+    "../docs/development/documentation.md",
+    "../docs/requirements.md"
+  ],
+  "confirmation": {
+    "definition": "e33f6b8f2fea0c741e49f3c68c17e8e2b332398096f146845c10fbb80ed0e35c",
+    "hashes": {
+      "../AGENTS.md": "8ebb6c8ffe4658db771ae2847430f9ca5177f30333c3a954f53545455ea16346",
+      "../CONTRIBUTING.md": "7209dd3a006405244365a5804d9b366919c2c5e379f02c4f0565863488dcf6aa",
+      "../README.md": "51a3fdee06d7c6f4b36f0d9f8932374d76ddd3bec4f927efee5ece9232f37559",
+      "../docs/development/documentation.md": "4fcc8ad11e1b3315bf9dc4fab704598b7f58c64930e2586fd0188d5696645b84",
+      "../docs/requirements.md": "dfc0ac7656e80f84020c24582c12d87b646d190b7387930c33242d8f43588679"
+    }
+  }
+}
