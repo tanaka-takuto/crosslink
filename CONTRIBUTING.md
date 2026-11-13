@@ -104,6 +104,10 @@ Dependabot は毎週月曜 09:00 JST に Actions の更新を確認し、minor�
 
 ## main の保護
 
+`.github/rulesets/default-branch.json` の ruleset を GitHub に設定し、現在のデフォルトブランチに適用します。
+バイパス対象は設定しません。JSON ファイルを変更しただけでは GitHub 設定は変わらないため、
+設定を更新した場合は GitHub API から読み戻して実際の適用状態を確認します。
+
 - PR と最新の main に対する `Git policy`・`PR policy` の成功を必須にします。
 - 未解決のレビュー会話がある場合はマージできません。
 - 管理者にもルールを適用し、force push とブランチ削除を禁止します。
