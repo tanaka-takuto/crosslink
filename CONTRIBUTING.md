@@ -108,9 +108,13 @@ Dependabot は毎週月曜 09:00 JST に Actions の更新を確認し、minor�
 - 未解決のレビュー会話がある場合はマージできません。
 - 管理者にもルールを適用し、force push とブランチ削除を禁止します。
 - 必須のレビュー承認数は 0 とします。これは人間による承認を保証しません。
-- 通常の merge commit を使い、squash merge・rebase merge・auto-merge は無効にします。
+- 通常の merge commit と auto-merge を基本にし、squash merge・rebase merge は無効にします。
+- レビュー可能な状態の PR で auto-merge を有効にし、必須チェックの成功を待ちます。管理者権限で検査を迂回しません。
 - GitHub の merge commit は PR タイトルを件名にし、本文を空にします。マージ時に本文を追加しないでください。
 - マージ済みの作業ブランチは自動削除します。
 
 このリポジトリでは GitHub の commit metadata rules を利用できないため、PR 内のコミットは必須 CI、
 マージメッセージは本文なしの既定設定とマージ時の確認で管理します。
+
+merge queue は Organization 所有リポジトリ向けの機能であり、現在の個人所有リポジトリでは利用できません。
+参照: [GitHub の merge queue 利用条件](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue)。
