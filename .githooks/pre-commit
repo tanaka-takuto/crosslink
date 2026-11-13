@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -eu
+
+# index の内容だけを検査し、作業ツリーやステージ状態は変更しない。
+git diff --cached --check

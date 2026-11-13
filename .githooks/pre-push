@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -eu
+
+issue_pattern='^issue/#[1-9][0-9]*(-[a-z0-9]([a-z0-9._-]*[a-z0-9])?)?$'
+topic_pattern='^(setup|build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test|dependabot)/[a-z0-9][a-z0-9._/-]*$'
+status=0
+
+# push 先の ref を検査する。タグと削除はブランチ名検査の対象外。
+while read -r local_ref local_oid remote_ref remote_oid; do
+  case "$remote_ref" in
+    refs/heads/*) branch=${remote_ref#refs/heads/} ;;
+    *) continue ;;
+  esac
+  case "$local_oid" in
+    *[!0]*) ;;
+    *) continue ;;
+  esac
+  case "$branch" in
+    main) continue ;;
+  esac
+  if printf '%s\n' "$branch" | LC_ALL=C grep -Eq "$issue_pattern|$topic_pattern"; then
+    continue
+  fi
+  printf 'pre-push: ブランチ名 "%s" は規則に合いません。\n' "$branch" >&2
+  printf '%s\n' '例: setup/git-github、feat/add-command、issue/#123、issue/#123-review-layer' >&2
+  status=1
+done
+
+exit "$status"

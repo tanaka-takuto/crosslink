@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -eu
+
+message_file=${1:?commit message file is required}
+# エディターのコメントを除いて検査し、メッセージ自体は変更しない。
+message=$(git stripspace --strip-comments < "$message_file")
+subject=$(printf '%s\n' "$message" | sed -n '1p')
+
+# Git が作るメッセージは通常の履歴操作で使用する。
+case "$subject" in
+  Merge\ *|Revert\ \"*\"|fixup!\ *|squash!\ *|amend!\ *) exit 0 ;;
+esac
+
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([A-Za-z0-9._/#-]+\))?!?: [^[:space:]](.*[^[:space:]])?$'
+if ! printf '%s\n' "$subject" | LC_ALL=C grep -Eq "$pattern"; then
+  cat >&2 <<'EOF'
+commit-msg: Conventional Commits の形式で入力してください。
+形式: type(scope): 説明（scope は省略可、破壊的変更は ! を使用）
+例: chore: Git の開発設定を追加する
+例: fix(cli): 引数の検証を修正する
+Issue 番号は必須ではありません。本文・フッターは使用できます。
+EOF
+  exit 1
+fi
