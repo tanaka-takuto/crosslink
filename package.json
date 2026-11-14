@@ -22,6 +22,8 @@
     "test": "pnpm build && vitest run && node --test script/check-staged.test.mjs",
     "self:check": "node dist/cli.js check",
     "check": "pnpm format:check && pnpm lint && pnpm check:release && pnpm typecheck && pnpm test && pnpm build && pnpm self:check",
+    "build:binary": "pnpm build && node script/build-binary.ts",
+    "test:binary": "pnpm build:binary && tsc --noEmit -p script/tsconfig.binary.json && vitest run --config script/vitest.binary.config.ts",
     "check:version": "node script/check-version.ts",
     "test:release": "vitest run --config script/vitest.config.ts",
     "check:release": "tsc -p script/tsconfig.release.json && oxlint --deny-warnings script/check-version.ts script/check-version.test.ts script/release.ts script/release.test.ts script/vitest.config.ts && pnpm test:release"

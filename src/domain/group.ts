@@ -14,19 +14,19 @@ export function validateGroup(group: Group): void {
     typeof group.reason !== "string" ||
     !group.reason.trim()
   )
-    throw new CrosslinkError("INVALID_DEFINITION", "名前と確認が必要な理由は必須です");
+    throw new CrosslinkError("INVALID_DEFINITION", "A name and a reason for review are required.");
   if (
     !Array.isArray(group.files) ||
     group.files.some((file) => typeof file !== "string" || !file.trim() || file.includes("\0"))
   )
-    throw new CrosslinkError("INVALID_DEFINITION", "filesにはファイルパスの配列を指定してください");
+    throw new CrosslinkError("INVALID_DEFINITION", "files must be an array of file paths.");
   if (new Set(group.files).size !== group.files.length)
-    throw new CrosslinkError("DUPLICATE_MEMBER", "同じパスが複数登録されています");
+    throw new CrosslinkError("DUPLICATE_MEMBER", "The same path is registered more than once.");
 }
 
 export function inspectionProblems(group: Group): Problem[] {
   return group.files.length < 2
-    ? [{ code: "TOO_FEW_FILES", message: "検査には2ファイル以上が必要です" }]
+    ? [{ code: "TOO_FEW_FILES", message: "At least two files are required for inspection." }]
     : [];
 }
 

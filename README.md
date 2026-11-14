@@ -3,6 +3,25 @@
 関連するファイルをグループにし、変更後の整合性確認を管理するCLIです。
 現在のファイル内容が最後の確認記録と一致するかを検査します。内容の意味的な正しさを自動保証するものではありません。
 
+## 配布・インストール
+
+[GitHub Releases](https://github.com/tanaka-takuto/crosslink/releases) から、自分のOS・CPUに対応する実行ファイルと同名の `.sha256` を取得します。
+ファイル名は `crosslink-<OS>-<CPU>`、Windowsでは末尾に `.exe` が付きます。公開済みの組み合わせはReleaseのAssetsで確認してください。
+Node.js・pnpm・node_modulesは不要です。該当する成果物がない場合は、[単一実行ファイルのビルド手順](docs/development/distribution.md)を利用できます。
+
+macOS ARM64では、取得した2ファイルを同じディレクトリへ置いて実行します。
+
+```sh
+shasum -a 256 -c crosslink-darwin-arm64.sha256
+chmod +x crosslink-darwin-arm64
+./crosslink-darwin-arm64 --help
+```
+
+Linuxでは `sha256sum -c` で検証し、実行権限を付けます。
+Windowsでは `Get-FileHash .\crosslink-win32-x64.exe -Algorithm SHA256` のHashを `.sha256` の値と比較し、`.\crosslink-win32-x64.exe --help` で起動します。
+実行ファイルは任意の名前でPATHの通った場所へ配置できます。Windowsの `.exe` は保持してください。
+署名・ハッシュ・OSごとの検証条件は[配布の詳細](docs/development/distribution.md)を参照してください。
+
 ## 開発・実行
 
 Node.js 24以上とpnpm 12.18.0で開発します。推奨Node.jsは `.node-version` に記載しています。
@@ -13,7 +32,7 @@ pnpm build
 node dist/cli.js --help
 ```
 
-ビルド後の実行にはNode.jsだけを使用します。Vitest、TypeScript、oxfmt、oxlint、pnpmは開発用です。
+ソースからビルドしたJSの実行にはNode.jsだけを使用します。Vitest、TypeScript、oxfmt、oxlint、pnpmは開発用です。
 インストール済みの `pnpm` がない場合は `npx --yes pnpm@12.18.0` をコマンドの `pnpm` の代わりに使用できます。
 
 ## 登録から確認まで
@@ -92,7 +111,23 @@ node dist/cli.js check --config path/to/config.json
 | 1          | 未確認のグループあり                                       |
 | 2          | 不正な構成、参照消失、読取不能、壊れた定義、引数エラーなど |
 
-登録グループが0件の場合は、その旨を通知して成功します。
+CLIの固定文言（help・結果・診断）は英語です。入力した名前・理由・パスはそのまま表示します。
+通常の `check` は confirmed / unconfirmed / invalid の件数と、未確認・不正なグループを表示します。
+確認済みグループの全ファイルは省略します。理由と全グループ・全ファイルの状態は `-v` / `--verbose` で確認します。
+`-v` は verbose の略です。`--json` は表示の省略に影響されず、全情報を出力します。
+
+```sh
+node dist/cli.js check --verbose
+node dist/cli.js check -v
+node dist/cli.js check --json
+node dist/cli.js --version
+```
+
+`--version` はcrosslink自身の `package.json` のversionだけを表示します。実行先プロジェクトのversionは参照しません。
+JSONの `version: 1` は出力形式の版であり、アプリのversionとは別です。
+`--` 以降はファイル名として扱うため、`--json`・`--version` などの名前のファイルも指定できます。
+
+登録グループが0件の場合は `No registered groups.` と通知して成功します。
 確認・編集などの操作は、操作が成功すれば0、失敗すれば2です。確認後の検査で新たな変更が見つかった場合は1になります。
 
 ## このリポジトリへの適用
@@ -107,4 +142,4 @@ pnpm check
 型検査、整形検査、lint、テスト、ビルド、自身の関連グループの検査を実行します。
 製品の検査はCIでLinux・macOS・Windows、Node.js 24・26を対象に実行します。
 
-詳細：[要件一覧](docs/requirements.md)、[CLI仕様](docs/specifications/cli.md)、[保存形式](docs/specifications/storage.md)、[開発ツール](docs/development/toolchain.md)、[実装の責務と依存方向](docs/development/architecture.md)。
+詳細：[要件一覧](docs/requirements.md)、[CLI仕様](docs/specifications/cli.md)、[保存形式](docs/specifications/storage.md)、[開発ツール](docs/development/toolchain.md)、[実装の責務と依存方向](docs/development/architecture.md)、[単一実行ファイルの配布](docs/development/distribution.md)。

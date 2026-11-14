@@ -28,7 +28,7 @@ PRとworkflow_dispatchでは公開せず、mainへのpushだけで実行する�
 
 1. そのrunのcheckout SHAでNode.js 24/26の通常検査をLinux・macOS・Windowsに対して実行する。
 2. [VFSを使えるNode.js 26.13.1](https://nodejs.org/api/single-executable-applications.html) で `pnpm build:binary` と `pnpm test:binary` を3環境とも実行する。
-3. 実際の `process.platform` / `process.arch`、version、`GITHUB_SHA`、binary/checksumのSHA-256をmanifestへ記録し、同じrunのartifactへ保存する。
+3. [単一実行ファイルの配布仕様](distribution.md) に従い、実際の `process.platform` / `process.arch`、version、`GITHUB_SHA`、binary/checksumのSHA-256をmanifestへ記録し、同じrunのartifactへ保存する。
 4. mainで追加されたコミットとGitフックをLinux/macOSで再検査する。公開は別workflowの通知や別SHAのstatusに依存しない。
 5. `CLI policy` と上記Git検査が成功したときだけ、公開jobが同じrunのartifactをダウンロードする。全manifestのSHA/version/target、6ファイルとchecksum、過不足を検査する。
 6. `v<version>` のtagがあればcommitまで解決してSHAを照合する。なければ検査済みSHAに新規tagを作り、[GitHub公式のgenerate-notes API](https://docs.github.com/en/rest/releases/releases#generate-release-notes-content-for-a-release) の本文からdraft Releaseを作る。

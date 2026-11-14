@@ -22,11 +22,33 @@
 探索では `.git`・`node_modules`・ディレクトリのシンボリックリンクをたどらない。
 管理ディレクトリ・管理JSONのシンボリックリンクを見つけた場合はエラーとし、0グループ扱いで成功させない。
 `--config` は任意の設定ファイル、`--json` は機械・AI共通のJSON出力を指定する。
+`check -v` / `check --verbose` は人間向けの詳細表示を指定する。`-v` はverboseの略で、versionではない。
+`--version` はcrosslink自身の同梱 `package.json` のversionだけを改行付きで表示し、0で終了する。
+実行先CWDの `package.json` や設定には依存しない。通常実行とSEAで同じ同梱版を参照する。
+`--version --json` は `operation: "version"`、`messages: ["アプリversion"]` を含む通常のJSON形式で返す。
+`--version` にコマンドや `--config` は併用できない。`--help` があればhelpを優先する。
+`--` 以降の引数はオプションと解釈しない。例えば `create flags --reason review -- --verbose --version` は2つのファイル名を登録する。
+
+## 人間向け出力
+
+固定文言（help、成功・失敗、状態、診断）は英語とする。利用者の名前・理由・パスは変更しない。
+
+通常の `check` は `Groups: N confirmed, N unconfirmed, N invalid.` の件数を表示し、
+未確認・不正なグループの名前と管理ファイルを `Unconfirmed:` / `Invalid:` で列挙する。
+確認済みグループの名前・理由・構成ファイルは省略する。要確認があれば詳細は `--verbose` で取得できる旨を案内する。
+不正グループは未確認の件数へ重複計上しない。構成不正や検査不能の詳細診断は標準エラーへ出す。
+
+`check -v` / `check --verbose` は件数に加え、確認済みも含む全グループ・理由・全構成ファイルを表示する。
+状態は `Confirmed` / `Unconfirmed` / `Invalid`、理由は `Reason`、ファイルは `New` / `Changed` / `Unchanged` と表示する。
+`New` は比較元の確認記録がない状態を示す。`related` と保存後・確認後の表示は詳細形式のままとする。
+グループ0件は `No registered groups.`、逆引き0件は `No groups are related to this file.` と通知する。
 
 ## JSON出力
 
 標準出力へ一つのJSONオブジェクトだけを出力する。エラーもJSONに含める。
 通常表示では、結果を標準出力、エラー診断を標準エラーへ出す。
+`--json` は簡潔表示・verbose指定にかかわらず、全グループ・理由・全構成ファイル・ハッシュ・snapshot・エラーを保持する。
+以下の `version: 1` は出力形式の版であり、`--version` のアプリversionと混同しない。
 
 | 項目      | 内容                          |
 | --------- | ----------------------------- |
@@ -63,3 +85,5 @@ CLIの更新は管理ファイル単位の短時間のロックで保護する�
 書込エラーでは更新済みの対象を診断へ含める。再検査で現在の状態を確認する。
 
 関連：[明示確認の要件](../requirements/explicit-confirmation.md)、[自動検査の要件](../requirements/check.md)、[AIからの利用](../requirements/agent-usage.md)。
+
+英語表示・verbose・versionの決定：[Issue #15](https://github.com/tanaka-takuto/crosslink/issues/15)。
