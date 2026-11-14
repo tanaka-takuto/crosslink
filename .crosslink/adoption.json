@@ -9,6 +9,8 @@
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
     "../package.json",
+    "../script/build-binary.test.ts",
+    "../script/build-binary.ts",
     "../src/application/ports.ts",
     "../src/bootstrap.ts",
     "../src/cli.test.ts",
@@ -21,13 +23,15 @@
     "../src/interfaces/cli/commands.ts"
   ],
   "confirmation": {
-    "definition": "fc2611304943a8fbb50081666953337f4e7a2e3e40b09babc886ecd339caca01",
+    "definition": "b0dd9c61503f208c8dcb62e336e4a9a71f96278d17690e265efbf4b6b31a4e52",
     "hashes": {
-      "../README.md": "aeedf21b4c8e05638249028959d9f7e1be4a4b777167fa7bccc10edfd5ca4e74",
+      "../README.md": "b9550971e75a24a2b4471755ae4fddc60e3a91da1c974ec41caf6414487af36b",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
       "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../package.json": "6b69a413ebf6ac1460aaef61f58630b8b67e3819d6a5bb4b98d6944f3653c408",
+      "../package.json": "133b0e2d86622ea88d9fbdffe73531655dc08bf3b43b145cf62c5dac2d85197c",
+      "../script/build-binary.test.ts": "3956f4c7e07ce99b906707d95e8b11ba8da4c78ac509044c97db581c5e1ce7d3",
+      "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../src/application/ports.ts": "1ecf93c30a2e617eec52d349655ab476fa30516ac9e81d857b5ade222721fe30",
       "../src/bootstrap.ts": "399579a738936256c1ba9b80ea30f15fdc6516a3071267ec9966d7c076ed17df",
       "../src/cli.test.ts": "5a27752046e0750a623f0233a84a808497817fdda2ed15bc154c117f3fea3b2b",

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "allowImportingTsExtensions": true },
+  "include": [
+    "check-version.ts",
+    "check-version.test.ts",
+    "release.ts",
+    "release.test.ts",
+    "vitest.config.ts"
+  ]
+}

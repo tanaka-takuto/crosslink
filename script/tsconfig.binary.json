@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "allowImportingTsExtensions": true },
+  "include": ["./build-binary.ts", "./build-binary.test.ts", "./vitest.binary.config.ts"]
+}

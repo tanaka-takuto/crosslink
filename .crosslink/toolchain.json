@@ -18,12 +18,12 @@
   "confirmation": {
     "definition": "eff6ad15d1a570970f5e2977a4a1abdafc0bc6c0d08b60408382d9985d050ac8",
     "hashes": {
-      "../.github/workflows/cli-policy.yml": "14f2d24e60f6e803f23ed86ef933e6c9e2f9088de6ad272a81bd5693b85ab5e5",
+      "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
       "../.node-version": "5c293036fc0a61ad76e15d85f454c3c7cec157e181e035b69f95058a2c239144",
       "../.oxfmtrc.json": "b13a11224659ff2ac1472f1f46fb3de40751aa0fc99ce891bdc977cb5d48d66c",
       "../.oxlintrc.json": "69fafc2664ec67ae0538000b59b1f51c1410494d0e5e932de9819e702d1cbd3f",
       "../docs/development/toolchain.md": "8c309bfc30301830d214ee9d50ac4ffc2689ee4e710f5a1e590a2e67bf24ad3e",
-      "../package.json": "6b69a413ebf6ac1460aaef61f58630b8b67e3819d6a5bb4b98d6944f3653c408",
+      "../package.json": "133b0e2d86622ea88d9fbdffe73531655dc08bf3b43b145cf62c5dac2d85197c",
       "../pnpm-lock.yaml": "610eb9ed7d24dbe342fd6483187411f4e6e8c9e0f4c611b382992c8db0e6a2ca",
       "../tsconfig.build.json": "f22e8e2bd7ecb3a731cc91eb003ba374a1beddde0dfbf722d559647cd78812a0",
       "../tsconfig.json": "b9f213065b2279eaad33b4fcbdd810194356597a8cd3e3f03bd00c6386b7a99e",
