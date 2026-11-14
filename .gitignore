@@ -10,3 +10,6 @@ node_modules/
 dist/
 coverage/
 .vitest/
+
+# 作業ログ・未対応事項・ローカル検証の記録。
+/tmp/

@@ -1,6 +1,6 @@
 {
   "name": "@tanaka-takuto/crosslink",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Track explicit consistency checks across related files",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint --deny-warnings src vitest.config.ts",
-    "test": "pnpm build && vitest run",
+    "test": "pnpm build && vitest run && node --test script/check-staged.test.mjs",
     "self:check": "node dist/cli.js check",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm self:check"
   },

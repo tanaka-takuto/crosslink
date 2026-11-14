@@ -22,6 +22,9 @@ TypeScriptで型検査し、JavaScriptのES Modulesへビルドする。テス�
 実行テストでは、ビルド結果だけを一時ディレクトリへコピーし、pnpmやnode_modulesを使わずNode.jsから起動する。
 製品CIはLinux・macOS・Windows、Node.js 24・26で実行する。
 Git/GitHub運用の検査は既存の `sh script/check-git.sh` で別途実行する。
+pre-commitはステージ済みの内容を取り出して整形・lintを検査し、そこからビルドしたCLIで確認状態を検査する。
+`pnpm test` では実際のGitフックを使い、部分ステージ・確認記録のステージ漏れ・古い生成物・検査不能・一時ファイルの後片付けも検証する。
+詳しい動作と失敗時の対応は[Git / GitHubの開発運用](../../CONTRIBUTING.md#フックとci)を参照する。
 
 ## 選択理由
 

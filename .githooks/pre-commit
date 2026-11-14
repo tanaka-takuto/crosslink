@@ -4,3 +4,7 @@ set -eu
 
 # index の内容だけを検査し、作業ツリーやステージ状態は変更しない。
 git diff --cached --check
+
+# フックの配置元を使い、部分ステージの整形・lint・crosslinkを検査する。
+script_dir=$(CDPATH='' cd -- "$(dirname "$0")/../script" && pwd)
+node "$script_dir/check-staged.mjs"
