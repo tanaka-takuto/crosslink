@@ -417,3 +417,39 @@ it.each(
   expect(result.status).toBe(2);
   expect(result.stderr).toContain("INVALID_ARGUMENT");
 });
+
+it("generates HTML with Node alone, resolves links from another output directory and preserves snapshots", () => {
+  const { root, call } = fixture();
+  call("create", "first", "a", "b", "--reason", "AとB");
+  call("create", "second", "a", "package.json", "--reason", "AとC");
+  const review = join(root, "review.json");
+  writeFileSync(review, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", review).status).toBe(0);
+  writeFileSync(join(root, "a"), "changed");
+  const before = readFileSync(join(root, ".crosslink/first.json"), "utf8");
+  const output = join(root, "dist/report.html");
+  const report = call("report", "--format", "html", "--output", output, "--json");
+  expect(report.status).toBe(1);
+  expect(report.stderr).toBe("");
+  expect(JSON.parse(report.stdout).groups).toEqual(
+    JSON.parse(call("check", "--json").stdout).groups,
+  );
+  const html = readFileSync(output, "utf8");
+  expect(html).toContain("2 direct groups");
+  expect(html).toContain("Changed");
+  expect(html).toContain("Unchanged");
+  expect(html).toContain('href="file:');
+  expect(html).toContain("AとB");
+  expect(readFileSync(join(root, ".crosslink/first.json"), "utf8")).toBe(before);
+  const retry = call("report", "--format", "html", "--output", output, "--json");
+  expect(retry.status).toBe(2);
+  expect(JSON.parse(retry.stdout).errors.at(-1).code).toBe("REPORT_EXISTS");
+  expect(readFileSync(output, "utf8")).toBe(html);
+  writeFileSync(review, call("check", "--json").stdout);
+  call("confirm", ".crosslink/first.json", "--snapshot", review);
+  const regenerated = call("report", "--format", "html", "--output", "partial.html", "--json");
+  expect(regenerated.status).toBe(1);
+  expect(
+    JSON.parse(regenerated.stdout).groups.map((group: { status: string }) => group.status),
+  ).toEqual(["confirmed", "unconfirmed"]);
+});

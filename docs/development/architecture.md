@@ -8,6 +8,7 @@ src/
   application/               検査・登録・編集・確認の手順とポート
   infrastructure/filesystem/ JSON・ハッシュ・ファイル保存・探索
   infrastructure/version-reader.ts アプリ同梱メタデータの取得
+  interfaces/html/           読取専用HTMLと内包CSS/JSへの変換
   interfaces/cli/            引数・出力・終了コードへの変換
   bootstrap.ts               実アダプターをポートへ接続
   cli.ts                     実行ファイルの入口
@@ -35,6 +36,16 @@ src/
 | infrastructure | [version-reader.ts](../../src/infrastructure/version-reader.ts)              | 実行先CWDに依存せず同梱package.jsonからversionを取得                     |
 | interfaces     | [output.ts](../../src/interfaces/cli/output.ts)                              | 簡潔/verboseの英語テキスト表示、全情報を持つJSON結果からの変換           |
 
+HTMLレポートは以下の責務を追加する。
+
+| 層             | 実装                                                                     | 責務                                                                           |
+| -------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| application    | [inspection-report.ts](../../src/application/inspection-report.ts)       | check/related/reportの検査結果・診断・終了コードの共通集約                     |
+| application    | [report.ts](../../src/application/report.ts)                             | 選択/探索した検査、日時・version・範囲、出力入力衝突の検証、描画と保存のポート |
+| interfaces     | [html/report.ts](../../src/interfaces/html/report.ts)                    | 既存Inspectionの表示、検索・直接所属リンク、データのエスケープ、CSP            |
+| interfaces     | [report-assets.ts](../../src/interfaces/html/report-assets.ts)           | 内包CSSとオフライン検索・コピーのスクリプト                                    |
+| infrastructure | [report-output.ts](../../src/infrastructure/filesystem/report-output.ts) | 既存先を置換しないHTMLの新規書出し                                             |
+
 ## 依存方向と処理
 
 `interfaces` は `application` と `domain` を参照する。
@@ -50,7 +61,9 @@ src/
 version取得は `ApplicationMetadata` ポートで表し、bootstrapが `version-reader` をCLIへ接続する。
 `version-reader` は自身のモジュール位置から同梱ルートの `package.json` を参照する。domainはFS・packageの知識を持たない。
 SEAでは同じ相対位置の `dist/**` とルートpackage.jsonをVFSへ保持することで、この取得方法を共有できる。
-`commands` は完全なReportを作り、`output` が通常checkの省略とverboseの詳細表示を担当する。JSONはReport全体を直接出力する。
+検査結果の集約はapplicationの `inspection-report` が所有し、`commands` とHTML生成操作で共用する。
+HTML生成操作は `ReportServices` ポートを通じて描画・新規保存・時計へ接続し、bootstrapがHTMLプレゼンターと書出しアダプターを組み合わせる。
+`commands` は完全なReportを返し、`output` が通常checkの省略とverboseの詳細表示を担当する。JSONはReport全体を直接出力する。
 
 ドメインのテストはファイルやCLIを使わず、判断ルールを直接検証する。
 applicationの隣接テストは実際のファイルアダプターを組み合わせ、検査・保存・競合の手順を検証する。

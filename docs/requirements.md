@@ -20,6 +20,7 @@
 | [変更と確認の区別](requirements/change-and-confirmation.md)              |
 | [明示的な確認操作](requirements/explicit-confirmation.md)                |
 | [内容に基づく確認状態](requirements/confirmation-state.md)               |
+| [単一HTMLレポート](requirements/html-report.md)                          |
 | [変更影響の可視化](requirements/impact-output.md)                        |
 | [整合性確認の自動検査](requirements/check.md)                            |
 | [CI/CDとの統合](requirements/ci.md)                                      |

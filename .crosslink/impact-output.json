@@ -4,11 +4,14 @@
   "name": "impact-output",
   "reason": "impact-output の要件・仕様・実装・テストの整合性を確認するため",
   "files": [
+    "../docs/requirements/html-report.md",
     "../docs/requirements/impact-output.md",
     "../docs/specifications/cli.md",
     "../docs/specifications/storage.md",
     "../src/application/inspect-group.test.ts",
     "../src/application/inspect-group.ts",
+    "../src/application/inspection-report.test.ts",
+    "../src/application/inspection-report.ts",
     "../src/cli.test.ts",
     "../src/cli.ts",
     "../src/domain/confirmation.test.ts",
@@ -16,24 +19,33 @@
     "../src/interfaces/cli/commands.test.ts",
     "../src/interfaces/cli/commands.ts",
     "../src/interfaces/cli/output.test.ts",
-    "../src/interfaces/cli/output.ts"
+    "../src/interfaces/cli/output.ts",
+    "../src/interfaces/html/report-assets.ts",
+    "../src/interfaces/html/report.test.ts",
+    "../src/interfaces/html/report.ts"
   ],
   "confirmation": {
-    "definition": "4b334071d24582ed2e3a9cfff345f72d55f0d1d777dd9909833918acbd346582",
+    "definition": "5038dbddd75cf2873b77c3654863528797e3fefc3376b989f2a75fc2020a161c",
     "hashes": {
-      "../docs/requirements/impact-output.md": "b70c98f067d27d2b41e82b09a9f8a4075d7b484b1805de0789a7a04b47154074",
-      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
+      "../docs/requirements/html-report.md": "4116408f4c658e584fbfcba6c228704ba4ec99a9fe83e69f001a198612a491ba",
+      "../docs/requirements/impact-output.md": "7438644c66423650cc47f66c6c90dd88b6146da46f3116a474de95fbd92f7d82",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/inspect-group.test.ts": "3c93693b622965faa8f277fa1c36a096f2c75ab448014f2fb7fb2fc0a11dd358",
       "../src/application/inspect-group.ts": "d9e13c81178a5a3d2dfc6e27c389a87f422aa1f7c3c864e8ec3913d7fabd7a40",
-      "../src/cli.test.ts": "5a27752046e0750a623f0233a84a808497817fdda2ed15bc154c117f3fea3b2b",
+      "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
+      "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
+      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
       "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a",
-      "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
-      "../src/interfaces/cli/commands.ts": "0e8cc69816950eedc30a5a7431b6eb5b132024550f74fa4eea5f27dcdf31c669",
+      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
+      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279",
       "../src/interfaces/cli/output.test.ts": "8b13510b1e0cbb8f0586561c9034ead3b15766c410d593ec6a1d4fb3d8652981",
-      "../src/interfaces/cli/output.ts": "fc4142c616e50b4cb8408bff852515ef046296044bd40a4e50b21fde450ab7cd"
+      "../src/interfaces/cli/output.ts": "fc4142c616e50b4cb8408bff852515ef046296044bd40a4e50b21fde450ab7cd",
+      "../src/interfaces/html/report-assets.ts": "0b334488d26cbb7482c79c59472e23c27ca7af16ad08046a306cc22ae181aa25",
+      "../src/interfaces/html/report.test.ts": "bcc5cc78b44b953c848ac322afe8f31895a1a917a0b3a497d5b1990938c8d87c",
+      "../src/interfaces/html/report.ts": "15ba17445aa0ead3a6c3aca879d6fcdc2aac38d7419631980ff5048e3ccd66b1"
     }
   }
 }

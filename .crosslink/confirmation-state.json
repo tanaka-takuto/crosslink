@@ -20,7 +20,7 @@
     "definition": "47a01cb85e8a4cf9509c7aa09392ded303acfa11a5735d47c4591b4f0523304c",
     "hashes": {
       "../docs/requirements/confirmation-state.md": "6c8dae8e7888dd51b022517ee46b71de256b9c850fc80ca5a234cf2752ce4d76",
-      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/group-operations.test.ts": "deb98717e0414bf23841bc37ae05fa6f55ce7a48a285f1b606fcf2b063f7bafa",
       "../src/application/group-operations.ts": "2f65c3cdc0766a8cf8bb92094141442173082b47a17677c05c827c4d054070ca",

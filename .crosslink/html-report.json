@@ -1,0 +1,47 @@
+{
+  "kind": "crosslink-group",
+  "version": 1,
+  "name": "html-report",
+  "reason": "単一HTMLの要件・CLI契約・検査共用・安全な描画と書出し・隣接テストを一緒に確認するため",
+  "files": [
+    "../README.md",
+    "../docs/requirements/html-report.md",
+    "../docs/specifications/cli.md",
+    "../docs/specifications/html-report.md",
+    "../src/application/inspection-report.test.ts",
+    "../src/application/inspection-report.ts",
+    "../src/application/report.test.ts",
+    "../src/application/report.ts",
+    "../src/bootstrap.ts",
+    "../src/cli.test.ts",
+    "../src/infrastructure/filesystem/report-output.test.ts",
+    "../src/infrastructure/filesystem/report-output.ts",
+    "../src/interfaces/cli/commands.test.ts",
+    "../src/interfaces/cli/commands.ts",
+    "../src/interfaces/html/report-assets.ts",
+    "../src/interfaces/html/report.test.ts",
+    "../src/interfaces/html/report.ts"
+  ],
+  "confirmation": {
+    "definition": "16c0c3a9b9ca01fa14b113bf61282a68e9ff139cf0e0cc782b5dc07eaef52ea9",
+    "hashes": {
+      "../README.md": "8dda427c7c47574b8eb548ddd141fe78f6f9611eba692e407051e0de1b119d29",
+      "../docs/requirements/html-report.md": "4116408f4c658e584fbfcba6c228704ba4ec99a9fe83e69f001a198612a491ba",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
+      "../docs/specifications/html-report.md": "41064c968fca8a978b918bd2421fb66504d910f00f0bca4d8e6fc06551230534",
+      "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
+      "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
+      "../src/application/report.test.ts": "9ecb7601aed9d320f046cee42210c3f8c96c36d80e96f8fb5658b00536c31b28",
+      "../src/application/report.ts": "6e6f0d88dc00a38e2d52dfa24345888359cab0a29485c8b12fb8d658f62baa36",
+      "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
+      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
+      "../src/infrastructure/filesystem/report-output.test.ts": "013473eb477d139a4671280b3da2aca6e7a49562b3429fa468d54d07a15cf1fd",
+      "../src/infrastructure/filesystem/report-output.ts": "2ba4ebb9f9ae8aefb223f7d0d056b7d8b78fde2a02542b2db8e09360be88ac5b",
+      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
+      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279",
+      "../src/interfaces/html/report-assets.ts": "0b334488d26cbb7482c79c59472e23c27ca7af16ad08046a306cc22ae181aa25",
+      "../src/interfaces/html/report.test.ts": "bcc5cc78b44b953c848ac322afe8f31895a1a917a0b3a497d5b1990938c8d87c",
+      "../src/interfaces/html/report.ts": "15ba17445aa0ead3a6c3aca879d6fcdc2aac38d7419631980ff5048e3ccd66b1"
+    }
+  }
+}

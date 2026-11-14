@@ -28,6 +28,91 @@ it("notifies that there are no registered groups, without initialization", () =>
   expect(result.code).toBe(0);
   expect(result.report.messages).toContain("No registered groups.");
 });
+
+it("writes a standalone HTML snapshot and notifies about zero groups", () => {
+  const root = fixture();
+  const result = run(["report", "--format", "html", "--output", "report.html"], root);
+  expect(result.code).toBe(0);
+  expect(result.report.operation).toBe("report");
+  expect(result.report.messages).toContain("No registered groups.");
+  expect(result.report.messages).toContain(`HTML report saved: ${join(root, "report.html")}`);
+  expect(readFileSync(join(root, "report.html"), "utf8")).toContain("No registered groups.");
+});
+
+it("reuses check inspection and repeated --file selection for HTML without changing inputs", () => {
+  const root = fixture();
+  run(["create", "first", "a", "b", "--reason", "AとB"], root);
+  run(["create", "second", "b", "c", "--reason", "BとC"], root);
+  run(["create", "draft", "--reason", "編集途中"], root);
+  const before = readFileSync(join(root, ".crosslink/first.json"), "utf8");
+  const selected = ["--file", ".crosslink/first.json", "--file", ".crosslink/second.json"];
+  const checked = run(["check", ...selected], root);
+  const result = run(["report", "--format", "html", "--output", "report.html", ...selected], root);
+  expect(result.code).toBe(1);
+  expect(result.report.groups).toEqual(checked.report.groups);
+  expect(result.report.errors).toEqual(checked.report.errors);
+  expect(readFileSync(join(root, ".crosslink/first.json"), "utf8")).toBe(before);
+  const html = readFileSync(join(root, "report.html"), "utf8");
+  expect(html).toContain("AとB");
+  expect(html).toContain("BとC");
+  expect(html).not.toContain("編集途中");
+  expect(html).toContain("Selected management files");
+});
+
+it("keeps drawable inspection errors in HTML and returns 2", () => {
+  const root = fixture();
+  run(["create", "draft", "--reason", "編集途中"], root);
+  writeFileSync(join(root, ".crosslink/broken.json"), "{");
+  const checked = run(["check"], root);
+  const result = run(["report", "--format", "html", "--output", "errors.html"], root);
+  expect(result.code).toBe(2);
+  expect(result.report.groups).toEqual(checked.report.groups);
+  const html = readFileSync(join(root, "errors.html"), "utf8");
+  expect(html).toContain("Invalid management JSON");
+  expect(html).toContain("At least two files are required");
+});
+
+it.each(
+  [
+    ["--output", "report.html"],
+    ["--format", "html"],
+    ["--format", "json", "--output", "report.html"],
+    ["--format", "html", "--output", ""],
+    ["--format", "html", "--output", "report.html", "extra"],
+    ["--format", "html", "--output", "report.html", "--verbose"],
+    ["--format", "html", "--format", "html", "--output", "report.html"],
+    ["--format", "html", "--output", "one.html", "--output", "two.html"],
+  ].map((args) => ({ args })),
+)("rejects invalid report arguments $args", ({ args }) => {
+  const result = run(["report", ...args], fixture());
+  expect(result.code).toBe(2);
+  expect(result.report.errors[0]?.code).toBe("INVALID_ARGUMENT");
+});
+
+it("honors --config and retains configuration failures in an HTML report", () => {
+  const root = fixture();
+  writeFileSync(join(root, "settings.json"), '{"directoryName":".links"}');
+  run(
+    ["create", "custom", "a", "b", "--reason", "custom reason", "--config", "settings.json"],
+    root,
+  );
+  const result = run(
+    ["report", "--format", "html", "--output", "custom.html", "--config", "settings.json"],
+    root,
+  );
+  expect(result.code).toBe(1);
+  expect(result.report.groups[0]?.name).toBe("custom");
+  writeFileSync(join(root, "settings.json"), '{"directoryName":"bad/path"}');
+  const invalid = run(
+    ["report", "--format", "html", "--output", "invalid.html", "--config", "settings.json"],
+    root,
+  );
+  expect(invalid.code).toBe(2);
+  const html = readFileSync(join(root, "invalid.html"), "utf8");
+  expect(html).toContain("INVALID_CONFIG");
+  expect(html).toContain("Inspection incomplete");
+  expect(html).not.toContain("No registered groups.");
+});
 it("creates, checks, explicitly confirms and detects later changes", () => {
   const root = fixture();
   expect(run(["create", "api", "a", "b", "--reason", "API整合性"], root).code).toBe(0);

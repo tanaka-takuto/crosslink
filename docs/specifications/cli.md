@@ -14,11 +14,12 @@
 | delete 管理ファイル                           | グループを削除。関連ファイルは削除しない             |
 | migrate 管理ファイル                          | 旧形式へ管理ファイルの種別宣言を追加。確認記録は保持 |
 | check                                         | グループの定義・確認状態を検査                       |
+| report --format html --output 出力先          | 閲覧用の単一HTMLを保存する                           |
 | related 対象ファイル                          | 直接関連するグループと全構成ファイルを提示           |
 | confirm 管理ファイル --snapshot 検査結果.json | 一つのグループを明示確認                             |
 | confirm --all --snapshot 検査結果.json        | 検査結果に含まれる全グループを明示確認               |
 
-`check`・`related` は `--file` を繰り返して対象を指定できる。指定がなければ実行ディレクトリ配下を探索する。
+`check`・`related`・`report` は `--file` を繰り返して対象を指定できる。指定がなければ実行ディレクトリ配下を探索する。
 探索では `.git`・`node_modules`・ディレクトリのシンボリックリンクをたどらない。
 管理ディレクトリ・管理JSONのシンボリックリンクを見つけた場合はエラーとし、0グループ扱いで成功させない。
 `--config` は任意の設定ファイル、`--json` は機械・AI共通のJSON出力を指定する。
@@ -28,6 +29,14 @@
 `--version --json` は `operation: "version"`、`messages: ["アプリversion"]` を含む通常のJSON形式で返す。
 `--version` にコマンドや `--config` は併用できない。`--help` があればhelpを優先する。
 `--` 以降の引数はオプションと解釈しない。例えば `create flags --reason review -- --verbose --version` は2つのファイル名を登録する。
+
+## HTMLレポート
+
+`report --format html --output <path>` は必須オプションをそれぞれ一回指定する。
+`--file` の繰り返し・`--config`・`--json` を使える。位置引数と `--verbose` は使えない。
+対象の検査結果を単一HTMLへ保存し、既存ファイルには上書きしない。出力先の親ディレクトリは自動作成しない。
+未確認は1、検査不能や書出し不能は2で終了するが、描画可能な検査エラーはHTMLに残す。
+詳しい表示・引数・安全性は [HTML仕様](html-report.md)、受入条件は [HTML要件](../requirements/html-report.md) を参照する。
 
 ## 人間向け出力
 

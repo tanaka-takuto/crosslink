@@ -20,12 +20,12 @@
       "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
       "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
       "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
-      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/cli.test.ts": "5a27752046e0750a623f0233a84a808497817fdda2ed15bc154c117f3fea3b2b",
+      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
-      "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
-      "../src/interfaces/cli/commands.ts": "0e8cc69816950eedc30a5a7431b6eb5b132024550f74fa4eea5f27dcdf31c669"
+      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
+      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279"
     }
   }
 }

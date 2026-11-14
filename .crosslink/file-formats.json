@@ -22,18 +22,18 @@
     "definition": "0ab8f93a022357c5118712dd678bfe0490dac7e5c71ea6d60f43324549c8d32b",
     "hashes": {
       "../docs/requirements/file-formats.md": "b2e23925eee4d57ae8ad0fa761203dc9c4fa33bde5d6b240b239ccc2d2f8750f",
-      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/group-operations.test.ts": "deb98717e0414bf23841bc37ae05fa6f55ce7a48a285f1b606fcf2b063f7bafa",
       "../src/application/group-operations.ts": "2f65c3cdc0766a8cf8bb92094141442173082b47a17677c05c827c4d054070ca",
-      "../src/cli.test.ts": "5a27752046e0750a623f0233a84a808497817fdda2ed15bc154c117f3fea3b2b",
+      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/infrastructure/filesystem/content-hash.test.ts": "bdfbb0c99a10c010d4e21afe0bd204d102e4f7b899587f2f0b7964689e2ae431",
       "../src/infrastructure/filesystem/content-hash.ts": "a0478f1a6d25587e810b209239d7ce8e19a870001c4a74310e75fbbfa24ca86c",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
       "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",
-      "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
-      "../src/interfaces/cli/commands.ts": "0e8cc69816950eedc30a5a7431b6eb5b132024550f74fa4eea5f27dcdf31c669"
+      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
+      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279"
     }
   }
 }

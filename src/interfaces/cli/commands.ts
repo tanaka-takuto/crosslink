@@ -1,8 +1,8 @@
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
-import { CrosslinkError, problem, type Problem } from "../../domain/errors.js";
+import { CrosslinkError, problem } from "../../domain/errors.js";
 import type { Group } from "../../domain/group.js";
-import { inspectGroup, type Inspection } from "../../application/inspect-group.js";
+import { inspectGroup } from "../../application/inspect-group.js";
 import {
   confirmGroups,
   createGroup,
@@ -11,42 +11,14 @@ import {
 } from "../../application/group-operations.js";
 import type { ApplicationMetadata, CrosslinkPorts } from "../../application/ports.js";
 
-export interface Report {
-  version: 1;
-  operation: string;
-  result: "ok" | "unconfirmed" | "error";
-  groups: Inspection[];
-  errors: Problem[];
-  messages: string[];
-}
+export type { Report } from "../../application/inspection-report.js";
+import { inspectionReport as inspect, type Report } from "../../application/inspection-report.js";
+import { generateReport, type ReportServices } from "../../application/report.js";
+
 export interface RunResult {
   code: number;
   report: Report;
   verbose?: boolean;
-}
-
-function inspect(operation: string, groups: Inspection[]): RunResult {
-  const errors = groups.flatMap((group) =>
-    group.errors.map((error) => ({ ...error, message: `${group.file}: ${error.message}` })),
-  );
-  const code = errors.length ? 2 : groups.some((group) => group.status === "unconfirmed") ? 1 : 0;
-  return {
-    code,
-    report: {
-      version: 1,
-      operation,
-      result: code === 2 ? "error" : code === 1 ? "unconfirmed" : "ok",
-      groups,
-      errors,
-      messages: groups.length
-        ? []
-        : [
-            operation === "related"
-              ? "No groups are related to this file."
-              : "No registered groups.",
-          ],
-    },
-  };
 }
 
 function stored(member: string, file: string, cwd: string): string {
@@ -111,6 +83,7 @@ const help = [
   "crosslink delete <group-file>",
   "crosslink migrate <legacy-group-file>",
   "crosslink check [--file <group-file>] [-v | --verbose] [--json]",
+  "crosslink report --format html --output <path> [--file <group-file>]",
   "crosslink related <target-file> [--file <group-file>] [--json]",
   "crosslink confirm <group-file> --snapshot <report.json>",
   "crosslink confirm --all --snapshot <report.json>",
@@ -124,16 +97,20 @@ export function run(
   cwd: string,
   ports: CrosslinkPorts,
   metadata: ApplicationMetadata,
+  reports: ReportServices,
 ): RunResult {
   let operation = "unknown";
   try {
-    const { values, positionals } = parseArgs({
+    const { values, positionals, tokens } = parseArgs({
+      tokens: true,
       args,
       allowPositionals: true,
       options: {
         file: { type: "string", multiple: true },
         reason: { type: "string" },
         name: { type: "string" },
+        format: { type: "string" },
+        output: { type: "string" },
         snapshot: { type: "string" },
         all: { type: "boolean" },
         config: { type: "string" },
@@ -164,6 +141,7 @@ export function run(
       delete: [],
       migrate: [],
       check: ["file", "verbose"],
+      report: ["file", "format", "output"],
       version: ["version"],
       related: ["file"],
       confirm: ["all", "snapshot"],
@@ -193,6 +171,32 @@ export function run(
           messages: [metadata.version()],
         },
       };
+    }
+    if (operation === "report") {
+      if (
+        positionals.length !== 1 ||
+        values.format !== "html" ||
+        !values.output?.trim() ||
+        ["format", "output"].some(
+          (name) =>
+            tokens.filter((token) => token.kind === "option" && token.name === name).length !== 1,
+        )
+      )
+        throw new CrosslinkError(
+          "INVALID_ARGUMENT",
+          "Use report --format html --output <path>, with each required option exactly once and no positional targets.",
+        );
+      return generateReport(
+        {
+          cwd,
+          output: values.output,
+          ...(values.file ? { files: values.file } : {}),
+          ...(values.config !== undefined ? { config: values.config } : {}),
+        },
+        ports,
+        metadata,
+        reports,
+      );
     }
     const settings = ports.configuration.load(cwd, values.config);
     const positional = positionals.slice(1);
