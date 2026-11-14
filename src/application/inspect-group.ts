@@ -57,7 +57,10 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
         result.errors.push(
           error instanceof CrosslinkError
             ? problem(error)
-            : { code: "FILE_UNREADABLE", message: `Cannot read file: ${member}` },
+            : {
+                code: "FILE_UNREADABLE",
+                message: `Cannot read file: ${member}. Check existence and read permissions; restore the file, update its registered path if moved, or remove it from the group if deletion was intended.`,
+              },
         );
       }
     }

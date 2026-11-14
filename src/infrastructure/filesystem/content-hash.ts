@@ -8,11 +8,18 @@ export function digest(content: string | Buffer): string {
 
 export function hashFile(file: string): { hash: string; identity: string } {
   if (!statSync(file).isFile())
-    throw new CrosslinkError("NOT_A_FILE", `Not a regular file: ${file}`);
+    throw new CrosslinkError(
+      "NOT_A_FILE",
+      `Not a regular file: ${file}. Update the registered path to a regular file, then run check again.`,
+    );
   const fd = openSync(file, "r");
   try {
     const before = fstatSync(fd);
-    if (!before.isFile()) throw new CrosslinkError("NOT_A_FILE", `Not a regular file: ${file}`);
+    if (!before.isFile())
+      throw new CrosslinkError(
+        "NOT_A_FILE",
+        `Not a regular file: ${file}. Update the registered path to a regular file, then run check again.`,
+      );
     const hash = createHash("sha256"),
       buffer = Buffer.alloc(64 * 1024);
     let bytes: number;

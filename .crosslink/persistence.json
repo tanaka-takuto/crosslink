@@ -22,18 +22,18 @@
     "definition": "686bbbe0b7fdf390e13358bdac1a82e91b23d397af995f4dffc000503e406e7f",
     "hashes": {
       "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
-      "../docs/specifications/cli.md": "1843ba439db30c635da2b791e36ce00f84e5e0f104793155920575f7e805fcf2",
+      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
-      "../src/application/group-operations.ts": "f34f1848537102cfb34949e3dcc0952537781ba4e4a8761c553ec8c364fbafc9",
-      "../src/infrastructure/filesystem/group-format.test.ts": "d2fe0b9444b31b26b92625b9fffe3393a155cb53c1521e02b1fbfbf4c45ab2d2",
-      "../src/infrastructure/filesystem/group-format.ts": "8dd8c5f152ad9e5fc08d36bbe5228d6ae9401a8984f430b1db7fef523a54d808",
+      "../src/application/group-operations.test.ts": "deb98717e0414bf23841bc37ae05fa6f55ce7a48a285f1b606fcf2b063f7bafa",
+      "../src/application/group-operations.ts": "2f65c3cdc0766a8cf8bb92094141442173082b47a17677c05c827c4d054070ca",
+      "../src/infrastructure/filesystem/group-format.test.ts": "5b09da9341b21f9a454d7759d61b90adfefd2a4b39b8432f29cce168fc8fd6c2",
+      "../src/infrastructure/filesystem/group-format.ts": "59f355945a435e352d635e732b5c84138e2dfb4933ad6e87532986fe613d7dc8",
       "../src/infrastructure/filesystem/group-storage.test.ts": "8f4a572ed8d4aaaadf12d7b98520e96ab358c88d29b140ad3fbbd55b27e9b578",
       "../src/infrastructure/filesystem/group-storage.ts": "03aae840f04bae3f19f60685aad14757b5012b904d6527b2d5b8d83acd429e33",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
       "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",
       "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
-      "../src/interfaces/cli/commands.ts": "3fde6f503f401c1224e4bea0b6e772658db0636690300fc3aa516b2a58516cc8"
+      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279"
     }
   }
 }

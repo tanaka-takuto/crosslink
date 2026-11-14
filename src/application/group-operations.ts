@@ -84,11 +84,14 @@ export function confirmGroups(
       const { group, raw } = ports.groups.read(file);
       const current = inspectGroup(file, ports, settings);
       if (current.errors.length || !current.snapshot)
-        throw new CrosslinkError("INVALID_GROUP", `Cannot confirm an invalid group: ${file}`);
+        throw new CrosslinkError(
+          "INVALID_GROUP",
+          `Cannot confirm an invalid group: ${file}. Run check --verbose to locate and fix the problems, then read all related files before confirming.`,
+        );
       if (current.snapshot !== expected.get(file))
         throw new CrosslinkError(
           "STALE_SNAPSHOT",
-          `State changed after inspection. Run check again: ${file}`,
+          `State changed after inspection: ${file}. Run check --json again and read all related files before confirming with the new report.`,
         );
       if (
         current.snapshot !==
@@ -102,7 +105,7 @@ export function confirmGroups(
       )
         throw new CrosslinkError(
           "STALE_SNAPSHOT",
-          `Management data changed during inspection: ${file}`,
+          `Management data changed during inspection: ${file}. Run check --json again and read all related files before confirming with the new report.`,
         );
       group.confirmation = {
         definition: ports.digest(canonicalDefinition(group)),

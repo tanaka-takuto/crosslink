@@ -39,7 +39,10 @@ it("fails for missing paths and directories instead of treating them as file con
   const root = fixture();
   mkdirSync(join(root, "folder"));
   expect(() => hashFile(join(root, "folder"))).toThrow(
-    expect.objectContaining({ code: "NOT_A_FILE" }),
+    expect.objectContaining({
+      code: "NOT_A_FILE",
+      message: expect.stringContaining("Update the registered path to a regular file"),
+    }),
   );
   expect(() => hashFile(join(root, "missing"))).toThrow();
 });

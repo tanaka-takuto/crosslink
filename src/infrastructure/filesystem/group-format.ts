@@ -11,9 +11,16 @@ function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function invalid(code: string, message: string): never {
+  throw new CrosslinkError(
+    code,
+    `${message} Repair the management JSON or restore a valid copy, then run check again.`,
+  );
+}
+
 function fields(value: Record<string, unknown>, allowed: string[]): void {
   if (Object.keys(value).some((key) => !allowed.includes(key)))
-    throw new CrosslinkError("INVALID_DEFINITION", "Unsupported fields in the management file.");
+    invalid("INVALID_DEFINITION", "Unsupported fields in the management file.");
 }
 
 export function parseGroup(text: string): GroupRecord {
@@ -21,20 +28,26 @@ export function parseGroup(text: string): GroupRecord {
   try {
     value = JSON.parse(withoutBom(text));
   } catch {
-    throw new CrosslinkError("INVALID_JSON", "Invalid management JSON.");
+    invalid("INVALID_JSON", "Invalid management JSON.");
   }
-  if (!object(value))
-    throw new CrosslinkError("INVALID_DEFINITION", "Management file must be a JSON object.");
+  if (!object(value)) invalid("INVALID_DEFINITION", "Management file must be a JSON object.");
   fields(value, ["kind", "version", "name", "reason", "files", "confirmation"]);
   if (value.kind !== undefined && value.kind !== groupKind)
-    throw new CrosslinkError("INVALID_DEFINITION", "Invalid management file kind.");
+    invalid("INVALID_DEFINITION", "Invalid management file kind.");
   if (value.version !== 1)
-    throw new CrosslinkError("UNSUPPORTED_VERSION", "Only management file version 1 is supported.");
-  validateGroup(value as unknown as Group);
+    throw new CrosslinkError(
+      "UNSUPPORTED_VERSION",
+      "Only management file version 1 is supported. Use a compatible crosslink version or restore a supported copy, then run check again.",
+    );
+  try {
+    validateGroup(value as unknown as Group);
+  } catch (error) {
+    if (error instanceof CrosslinkError) invalid(error.code, error.message);
+    throw error;
+  }
   if (value.confirmation !== undefined) {
     const confirmation = value.confirmation;
-    if (!object(confirmation))
-      throw new CrosslinkError("INVALID_CONFIRMATION", "Invalid confirmation record.");
+    if (!object(confirmation)) invalid("INVALID_CONFIRMATION", "Invalid confirmation record.");
     fields(confirmation, ["definition", "hashes"]);
     const hex = (v: unknown) => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
     if (
@@ -42,7 +55,7 @@ export function parseGroup(text: string): GroupRecord {
       !object(confirmation.hashes) ||
       Object.values(confirmation.hashes).some((hash) => !hex(hash))
     )
-      throw new CrosslinkError("INVALID_CONFIRMATION", "Invalid confirmation hashes.");
+      invalid("INVALID_CONFIRMATION", "Invalid confirmation hashes.");
   }
   return value as unknown as GroupRecord;
 }

@@ -20,6 +20,10 @@ it.each([{ files: [] }, { files: ["a"] }])(
     const draft = { ...group, files };
     expect(() => validateGroup(draft)).not.toThrow();
     expect(inspectionProblems(draft)).toEqual([expect.objectContaining({ code: "TOO_FEW_FILES" })]);
+    const message = inspectionProblems(draft)[0]!.message;
+    expect(message).toContain(`found ${files.length}`);
+    expect(message).toContain("Add member files");
+    expect(message).toContain("read all related files before confirming");
     expect(inspectionProblems(group)).toEqual([]);
   },
 );

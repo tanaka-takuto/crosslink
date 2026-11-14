@@ -49,7 +49,26 @@ it("refuses stale file contents without changing the record", () => {
   const snapshot = inspectGroup(file).snapshot!;
   const before = readFileSync(file, "utf8");
   writeFileSync(join(root, "a"), "new");
-  expect(() => confirmGroups([file], new Map([[file, snapshot]]))).toThrow();
+  expect(() => confirmGroups([file], new Map([[file, snapshot]]))).toThrow(
+    expect.objectContaining({
+      code: "STALE_SNAPSHOT",
+      message: expect.stringContaining("Run check --json again and read all related files"),
+    }),
+  );
+  expect(readFileSync(file, "utf8")).toBe(before);
+});
+it("guides invalid groups through inspection and repair before explicit confirmation", () => {
+  const { file } = fixture();
+  updateGroup(file, (group) => ({ ...group, files: [] }));
+  const before = readFileSync(file, "utf8");
+  expect(() => confirmGroups([file], new Map([[file, "a".repeat(64)]]))).toThrow(
+    expect.objectContaining({
+      code: "INVALID_GROUP",
+      message: expect.stringContaining(
+        "Run check --verbose to locate and fix the problems, then read all related files",
+      ),
+    }),
+  );
   expect(readFileSync(file, "utf8")).toBe(before);
 });
 it("refuses stale group definitions and metadata-only changes", () => {
@@ -57,6 +76,30 @@ it("refuses stale group definitions and metadata-only changes", () => {
   const snapshot = inspectGroup(file).snapshot!;
   writeFileSync(file, JSON.stringify({ version: 1, ...group, reason: "別の理由" }));
   expect(() => confirmGroups([file], new Map([[file, snapshot]]))).toThrow();
+});
+it("guides a snapshot race during confirmation without saving an older definition", () => {
+  const { file } = fixture();
+  const old = filesystemPorts.groups.read(file);
+  updateGroup(file, (group) => ({ ...group, reason: "新しい理由" }));
+  const snapshot = inspectGroup(file).snapshot!;
+  const before = readFileSync(file, "utf8");
+  let reads = 0;
+  const ports = {
+    ...filesystemPorts,
+    groups: {
+      ...filesystemPorts.groups,
+      read: (target: string) => (++reads === 1 ? old : filesystemPorts.groups.read(target)),
+    },
+  };
+  expect(() =>
+    operations.confirmGroups([file], new Map([[file, snapshot]]), ports, defaults),
+  ).toThrow(
+    expect.objectContaining({
+      code: "STALE_SNAPSHOT",
+      message: expect.stringContaining("Run check --json again and read all related files"),
+    }),
+  );
+  expect(readFileSync(file, "utf8")).toBe(before);
 });
 it("supports 1/0 member drafts and invalidates previous confirmation on every membership edit", () => {
   const { file } = fixture();
