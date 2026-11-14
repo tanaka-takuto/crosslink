@@ -1,5 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,6 +64,151 @@ it("serializes invocation errors as JSON without a stack trace", () => {
   expect(result.status).toBe(2);
   expect(result.stderr).toBe("");
   expect(JSON.parse(result.stdout).result).toBe("error");
+});
+
+it.each([
+  { report: "{", code: "IO_ERROR" },
+  { report: '{"version":2,"groups":[]}', code: "INVALID_SNAPSHOT" },
+  { report: '{"version":1}', code: "INVALID_SNAPSHOT" },
+  { report: "relative path", code: "INVALID_SNAPSHOT" },
+  { report: "duplicate target", code: "INVALID_SNAPSHOT" },
+  { report: "invalid hash", code: "INVALID_SNAPSHOT" },
+])("guides invalid snapshot reports without changing files: $report", ({ report, code }) => {
+  const { root, call } = fixture();
+  call("create", "api", "a", "b", "--reason", "理由");
+  const groupFile = join(root, ".crosslink/api.json");
+  const review = join(root, "review ' $().json");
+  const checked = JSON.parse(call("check", "--json").stdout);
+  if (report === "relative path") checked.groups[0].file = ".crosslink/api.json";
+  if (report === "duplicate target") checked.groups.push(checked.groups[0]);
+  if (report === "invalid hash") checked.groups[0].snapshot = "invalid";
+  const raw = report.startsWith("{") ? report : JSON.stringify(checked);
+  writeFileSync(review, raw);
+  const before = readFileSync(groupFile, "utf8");
+  const args = ["confirm", groupFile, "--snapshot", review];
+  const result = call(...args, "--json");
+  expect(result.status).toBe(2);
+  expect(result.stderr).toBe("");
+  const error = JSON.parse(result.stdout).errors[0];
+  expect(error.code).toBe(code);
+  expect(error.message).toContain(review);
+  expect(error.message).toContain("Run check --json again and read all related files");
+  expect(call(...args).stderr).toContain(error.message);
+  expect(readFileSync(groupFile, "utf8")).toBe(before);
+  expect(readFileSync(review, "utf8")).toBe(raw);
+  expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+});
+
+it("rejects stale snapshots with reinspection and review guidance and preserves existing records", () => {
+  const { root, call } = fixture();
+  call("create", "api", "a", "b", "--reason", "理由");
+  const review = join(root, "review.json");
+  writeFileSync(review, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", review).status).toBe(0);
+  const groupFile = join(root, ".crosslink/api.json");
+  const before = readFileSync(groupFile, "utf8");
+  writeFileSync(review, call("check", "--json").stdout);
+  writeFileSync(join(root, "a"), "changed");
+  const reportBefore = readFileSync(review, "utf8");
+  const result = call("confirm", "--all", "--snapshot", review, "--json");
+  expect(result.status).toBe(2);
+  expect(result.stderr).toBe("");
+  expect(JSON.parse(result.stdout).errors).toEqual([
+    {
+      code: "STALE_SNAPSHOT",
+      message: expect.stringContaining("Run check --json again and read all related files"),
+    },
+  ]);
+  expect(JSON.parse(result.stdout).errors[0].message).toContain(groupFile);
+  expect(readFileSync(groupFile, "utf8")).toBe(before);
+  expect(readFileSync(review, "utf8")).toBe(reportBefore);
+  expect(readFileSync(join(root, "a"), "utf8")).toBe("changed");
+  writeFileSync(review, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", review).status).toBe(0);
+});
+
+it.each([
+  { scenario: "missing", code: "FILE_UNREADABLE", guidance: "if deletion was intended" },
+  { scenario: "directory", code: "NOT_A_FILE", guidance: "regular file" },
+  { scenario: "zero", code: "TOO_FEW_FILES", guidance: "Add member files" },
+  { scenario: "one", code: "TOO_FEW_FILES", guidance: "Add member files" },
+  { scenario: "broken JSON", code: "INVALID_JSON", guidance: "restore a valid copy" },
+])(
+  "keeps check compact and exposes safe guidance for $scenario",
+  ({ scenario, code, guidance }) => {
+    const { root, call } = fixture();
+    call("create", "要確認", "a", "b", "--reason", "理由を保持する");
+    const groupFile = join(root, ".crosslink/要確認.json");
+    const review = join(root, "review.json");
+    writeFileSync(review, call("check", "--json").stdout);
+    expect(call("confirm", "--all", "--snapshot", review).status).toBe(0);
+    if (scenario === "missing") unlinkSync(join(root, "b"));
+    if (scenario === "directory") {
+      unlinkSync(join(root, "b"));
+      mkdirSync(join(root, "b"));
+    }
+    if (scenario === "zero") call("remove", groupFile, "a", "b");
+    if (scenario === "one") call("remove", groupFile, "b");
+    if (scenario === "broken JSON") writeFileSync(groupFile, "{");
+    const before = readFileSync(groupFile, "utf8");
+    const compact = call("check");
+    expect(compact.status).toBe(2);
+    expect(compact.stdout).toBe(
+      "Groups: 0 confirmed, 0 unconfirmed, 1 invalid.\n" +
+        `Invalid: ${scenario === "broken JSON" ? "要確認.json" : "要確認"} (${join(".crosslink", "要確認.json")})\n` +
+        "Use --verbose for all groups, files and reasons.\n",
+    );
+    const result = call("check", "--json");
+    expect(result.status).toBe(2);
+    expect(result.stderr).toBe("");
+    const report = JSON.parse(result.stdout);
+    expect(Object.keys(report).sort()).toEqual([
+      "errors",
+      "groups",
+      "messages",
+      "operation",
+      "result",
+      "version",
+    ]);
+    expect(report.version).toBe(1);
+    expect(report.result).toBe("error");
+    expect(report.groups[0].snapshot).toBeNull();
+    expect(report.errors[0]).toEqual({ code, message: expect.stringContaining(groupFile) });
+    expect(report.errors[0].message).toContain(guidance);
+    expect(compact.stderr).toContain(report.errors[0].message);
+    const verbose = call("check", "--verbose");
+    expect(verbose.status).toBe(2);
+    expect(verbose.stdout).toContain(report.groups[0].errors[0].message);
+    expect(verbose.stdout).toContain(guidance);
+    if (scenario !== "broken JSON") {
+      expect(report.groups[0].reason).toBe("理由を保持する");
+      expect(verbose.stdout).toContain("Reason: 理由を保持する");
+    }
+    expect(call("confirm", "--all", "--snapshot", review).status).toBe(2);
+    expect(readFileSync(groupFile, "utf8")).toBe(before);
+    expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+  },
+);
+
+it("keeps the lock and instructs checking for an active update before manual inspection", () => {
+  const { root, call } = fixture();
+  call("create", "api", "a", "b", "--reason", "理由");
+  const file = join(root, ".crosslink/api.json");
+  const review = join(root, "review.json");
+  writeFileSync(review, call("check", "--json").stdout);
+  const before = readFileSync(file, "utf8");
+  writeFileSync(file + ".lock", "another writer");
+  const result = call("confirm", file, "--snapshot", review, "--json");
+  expect(result.status).toBe(2);
+  expect(result.stderr).toBe("");
+  expect(JSON.parse(result.stdout).errors).toEqual([
+    {
+      code: "GROUP_LOCKED",
+      message: `Another update is in progress. Ensure no update is running before inspecting the lock: ${realpathSync(file)}.lock`,
+    },
+  ]);
+  expect(readFileSync(file + ".lock", "utf8")).toBe("another writer");
+  expect(readFileSync(file, "utf8")).toBe(before);
 });
 
 it("does not mistake a positional file named --json for an output option", () => {

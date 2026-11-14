@@ -56,7 +56,14 @@ function stored(member: string, file: string, cwd: string): string {
 }
 
 function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
-  const value: unknown = JSON.parse(ports.groups.readRaw(file));
+  const guidance = `Snapshot report: ${file}. Run check --json again and read all related files before confirming with the new report.`;
+  let value: unknown;
+  try {
+    value = JSON.parse(ports.groups.readRaw(file));
+  } catch (error) {
+    const detail = problem(error);
+    throw new CrosslinkError(detail.code, `${detail.message} ${guidance}`);
+  }
   if (
     !value ||
     typeof value !== "object" ||
@@ -65,7 +72,7 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
     !("groups" in value) ||
     !Array.isArray(value.groups)
   )
-    throw new CrosslinkError("INVALID_SNAPSHOT", "Provide the inspection report JSON.");
+    throw new CrosslinkError("INVALID_SNAPSHOT", `Provide the inspection report JSON. ${guidance}`);
   const expected = new Map<string, string>();
   for (const group of value.groups) {
     if (
@@ -74,15 +81,24 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
       typeof group.file !== "string" ||
       !isAbsolute(group.file)
     )
-      throw new CrosslinkError("INVALID_SNAPSHOT", "Invalid target path in the inspection report.");
+      throw new CrosslinkError(
+        "INVALID_SNAPSHOT",
+        `Invalid target path in the inspection report. ${guidance}`,
+      );
     if (expected.has(group.file))
-      throw new CrosslinkError("INVALID_SNAPSHOT", "Duplicate target in the inspection report.");
+      throw new CrosslinkError(
+        "INVALID_SNAPSHOT",
+        `Duplicate target in the inspection report. ${guidance}`,
+      );
     if (group.snapshot === null) {
       expected.set(group.file, "");
       continue;
     }
     if (typeof group.snapshot !== "string" || !/^[a-f0-9]{64}$/.test(group.snapshot))
-      throw new CrosslinkError("INVALID_SNAPSHOT", "Invalid snapshot in the inspection report.");
+      throw new CrosslinkError(
+        "INVALID_SNAPSHOT",
+        `Invalid snapshot in the inspection report. ${guidance}`,
+      );
     expected.set(group.file, group.snapshot);
   }
   return expected;

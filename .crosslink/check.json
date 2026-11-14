@@ -20,14 +20,14 @@
     "definition": "a3ac77e57db2f84c6824ed5c4654f691449506d60594e41ec509daff7a1b97f0",
     "hashes": {
       "../docs/requirements/check.md": "866ae1e48204490de5ae87a8855d5f0cbb3bda0efd72620589ff50938170ae91",
-      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
+      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
-      "../src/application/inspect-group.ts": "00040fc56d4df9e5726e2ba67770ec0702e4e0990e7e45596a81379bb0c742fc",
+      "../src/application/inspect-group.test.ts": "3c93693b622965faa8f277fa1c36a096f2c75ab448014f2fb7fb2fc0a11dd358",
+      "../src/application/inspect-group.ts": "d9e13c81178a5a3d2dfc6e27c389a87f422aa1f7c3c864e8ec3913d7fabd7a40",
       "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
       "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a",
       "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
-      "../src/interfaces/cli/commands.ts": "10e05a3bcb6c0e71f182f7482a7eac430706e486fdf8cf18f1fbad07011d81a2",
+      "../src/interfaces/cli/commands.ts": "0e8cc69816950eedc30a5a7431b6eb5b132024550f74fa4eea5f27dcdf31c669",
       "../src/interfaces/cli/output.test.ts": "8b13510b1e0cbb8f0586561c9034ead3b15766c410d593ec6a1d4fb3d8652981",
       "../src/interfaces/cli/output.ts": "fc4142c616e50b4cb8408bff852515ef046296044bd40a4e50b21fde450ab7cd"
     }
