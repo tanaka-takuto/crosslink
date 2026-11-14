@@ -33,3 +33,7 @@ export interface CrosslinkPorts {
   configuration: Configuration;
   digest(content: string): string;
 }
+
+export interface ApplicationMetadata {
+  version(): string;
+}

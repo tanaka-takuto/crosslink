@@ -18,7 +18,7 @@ export function readGroup(file: string): { group: Group; raw: string } {
   if (lstatSync(file).isSymbolicLink())
     throw new CrosslinkError(
       "MANAGEMENT_SYMLINK",
-      "管理ファイル自体へのシンボリックリンクは使用できません",
+      "Symbolic links to management files are not supported.",
     );
   const raw = readFileSync(file, "utf8");
   return { group: parseGroup(raw), raw };

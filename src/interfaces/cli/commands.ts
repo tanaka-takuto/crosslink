@@ -9,7 +9,7 @@ import {
   deleteGroup,
   updateGroup,
 } from "../../application/group-operations.js";
-import type { CrosslinkPorts } from "../../application/ports.js";
+import type { ApplicationMetadata, CrosslinkPorts } from "../../application/ports.js";
 
 export interface Report {
   version: 1;
@@ -22,6 +22,7 @@ export interface Report {
 export interface RunResult {
   code: number;
   report: Report;
+  verbose?: boolean;
 }
 
 function inspect(operation: string, groups: Inspection[]): RunResult {
@@ -41,8 +42,8 @@ function inspect(operation: string, groups: Inspection[]): RunResult {
         ? []
         : [
             operation === "related"
-              ? "このファイルに関連するグループはありません"
-              : "登録されたグループはありません",
+              ? "No groups are related to this file."
+              : "No registered groups.",
           ],
     },
   };
@@ -64,7 +65,7 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
     !("groups" in value) ||
     !Array.isArray(value.groups)
   )
-    throw new CrosslinkError("INVALID_SNAPSHOT", "検査結果のJSONを指定してください");
+    throw new CrosslinkError("INVALID_SNAPSHOT", "Provide the inspection report JSON.");
   const expected = new Map<string, string>();
   for (const group of value.groups) {
     if (
@@ -73,34 +74,41 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
       typeof group.file !== "string" ||
       !isAbsolute(group.file)
     )
-      throw new CrosslinkError("INVALID_SNAPSHOT", "検査結果の対象パスが不正です");
+      throw new CrosslinkError("INVALID_SNAPSHOT", "Invalid target path in the inspection report.");
     if (expected.has(group.file))
-      throw new CrosslinkError("INVALID_SNAPSHOT", "検査結果の対象が重複しています");
+      throw new CrosslinkError("INVALID_SNAPSHOT", "Duplicate target in the inspection report.");
     if (group.snapshot === null) {
       expected.set(group.file, "");
       continue;
     }
     if (typeof group.snapshot !== "string" || !/^[a-f0-9]{64}$/.test(group.snapshot))
-      throw new CrosslinkError("INVALID_SNAPSHOT", "検査結果の状態が不正です");
+      throw new CrosslinkError("INVALID_SNAPSHOT", "Invalid snapshot in the inspection report.");
     expected.set(group.file, group.snapshot);
   }
   return expected;
 }
 
 const help = [
-  "crosslink create <name> [files...] --reason <理由> [--file <保存先>]",
-  "crosslink add|remove <管理ファイル> <files...>",
-  "crosslink set <管理ファイル> [--name <名前>] [--reason <理由>]",
-  "crosslink delete <管理ファイル>",
-  "crosslink migrate <旧形式の管理ファイル>",
-  "crosslink check [--file <管理ファイル>] [--json]",
-  "crosslink related <対象ファイル> [--file <管理ファイル>] [--json]",
-  "crosslink confirm <管理ファイル> --snapshot <検査結果.json>",
-  "crosslink confirm --all --snapshot <検査結果.json>",
-  "共通: --config <設定.json>, --json, --help",
+  "crosslink create <name> [files...] --reason <reason> [--file <destination>]",
+  "crosslink add|remove <group-file> <files...>",
+  "crosslink set <group-file> [--name <name>] [--reason <reason>]",
+  "crosslink delete <group-file>",
+  "crosslink migrate <legacy-group-file>",
+  "crosslink check [--file <group-file>] [-v | --verbose] [--json]",
+  "crosslink related <target-file> [--file <group-file>] [--json]",
+  "crosslink confirm <group-file> --snapshot <report.json>",
+  "crosslink confirm --all --snapshot <report.json>",
+  "crosslink --version",
+  "Options: --config <config.json>, --json, -h, --help",
+  "Check details: -v, --verbose (all groups, files and reasons)",
 ];
 
-export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResult {
+export function run(
+  args: string[],
+  cwd: string,
+  ports: CrosslinkPorts,
+  metadata: ApplicationMetadata,
+): RunResult {
   let operation = "unknown";
   try {
     const { values, positionals } = parseArgs({
@@ -114,10 +122,12 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
         all: { type: "boolean" },
         config: { type: "string" },
         json: { type: "boolean" },
+        verbose: { type: "boolean", short: "v" },
+        version: { type: "boolean" },
         help: { type: "boolean", short: "h" },
       },
     });
-    operation = positionals[0] ?? "help";
+    operation = values.version ? "version" : (positionals[0] ?? "help");
     if (values.help || operation === "help")
       return {
         code: 0,
@@ -137,20 +147,42 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
       set: ["name", "reason"],
       delete: [],
       migrate: [],
-      check: ["file"],
+      check: ["file", "verbose"],
+      version: ["version"],
       related: ["file"],
       confirm: ["all", "snapshot"],
     };
     if (!allowed[operation])
-      throw new CrosslinkError("INVALID_ARGUMENT", `未対応のコマンドです: ${operation}`);
+      throw new CrosslinkError("INVALID_ARGUMENT", `Unknown command: ${operation}`);
     for (const key of Object.keys(values))
       if (!["config", "json", "help", ...allowed[operation]!].includes(key))
-        throw new CrosslinkError("INVALID_ARGUMENT", `このコマンドでは--${key}を使えません`);
+        throw new CrosslinkError(
+          "INVALID_ARGUMENT",
+          `Option --${key} is not supported by this command.`,
+        );
+    if (operation === "version") {
+      if (positionals.length || values.config !== undefined)
+        throw new CrosslinkError(
+          "INVALID_ARGUMENT",
+          "Use --version without a command or configuration.",
+        );
+      return {
+        code: 0,
+        report: {
+          version: 1,
+          operation,
+          result: "ok",
+          groups: [],
+          errors: [],
+          messages: [metadata.version()],
+        },
+      };
+    }
     const settings = ports.configuration.load(cwd, values.config);
     const positional = positionals.slice(1);
     if (operation === "check" || operation === "related") {
       if (positional.length !== (operation === "related" ? 1 : 0))
-        throw new CrosslinkError("INVALID_ARGUMENT", "対象ファイルの指定を確認してください");
+        throw new CrosslinkError("INVALID_ARGUMENT", "Check the number of target files.");
       const files =
         values.file?.map((file) => resolve(cwd, file)) ??
         ports.configuration.findGroups(cwd, settings);
@@ -166,13 +198,13 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
             ),
         );
       }
-      return inspect(operation, groups);
+      return { ...inspect(operation, groups), verbose: values.verbose ?? false };
     }
     if (operation === "confirm") {
       if (!values.snapshot || (values.all ? positional.length !== 0 : positional.length !== 1))
         throw new CrosslinkError(
           "INVALID_ARGUMENT",
-          "対象を一つ指定するか--allを使い、--snapshotで検査結果を渡してください",
+          "Select one group or use --all, and provide an inspection report with --snapshot.",
         );
       const expected = snapshot(resolve(cwd, values.snapshot), ports);
       const files = values.all ? [...expected.keys()] : [resolve(cwd, positional[0]!)];
@@ -183,16 +215,13 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
       );
     }
     if (!positional[0])
-      throw new CrosslinkError(
-        "INVALID_ARGUMENT",
-        "グループ名または管理ファイルを指定してください",
-      );
+      throw new CrosslinkError("INVALID_ARGUMENT", "Specify a group name or management file.");
     let file: string;
     if (operation === "create") {
       if (!values.reason || (values.file?.length ?? 0) > 1)
         throw new CrosslinkError(
           "INVALID_ARGUMENT",
-          "--reasonと、必要なら保存先を一つ指定してください",
+          "Provide --reason and optionally one destination with --file.",
         );
       file = values.file?.[0]
         ? resolve(cwd, values.file[0])
@@ -207,10 +236,7 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
       file = resolve(cwd, positional[0]);
       if (operation === "delete") {
         if (positional.length !== 1)
-          throw new CrosslinkError(
-            "INVALID_ARGUMENT",
-            "削除する管理ファイルを一つ指定してください",
-          );
+          throw new CrosslinkError("INVALID_ARGUMENT", "Specify one management file to delete.");
         deleteGroup(file, ports);
         return {
           code: 0,
@@ -220,19 +246,19 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
             result: "ok",
             groups: [],
             errors: [],
-            messages: [`グループを削除しました: ${file}`],
+            messages: [`Deleted group: ${file}`],
           },
         };
       }
       if (operation === "migrate" && positional.length !== 1)
-        throw new CrosslinkError("INVALID_ARGUMENT", "移行する管理ファイルを一つ指定してください");
+        throw new CrosslinkError("INVALID_ARGUMENT", "Specify one management file to migrate.");
       if (
         operation === "set" &&
         (positional.length !== 1 || (values.name === undefined && values.reason === undefined))
       )
-        throw new CrosslinkError("INVALID_ARGUMENT", "--nameまたは--reasonを指定してください");
+        throw new CrosslinkError("INVALID_ARGUMENT", "Provide --name or --reason.");
       if ((operation === "add" || operation === "remove") && positional.length < 2)
-        throw new CrosslinkError("INVALID_ARGUMENT", "変更する対象ファイルを指定してください");
+        throw new CrosslinkError("INVALID_ARGUMENT", "Specify the member files to change.");
       updateGroup(
         file,
         (group) => {
@@ -258,7 +284,7 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
                 (member) => ports.files.canonical(resolve(dirname(file), member)) === target,
               )
             )
-              throw new CrosslinkError("NOT_A_MEMBER", `登録されていません: ${target}`);
+              throw new CrosslinkError("NOT_A_MEMBER", `Not a registered member: ${target}`);
           return {
             ...group,
             files: group.files.filter(
@@ -279,7 +305,7 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
         result: "ok",
         groups: [current],
         errors: [],
-        messages: ["保存しました。現在の確認状態は検査結果を参照してください"],
+        messages: ["Saved. See inspection results for the current confirmation status."],
       },
     };
   } catch (error) {
@@ -295,20 +321,4 @@ export function run(args: string[], cwd: string, ports: CrosslinkPorts): RunResu
       },
     };
   }
-}
-
-export function human(report: Report, cwd: string): string {
-  const lines = [...report.messages];
-  for (const group of report.groups) {
-    lines.push(
-      `${group.status === "confirmed" ? "確認済み" : "未確認"}: ${group.name} (${relative(cwd, group.file)})`,
-      `  確認が必要な理由: ${group.reason}`,
-    );
-    for (const file of group.files)
-      lines.push(
-        `  ${file.changed === null ? "初回" : file.changed ? "変更" : "未変更"}: ${file.path}`,
-      );
-    for (const error of group.errors) lines.push(`  ${error.code}: ${error.message}`);
-  }
-  return lines.join("\n") + "\n";
 }

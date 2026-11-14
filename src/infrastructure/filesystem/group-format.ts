@@ -13,7 +13,7 @@ function object(value: unknown): value is Record<string, unknown> {
 
 function fields(value: Record<string, unknown>, allowed: string[]): void {
   if (Object.keys(value).some((key) => !allowed.includes(key)))
-    throw new CrosslinkError("INVALID_DEFINITION", "未対応の項目が含まれています");
+    throw new CrosslinkError("INVALID_DEFINITION", "Unsupported fields in the management file.");
 }
 
 export function parseGroup(text: string): GroupRecord {
@@ -21,20 +21,20 @@ export function parseGroup(text: string): GroupRecord {
   try {
     value = JSON.parse(withoutBom(text));
   } catch {
-    throw new CrosslinkError("INVALID_JSON", "管理ファイルのJSONが壊れています");
+    throw new CrosslinkError("INVALID_JSON", "Invalid management JSON.");
   }
   if (!object(value))
-    throw new CrosslinkError("INVALID_DEFINITION", "管理ファイルはオブジェクトにしてください");
+    throw new CrosslinkError("INVALID_DEFINITION", "Management file must be a JSON object.");
   fields(value, ["kind", "version", "name", "reason", "files", "confirmation"]);
   if (value.kind !== undefined && value.kind !== groupKind)
-    throw new CrosslinkError("INVALID_DEFINITION", "管理ファイルのkindが不正です");
+    throw new CrosslinkError("INVALID_DEFINITION", "Invalid management file kind.");
   if (value.version !== 1)
-    throw new CrosslinkError("UNSUPPORTED_VERSION", "管理ファイルのversionは1のみ対応しています");
+    throw new CrosslinkError("UNSUPPORTED_VERSION", "Only management file version 1 is supported.");
   validateGroup(value as unknown as Group);
   if (value.confirmation !== undefined) {
     const confirmation = value.confirmation;
     if (!object(confirmation))
-      throw new CrosslinkError("INVALID_CONFIRMATION", "確認記録が壊れています");
+      throw new CrosslinkError("INVALID_CONFIRMATION", "Invalid confirmation record.");
     fields(confirmation, ["definition", "hashes"]);
     const hex = (v: unknown) => typeof v === "string" && /^[a-f0-9]{64}$/.test(v);
     if (
@@ -42,7 +42,7 @@ export function parseGroup(text: string): GroupRecord {
       !object(confirmation.hashes) ||
       Object.values(confirmation.hashes).some((hash) => !hex(hash))
     )
-      throw new CrosslinkError("INVALID_CONFIRMATION", "確認記録のハッシュが不正です");
+      throw new CrosslinkError("INVALID_CONFIRMATION", "Invalid confirmation hashes.");
   }
   return value as unknown as GroupRecord;
 }

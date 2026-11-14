@@ -138,7 +138,7 @@ test("作業ツリーが確認済みでもindexの未確認変更を拒否し、
   const index = f.git("ls-files", "--stage");
   const result = f.commit();
   assert.notEqual(result.status, 0, f.output(result));
-  assert.match(f.output(result), /未確認/);
+  assert.match(f.output(result), /Unconfirmed/);
   assert.equal(readFileSync(join(f.root, "a"), "utf8"), "a");
   assert.equal(f.git("ls-files", "--stage"), index);
 });
@@ -185,7 +185,7 @@ test("作業ツリーの古いdistと未ステージのCLI改変を使わない"
   writeFileSync(join(f.root, "src/cli.ts"), "process.exit(0);\n");
   const result = f.commit();
   assert.notEqual(result.status, 0, f.output(result));
-  assert.match(f.output(result), /未確認/);
+  assert.match(f.output(result), /Unconfirmed/);
 });
 
 test("必要な開発依存がなければ案内して失敗する", () => {
@@ -200,7 +200,7 @@ test("グループ0件は開発依存なしでも通知して成功する", () =
   const f = fixture({ project: false, groups: false });
   const result = f.commit();
   assert.equal(result.status, 0, f.output(result));
-  assert.match(f.output(result), /登録されたグループはありません/);
+  assert.match(f.output(result), /No registered groups/);
 });
 
 test("壊れた設定をグループ0件と誤認せず拒否する", () => {
@@ -223,7 +223,7 @@ test("作業ツリーを戻していてもステージ済みCLIのビルド不�
   writeFileSync(file, original);
   const result = f.commit();
   assert.notEqual(result.status, 0, f.output(result));
-  assert.match(f.output(result), /ビルド/);
+  assert.match(f.output(result), /build/);
 });
 
 test("設定で変更した管理ディレクトリも検査する", () => {
@@ -242,7 +242,7 @@ test("設定で変更した管理ディレクトリも検査する", () => {
   f.git("add", ".");
   const result = f.commit();
   assert.notEqual(result.status, 0, f.output(result));
-  assert.match(f.output(result), /未確認/);
+  assert.match(f.output(result), /Unconfirmed/);
 });
 
 test("未ステージの属性変更を取り込まず、ステージ済みの改行設定で検査する", () => {
