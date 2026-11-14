@@ -1,0 +1,35 @@
+{
+  "kind": "crosslink-group",
+  "version": 1,
+  "name": "git-hooks",
+  "reason": "コミット対象のcrosslink検査と部分ステージの保持を、フック・テスト・開発手順・CIで一緒に確認するため",
+  "files": [
+    "../.githooks/pre-commit",
+    "../.github/workflows/cli-policy.yml",
+    "../.gitignore",
+    "../.oxfmtrc.json",
+    "../.oxlintrc.json",
+    "../CONTRIBUTING.md",
+    "../docs/development/toolchain.md",
+    "../package.json",
+    "../script/check-staged.mjs",
+    "../script/check-staged.test.mjs",
+    "../script/test-githooks.sh"
+  ],
+  "confirmation": {
+    "definition": "757f59f132c426d863f8b5e9ba10438601abf630b1a7c2514d58ee2aa772a110",
+    "hashes": {
+      "../.githooks/pre-commit": "2526a60fd3d2fa0714aae9e6501506498d7ca85c20b590e10299a7704d3632f0",
+      "../.github/workflows/cli-policy.yml": "14f2d24e60f6e803f23ed86ef933e6c9e2f9088de6ad272a81bd5693b85ab5e5",
+      "../.gitignore": "e4f32e3839615212b67b8f22700a773d20c377149d40e7d146169e1949c827b9",
+      "../.oxfmtrc.json": "b13a11224659ff2ac1472f1f46fb3de40751aa0fc99ce891bdc977cb5d48d66c",
+      "../.oxlintrc.json": "69fafc2664ec67ae0538000b59b1f51c1410494d0e5e932de9819e702d1cbd3f",
+      "../CONTRIBUTING.md": "20232cc9ef288708ff3b284e3e281389bc98371246b9387f78227d6d57bfb365",
+      "../docs/development/toolchain.md": "2fdb31ff21801baa79107bb22651c6cfc7664ea0d0bc61ea5ce4e6ed9c63d555",
+      "../package.json": "941b9d9c58e26b9875208370a9132e981b1e438118f7ceb03959ae01f3e05643",
+      "../script/check-staged.mjs": "d188cdba56f663d0ae275bf8b0c54108347d1abf6fefa6363905b0b744039e20",
+      "../script/check-staged.test.mjs": "d7b248ba7e2423d7534018d1bcb6a2aad890c252a5b656b3d1cdba6707995875",
+      "../script/test-githooks.sh": "f7c7e1b86b8a40ebc249f3b275484b9174d9cac5a2b0d8adb3b346f4bc866ac0"
+    }
+  }
+}

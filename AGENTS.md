@@ -2,6 +2,9 @@
 
 ユーザーとの対話と説明は日本語で行う。
 
+- 作業中の追加依頼・進捗・未対応事項は、Git管理外の `tmp/progress.md` と `tmp/todo.md` に記録し、作業の節目で更新する。
+- 完了した項目は `tmp/todo.md` から削除し、結果と証拠は `tmp/progress.md` に残す。
+
 - 作業前に `CONTRIBUTING.md` と対応する Issue を読む。
 - Issue 作成には `.github/ISSUE_TEMPLATE/`、PR 作成には `.github/pull_request_template.md` を使う。
 - コミットと PR タイトルは `type(#Issue番号): 説明` の1行とし、Development に同じ Issue を紐づける。

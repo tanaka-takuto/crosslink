@@ -22,7 +22,7 @@
       "../docs/requirements/adoption.md": "a4b78e2327e0de04c76c7b573635240e520d53d9f7a06855e4a8e3cf6038566d",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../package.json": "f5c5457016cf5b4c0275b00c85031d788e45b734dc83842502d2db29b4eeb34e",
+      "../package.json": "941b9d9c58e26b9875208370a9132e981b1e438118f7ceb03959ae01f3e05643",
       "../src/bootstrap.ts": "3dd19c1066d239fa819909c78d1b43b2102b76336fa0b86a408bb79af742ef36",
       "../src/cli.test.ts": "3f97c4afab218be434b4cf345852a2551c64d8c1bf5081f11eb63ebf8b2c94da",
       "../src/cli.ts": "010bb061bcdb2839ef01ac68722f15f568baf089a1257be272d009aedf78ea3e",

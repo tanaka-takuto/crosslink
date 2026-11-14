@@ -90,16 +90,29 @@ Dependabot を含む bot の PR にも例外はありません。必要な Issue
 
 ## フックと CI
 
-- `pre-commit`: ステージ済みの空白エラーを検査します。自動整形や再ステージは行いません。
+- `pre-commit`: ステージ済みの空白エラー、oxfmtの整形、oxlint、crosslinkの確認状態を検査します。
 - `commit-msg`: Issue 番号付きの1行形式を検査し、コメント等を除去した1行を保存します。
 - `pre-push`: push 先のブランチ名を検査します。全テストは実行しません。
 - `sh script/check-git.sh`: shell 構文、空白エラー、Git フックと PR 判定のテストを実行します。
 - `sh script/check-commit-messages.sh BASE HEAD`: 指定範囲の全コミットを検査します。
 
+コミット対象のindexを一時ディレクトリへ取り出し、まずCIと同じ設定で `oxfmt --check .` と `oxlint --deny-warnings src vitest.config.ts` を実行します。
+整形やlintの違反があれば、元のファイルを修正して再ステージしてください。
+crosslinkの検査は、同じステージ済み内容のCLIをビルドして実行します。
+作業ツリーの未ステージ変更や古いdistは使いません。`git commit --only` でGitが用意する一時indexも対象にします。
+検査の成否にかかわらず、元の作業ツリーとindexの内容を保持し、検査用ディレクトリを削除します。
+Node.js 24以上とインストール済みの開発依存が必要です。依存不足・ビルド不能・検査不能はコミットを止め、修復方法を表示します。自動installはしません。
+管理グループと設定が存在しない場合も、開発プロジェクトでは整形・lintを検査し、crosslinkは登録0件を通知します。
+
+未確認で拒否された場合は対象の内容を確認し、変更ファイルと対応する確認記録を両方ステージしてください。
+部分ステージでは、コミットする内容の組み合わせと確認記録が一致するように整えます。
+実際のGitリポジトリとフックによるテストは `node --test script/check-staged.test.mjs` で実行でき、`pnpm test` にも含まれます。
+
 GitHub Actions は Node.js 24 を使い、同じ検査入口を Linux と macOS で実行します。
 `Git policy` は全 OS の結果を集約します。`PR policy` は Development の実リンク、PR タイトル、
 各コミットの Issue 番号、PR 本文を検査します。本文・タイトルの編集でも再検査します。
 CLI 本体は `CLI policy` により Linux・macOS・Windows、Node.js 24・26で `pnpm check` を実行します。
+この6環境で、ステージ済み内容を検査するpre-commitの実行テストも行います。
 
 Actions の既定権限は読み取り専用とし、PR を承認する権限は与えません。
 外部 Action は完全な commit SHA で固定します。

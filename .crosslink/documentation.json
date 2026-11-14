@@ -4,6 +4,7 @@
   "name": "documentation",
   "reason": "開発・文書管理の説明と実際の設定を一緒に確認するため",
   "files": [
+    "../.gitignore",
     "../AGENTS.md",
     "../CONTRIBUTING.md",
     "../README.md",
@@ -12,13 +13,14 @@
     "../docs/requirements.md"
   ],
   "confirmation": {
-    "definition": "97176b342c8122f3d6a44998e27d20ddd1289b5a8382d8187b2cfdc2b3a2b5ff",
+    "definition": "687c1efee01e2c89ab56237499782c1132c784a0caa07867d5e9275f05737e9c",
     "hashes": {
-      "../AGENTS.md": "329f5a933a31bc8c7210fa4bc9a88dce0f5e4fc2d03197bb8a94822019b7a4d0",
-      "../CONTRIBUTING.md": "7209dd3a006405244365a5804d9b366919c2c5e379f02c4f0565863488dcf6aa",
+      "../.gitignore": "e4f32e3839615212b67b8f22700a773d20c377149d40e7d146169e1949c827b9",
+      "../AGENTS.md": "c56f4a79be1d335e5084a951226d5503c3a8429c2cb054d13e4a15a5dee04c1c",
+      "../CONTRIBUTING.md": "20232cc9ef288708ff3b284e3e281389bc98371246b9387f78227d6d57bfb365",
       "../README.md": "5307892c2121963f8d12fb2e4497ddea369484e33be50075eb38b489f48e2aca",
       "../docs/development/architecture.md": "5175ac8741e81d903ef9b285e8f1dc7396a0db20e6a64284b26d04250ac59d3a",
-      "../docs/development/documentation.md": "a833a664492cca4e26d59a4e8fa5b802590efadfc4f5c8c6a7ee193a87485861",
+      "../docs/development/documentation.md": "88869892290c55753bde500e836cf825002217d47a0eb2864511d822a675cd58",
       "../docs/requirements.md": "dfc0ac7656e80f84020c24582c12d87b646d190b7387930c33242d8f43588679"
     }
   }
