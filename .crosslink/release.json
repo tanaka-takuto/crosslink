@@ -1,0 +1,39 @@
+{
+  "kind": "crosslink-group",
+  "version": 1,
+  "name": "release",
+  "reason": "mainのversion検査・同SHAのSEA配布・Release再実行の安全性と運用文書を一緒に確認するため",
+  "files": [
+    "../.github/rulesets/default-branch.json",
+    "../.github/workflows/cli-policy.yml",
+    "../.node-version",
+    "../CONTRIBUTING.md",
+    "../docs/development/release.md",
+    "../package.json",
+    "../script/check-version.test.ts",
+    "../script/check-version.ts",
+    "../script/release.test.ts",
+    "../script/release.ts",
+    "../script/tsconfig.release.json",
+    "../script/vitest.config.ts",
+    "../tsconfig.json"
+  ],
+  "confirmation": {
+    "definition": "47613b6f411c7874319763c52f384780a0edc0f0c10748c59de2f256b5f7bc90",
+    "hashes": {
+      "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
+      "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
+      "../.node-version": "5c293036fc0a61ad76e15d85f454c3c7cec157e181e035b69f95058a2c239144",
+      "../CONTRIBUTING.md": "e80e44a5afabdcbfc875d4af1b5cdf65a9c300da284cc79115cce84796b7ddf0",
+      "../docs/development/release.md": "6dd8f3212e0d338d1220e43fedb26ecbfc7e8a5bba85fe731d15a29e48390902",
+      "../package.json": "bc7c88340ff1c65430b7274026f3cc23e6f81dca8ab7f6889682264995306971",
+      "../script/check-version.test.ts": "f7581c3b71bd5f05b1d059235d5c3f50da6b1865b4036bde5a040570ec368c48",
+      "../script/check-version.ts": "8d392895c47656eb5b834e1d97f6cb8d37792271026d829b42397f68057bfe7c",
+      "../script/release.test.ts": "9464e81d6001e8c3020f79730c5a9f6b5d83c0b0c4637485985c588e41f1ff38",
+      "../script/release.ts": "9583d770b5d8ad4b4f3edcccc68526f2f5190aeeb50defabfa0a3e1a8ea43149",
+      "../script/tsconfig.release.json": "2307104310708e3e9d6492cce206671de16614ef04da23883d060a5d151d78c2",
+      "../script/vitest.config.ts": "1595bef9b7d90c6b798f60208a82dae1698982a2f78d34caf76ff9a3dfcb240a",
+      "../tsconfig.json": "b9f213065b2279eaad33b4fcbdd810194356597a8cd3e3f03bd00c6386b7a99e"
+    }
+  }
+}

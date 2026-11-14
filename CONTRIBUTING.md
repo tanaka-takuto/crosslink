@@ -138,3 +138,15 @@ Dependabot は毎週月曜 09:00 JST に Actions の更新を確認し、minor�
 
 merge queue は Organization 所有リポジトリ向けの機能であり、現在の個人所有リポジトリでは利用できません。
 参照: [GitHub の merge queue 利用条件](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue)。
+
+## versionとRelease
+
+main向けPRは `package.json` のversionをbaseから変更し、SemVer 2.0.0形式を使います。
+増分の種類や大小の追加規則は設けません。`private: true` を維持し、npm公開は行いません。
+`pnpm check:version --base <baseの完全なcommit SHA>` で形式・差分を、`pnpm check:release` で判定と公開処理を検査できます。
+既存の必須check `CLI policy` はversion・通常6環境・SEA3環境の全成功を要求します。
+
+main pushで同じSHAの通常検査・Git検査・SEA単体起動検査が成功すると、実行ファイルとchecksumを `v<version>` のGitHub Releaseへ自動添付します。
+notesはGitHub公式APIで生成し、draft上でassetを照合してから公開します。PRや手動workflow_dispatchからは公開しません。
+同SHAの再実行もtagと実assetを照合し、tagの付け替えやassetの無確認上書きは行いません。
+手順と失敗時の対応、受入条件とテストの対応は [Release運用](docs/development/release.md) を参照してください。
