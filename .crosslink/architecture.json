@@ -89,7 +89,7 @@
       "../src/interfaces/cli/output.ts": "fc4142c616e50b4cb8408bff852515ef046296044bd40a4e50b21fde450ab7cd",
       "../src/interfaces/html/report-assets.ts": "0b334488d26cbb7482c79c59472e23c27ca7af16ad08046a306cc22ae181aa25",
       "../src/interfaces/html/report.test.ts": "bcc5cc78b44b953c848ac322afe8f31895a1a917a0b3a497d5b1990938c8d87c",
-      "../src/interfaces/html/report.ts": "1cf0ee6099b6f62060d7f03a7e91cbcef3e2c067e5e27039b51393d935e6c203"
+      "../src/interfaces/html/report.ts": "15ba17445aa0ead3a6c3aca879d6fcdc2aac38d7419631980ff5048e3ccd66b1"
     }
   }
 }

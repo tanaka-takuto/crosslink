@@ -28,7 +28,7 @@
       "../README.md": "8dda427c7c47574b8eb548ddd141fe78f6f9611eba692e407051e0de1b119d29",
       "../docs/requirements/html-report.md": "4116408f4c658e584fbfcba6c228704ba4ec99a9fe83e69f001a198612a491ba",
       "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
-      "../docs/specifications/html-report.md": "4f5551e8ee290d17c49fa5ea741cecbafee77d70f28d3454b3ab913d6dae7083",
+      "../docs/specifications/html-report.md": "41064c968fca8a978b918bd2421fb66504d910f00f0bca4d8e6fc06551230534",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
       "../src/application/report.test.ts": "9ecb7601aed9d320f046cee42210c3f8c96c36d80e96f8fb5658b00536c31b28",
@@ -41,7 +41,7 @@
       "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279",
       "../src/interfaces/html/report-assets.ts": "0b334488d26cbb7482c79c59472e23c27ca7af16ad08046a306cc22ae181aa25",
       "../src/interfaces/html/report.test.ts": "bcc5cc78b44b953c848ac322afe8f31895a1a917a0b3a497d5b1990938c8d87c",
-      "../src/interfaces/html/report.ts": "1cf0ee6099b6f62060d7f03a7e91cbcef3e2c067e5e27039b51393d935e6c203"
+      "../src/interfaces/html/report.ts": "15ba17445aa0ead3a6c3aca879d6fcdc2aac38d7419631980ff5048e3ccd66b1"
     }
   }
 }

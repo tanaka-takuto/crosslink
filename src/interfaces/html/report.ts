@@ -79,6 +79,7 @@ export function renderHtmlReport(report: HtmlReport): string {
 <div class="card-head"><h3>${escape(group.name)}</h3>${badge(state(group), stateClass(group))}</div>
 <p class="label">Reason to review together</p><p class="reason">${escape(group.reason || "Reason unavailable.")}</p>
 <p class="label">Management file</p><code class="path">${escape(group.file)}</code>${local(group.file)}
+<p class="muted"><small>Local links may be blocked by your browser or unavailable on another computer. Use the adjacent Copy path button or select the displayed path.</small></p>
 ${diagnostics(group.errors, "Inspection errors")}
 <p class="label">All member files (${group.files.length})</p>
 ${
