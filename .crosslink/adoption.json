@@ -18,11 +18,11 @@
   "confirmation": {
     "definition": "715caa47abd545b2a813a28b34571c5a2f6c81a7ace23c791eb3458a2120741c",
     "hashes": {
-      "../README.md": "5307892c2121963f8d12fb2e4497ddea369484e33be50075eb38b489f48e2aca",
+      "../README.md": "d42cf9fb3d38250f0cb7a845c3acd9c0ebaf0539da9714676f20665407d1db9d",
       "../docs/requirements/adoption.md": "a4b78e2327e0de04c76c7b573635240e520d53d9f7a06855e4a8e3cf6038566d",
       "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../package.json": "941b9d9c58e26b9875208370a9132e981b1e438118f7ceb03959ae01f3e05643",
+      "../package.json": "737779eceb6260d57ae9e67cf83b4d05d65d63b1cd7e902df41e690e53bcfefa",
       "../src/bootstrap.ts": "3dd19c1066d239fa819909c78d1b43b2102b76336fa0b86a408bb79af742ef36",
       "../src/cli.test.ts": "3f97c4afab218be434b4cf345852a2551c64d8c1bf5081f11eb63ebf8b2c94da",
       "../src/cli.ts": "010bb061bcdb2839ef01ac68722f15f568baf089a1257be272d009aedf78ea3e",
