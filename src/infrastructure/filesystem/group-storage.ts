@@ -32,7 +32,7 @@ export function withLocks<T>(files: string[], operation: () => T): T {
         if ((error as NodeJS.ErrnoException).code === "EEXIST")
           throw new CrosslinkError(
             "GROUP_LOCKED",
-            `別の更新が実行中です。更新していないことを確認してからロックを調べてください: ${file}.lock`,
+            `Another update is in progress. Ensure no update is running before inspecting the lock: ${file}.lock`,
           );
         throw error;
       }

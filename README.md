@@ -92,7 +92,23 @@ node dist/cli.js check --config path/to/config.json
 | 1          | 未確認のグループあり                                       |
 | 2          | 不正な構成、参照消失、読取不能、壊れた定義、引数エラーなど |
 
-登録グループが0件の場合は、その旨を通知して成功します。
+CLIの固定文言（help・結果・診断）は英語です。入力した名前・理由・パスはそのまま表示します。
+通常の `check` は confirmed / unconfirmed / invalid の件数と、未確認・不正なグループを表示します。
+確認済みグループの全ファイルは省略します。理由と全グループ・全ファイルの状態は `-v` / `--verbose` で確認します。
+`-v` は verbose の略です。`--json` は表示の省略に影響されず、全情報を出力します。
+
+```sh
+node dist/cli.js check --verbose
+node dist/cli.js check -v
+node dist/cli.js check --json
+node dist/cli.js --version
+```
+
+`--version` はcrosslink自身の `package.json` のversionだけを表示します。実行先プロジェクトのversionは参照しません。
+JSONの `version: 1` は出力形式の版であり、アプリのversionとは別です。
+`--` 以降はファイル名として扱うため、`--json`・`--version` などの名前のファイルも指定できます。
+
+登録グループが0件の場合は `No registered groups.` と通知して成功します。
 確認・編集などの操作は、操作が成功すれば0、失敗すれば2です。確認後の検査で新たな変更が見つかった場合は1になります。
 
 ## このリポジトリへの適用

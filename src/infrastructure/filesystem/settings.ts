@@ -22,17 +22,14 @@ export function loadSettings(cwd: string, config?: string): Settings {
   if (!config && !existsSync(file)) return { ...defaults };
   const value: unknown = JSON.parse(readFileSync(file, "utf8"));
   if (!value || typeof value !== "object" || Array.isArray(value))
-    throw new CrosslinkError("INVALID_CONFIG", "設定はJSONオブジェクトにしてください");
+    throw new CrosslinkError("INVALID_CONFIG", "Configuration must be a JSON object.");
   const data = value as Record<string, unknown>;
   if (Object.keys(data).some((key) => !["directoryName", "fileNameTemplate"].includes(key)))
-    throw new CrosslinkError("INVALID_CONFIG", "未対応の設定項目があります");
+    throw new CrosslinkError("INVALID_CONFIG", "Unsupported configuration fields.");
   const directoryName = data.directoryName ?? defaults.directoryName;
   const fileNameTemplate = data.fileNameTemplate ?? defaults.fileNameTemplate;
   if (typeof directoryName !== "string" || !safeName(directoryName))
-    throw new CrosslinkError(
-      "INVALID_CONFIG",
-      "directoryNameには単一のディレクトリ名を指定してください",
-    );
+    throw new CrosslinkError("INVALID_CONFIG", "directoryName must be a single directory name.");
   if (
     typeof fileNameTemplate !== "string" ||
     fileNameTemplate.split("{name}").length !== 2 ||
@@ -41,7 +38,7 @@ export function loadSettings(cwd: string, config?: string): Settings {
   )
     throw new CrosslinkError(
       "INVALID_CONFIG",
-      "fileNameTemplateには{name}を一つ含むJSONファイル名を指定してください",
+      "fileNameTemplate must be a JSON filename containing exactly one {name}.",
     );
   return { directoryName, fileNameTemplate };
 }
@@ -51,7 +48,7 @@ export function groupFile(name: string, cwd: string, settings: Settings): string
   if (!safeName(filename))
     throw new CrosslinkError(
       "INVALID_NAME",
-      "この名前から安全なファイル名を作れません。--fileで保存先を指定してください",
+      "Cannot create a safe filename from this name. Specify a destination with --file.",
     );
   return resolve(cwd, settings.directoryName, filename);
 }
@@ -72,7 +69,7 @@ export function findGroups(cwd: string, settings: Settings): string[] {
       )
         throw new CrosslinkError(
           "MANAGEMENT_SYMLINK",
-          `管理ファイル・管理ディレクトリのシンボリックリンクには対応していません: ${file}`,
+          `Symbolic links to management files or directories are not supported: ${file}`,
         );
     }
   }
