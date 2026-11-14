@@ -18,10 +18,10 @@
       "../.gitignore": "e4f32e3839615212b67b8f22700a773d20c377149d40e7d146169e1949c827b9",
       "../AGENTS.md": "c56f4a79be1d335e5084a951226d5503c3a8429c2cb054d13e4a15a5dee04c1c",
       "../CONTRIBUTING.md": "20232cc9ef288708ff3b284e3e281389bc98371246b9387f78227d6d57bfb365",
-      "../README.md": "aeedf21b4c8e05638249028959d9f7e1be4a4b777167fa7bccc10edfd5ca4e74",
-      "../docs/development/architecture.md": "5784a2a302272cd9b69980468167cea0562a02aa275c888df54706ec5f05c2b1",
+      "../README.md": "a13d4d7705c08c365921f2306bc8c6925f0202a374efee3fd3419b5e574727a2",
+      "../docs/development/architecture.md": "b0d41f10a8c8dec0a5bbab6a209bd372cef9b180dfc1926cfb23039ec14b8e38",
       "../docs/development/documentation.md": "88869892290c55753bde500e836cf825002217d47a0eb2864511d822a675cd58",
-      "../docs/requirements.md": "dfc0ac7656e80f84020c24582c12d87b646d190b7387930c33242d8f43588679"
+      "../docs/requirements.md": "45b228ee029126e0b77de3ab791d09c2095d452c97f1a1a7e81d7cfbe4035a8a"
     }
   }
 }

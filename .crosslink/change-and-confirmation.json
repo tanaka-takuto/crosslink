@@ -16,7 +16,7 @@
     "definition": "6b052ab11d39bde3ce6cd4d7b774638e11f55878e329a8f6030dee884ba6e929",
     "hashes": {
       "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
-      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
+      "../docs/specifications/cli.md": "1843ba439db30c635da2b791e36ce00f84e5e0f104793155920575f7e805fcf2",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
       "../src/application/group-operations.ts": "f34f1848537102cfb34949e3dcc0952537781ba4e4a8761c553ec8c364fbafc9",

@@ -24,7 +24,7 @@
     "definition": "0b53d55bf2e065be7c7e41ec0454d5fcd298c967a7974caa9c614dcd37e13ec3",
     "hashes": {
       "../docs/requirements/invalid-references.md": "5a5224eb6e1e66fce8e7fba896d3fc9155e5b4d987fd213459507d53a56372c6",
-      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
+      "../docs/specifications/cli.md": "1843ba439db30c635da2b791e36ce00f84e5e0f104793155920575f7e805fcf2",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/group-operations.test.ts": "7a06749ff6e355975942444db839263f692cd563a6fdca3b11452efdf66cd88e",
       "../src/application/group-operations.ts": "f34f1848537102cfb34949e3dcc0952537781ba4e4a8761c553ec8c364fbafc9",
