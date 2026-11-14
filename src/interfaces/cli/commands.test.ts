@@ -26,7 +26,7 @@ afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true
 it("notifies that there are no registered groups, without initialization", () => {
   const result = run(["check", "--json"], fixture());
   expect(result.code).toBe(0);
-  expect(result.report.messages).toContain("登録されたグループはありません");
+  expect(result.report.messages).toContain("No registered groups.");
 });
 it("creates, checks, explicitly confirms and detects later changes", () => {
   const root = fixture();
@@ -105,7 +105,7 @@ it("distinguishes no related group from no registered groups", () => {
   const root = fixture();
   run(["create", "api", "a", "b", "--reason", "理由"], root);
   expect(run(["related", "c"], root).report.messages).toContain(
-    "このファイルに関連するグループはありません",
+    "No groups are related to this file.",
   );
 });
 

@@ -19,7 +19,7 @@ TypeScriptで型検査し、JavaScriptのES Modulesへビルドする。テス�
 - ビルド
 - 本CLIによる自身の関連グループの検査
 
-実行テストでは、ビルド結果だけを一時ディレクトリへコピーし、pnpmやnode_modulesを使わずNode.jsから起動する。
+実行テストでは、ビルド結果のdistとアプリ自身のpackage.jsonを一時ディレクトリへコピーし、pnpmやnode_modulesを使わずNode.jsから起動する。
 製品CIはLinux・macOS・Windows、Node.js 24・26で実行する。
 Git/GitHub運用の検査は既存の `sh script/check-git.sh` で別途実行する。
 pre-commitはステージ済みの内容を取り出して整形・lintを検査し、そこからビルドしたCLIで確認状態を検査する。

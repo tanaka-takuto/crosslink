@@ -58,16 +58,18 @@ Windows PowerShellでは `Get-FileHash .\crosslink-win32-x64.exe -Algorithm SHA2
 通常の `pnpm test` / `pnpm check` はこのSEA専用テストを含まず、Node.js 24でも実行できる。
 リリース候補では通常検査に加えて、対象OS・CPUで `pnpm test:binary` を実行する。
 一つの環境での合格は他のOS・CPUの実行確認を保証しない。
+helpの固定文言は英語で、通常checkは状態別の件数を表示する。`check --verbose` / `check -v` では利用者の名前・理由・全ファイルを保持する。
+`--version` は実行先にpackage.jsonがない場合も、別versionのpackage.jsonや壊れた設定がある場合も、同梱したアプリのversionを表示する。
 
-| 検証する契約                                                     | 対応するテスト名                                                                           |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| OS/CPU別のファイル名とWindowsの拡張子                            | `names native artifacts by OS/CPU and gives Windows an exe suffix`                         |
-| 最終バイト列のSHA-256、Unixの実行権限、macOS署名                 | `ships a checksum of the final executable and native execution permissions`                |
-| 実行ファイルだけを持ち出し、空のPATHでhelpを起動                 | `runs help with only the executable and an empty PATH`                                     |
-| 実行先に別versionのpackage.jsonがあっても同梱versionを表示       | `reports its bundled version even when the working directory has a different package.json` |
-| 実ファイルの登録・検査・確認・変更検知・古いsnapshotの拒否、JSON | `creates, checks, confirms and detects changes on the real working filesystem`             |
-| 引数エラーの終了コード2とJSON標準出力                            | `keeps invocation errors as one JSON object on stdout without Node`                        |
+| 検証する契約                                                                | 対応するテスト名                                                                           |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| OS/CPU別のファイル名とWindowsの拡張子                                       | `names native artifacts by OS/CPU and gives Windows an exe suffix`                         |
+| 最終バイト列のSHA-256、Unixの実行権限、macOS署名                            | `ships a checksum of the final executable and native execution permissions`                |
+| 実行ファイルだけを持ち出し、空のPATHで英語helpを起動                        | `runs English help with only the executable and an empty PATH`                             |
+| 実行先に別versionのpackage.json・壊れた設定があっても同梱versionを表示      | `reports its bundled version even when the working directory has a different package.json` |
+| 実ファイルの登録・検査・確認・変更検知・古いsnapshot拒否、通常/verbose/JSON | `creates, checks, confirms and detects changes on the real working filesystem`             |
+| 引数エラーの終了コード2とJSON標準出力                                       | `keeps invocation errors as one JSON object on stdout without Node`                        |
 
 実行用fixtureはOSの一時ディレクトリへ置き、テスト後に削除する。リポジトリ内の検査対象探索へ試験用管理グループを混ぜない。
 
-参考：[Node.js 26.13.1 SEA公式資料](https://nodejs.org/api/single-executable-applications.html)、[利用方法](../../README.md)、[開発ツール](toolchain.md)。
+参考：[Node.js 26.13.1 SEA公式資料](https://nodejs.org/api/single-executable-applications.html)、[利用方法](../../README.md)、[開発ツール](toolchain.md)、[CLI仕様](../specifications/cli.md)。

@@ -21,16 +21,15 @@ function validateMembers(
     if (ports.files.isManagementFile(target, file, settings))
       throw new CrosslinkError(
         "MANAGEMENT_FILE",
-        `確認記録ファイルは関連対象にできません: ${member}`,
+        `Management files cannot be group members: ${member}`,
       );
     const current = ports.files.info(target);
-    if (!current.isFile)
-      throw new CrosslinkError("NOT_A_FILE", `通常のファイルではありません: ${member}`);
+    if (!current.isFile) throw new CrosslinkError("NOT_A_FILE", `Not a regular file: ${member}`);
     const identity = current.identity;
     if (identities.has(identity))
       throw new CrosslinkError(
         "DUPLICATE_MEMBER",
-        `同じ実ファイルが複数登録されています: ${member}`,
+        `The same physical file is registered more than once: ${member}`,
       );
     identities.add(identity);
   }
@@ -47,7 +46,7 @@ export function createGroup(
   validateMembers(file, prepared, ports, settings);
   ports.groups.withLocks([file], () => {
     if (ports.groups.exists(file))
-      throw new CrosslinkError("ALREADY_EXISTS", `管理ファイルは既に存在します: ${file}`);
+      throw new CrosslinkError("ALREADY_EXISTS", `Management file already exists: ${file}`);
     ports.groups.write(file, prepared, true);
   });
 }
@@ -79,18 +78,17 @@ export function confirmGroups(
   settings: Settings,
 ): void {
   files = [...new Set(files.map((file) => resolve(file)))].sort();
-  if (files.length === 0)
-    throw new CrosslinkError("NO_SELECTION", "確認対象のグループを指定してください");
+  if (files.length === 0) throw new CrosslinkError("NO_SELECTION", "Select the groups to confirm.");
   ports.groups.withLocks(files, () => {
     const prepared = files.map((file) => {
       const { group, raw } = ports.groups.read(file);
       const current = inspectGroup(file, ports, settings);
       if (current.errors.length || !current.snapshot)
-        throw new CrosslinkError("INVALID_GROUP", `検査できないグループは確認できません: ${file}`);
+        throw new CrosslinkError("INVALID_GROUP", `Cannot confirm an invalid group: ${file}`);
       if (current.snapshot !== expected.get(file))
         throw new CrosslinkError(
           "STALE_SNAPSHOT",
-          `検査後に状態が変わりました。もう一度検査してください: ${file}`,
+          `State changed after inspection. Run check again: ${file}`,
         );
       if (
         current.snapshot !==
@@ -102,7 +100,10 @@ export function confirmGroups(
           }),
         )
       )
-        throw new CrosslinkError("STALE_SNAPSHOT", `検査中に管理情報が変わりました: ${file}`);
+        throw new CrosslinkError(
+          "STALE_SNAPSHOT",
+          `Management data changed during inspection: ${file}`,
+        );
       group.confirmation = {
         definition: ports.digest(canonicalDefinition(group)),
         hashes: Object.fromEntries(current.files.map((entry) => [entry.path, entry.hash!])),
@@ -118,7 +119,7 @@ export function confirmGroups(
     } catch (error) {
       throw new CrosslinkError(
         "WRITE_FAILED",
-        `確認記録の保存に失敗しました。更新済み: ${JSON.stringify(updated)}。${error instanceof Error ? error.message : String(error)}`,
+        `Failed to save confirmation records. Already updated: ${JSON.stringify(updated)}. ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   });

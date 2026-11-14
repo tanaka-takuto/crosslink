@@ -8,12 +8,11 @@ export function digest(content: string | Buffer): string {
 
 export function hashFile(file: string): { hash: string; identity: string } {
   if (!statSync(file).isFile())
-    throw new CrosslinkError("NOT_A_FILE", `通常のファイルではありません: ${file}`);
+    throw new CrosslinkError("NOT_A_FILE", `Not a regular file: ${file}`);
   const fd = openSync(file, "r");
   try {
     const before = fstatSync(fd);
-    if (!before.isFile())
-      throw new CrosslinkError("NOT_A_FILE", `通常のファイルではありません: ${file}`);
+    if (!before.isFile()) throw new CrosslinkError("NOT_A_FILE", `Not a regular file: ${file}`);
     const hash = createHash("sha256"),
       buffer = Buffer.alloc(64 * 1024);
     let bytes: number;
@@ -25,7 +24,7 @@ export function hashFile(file: string): { hash: string; identity: string } {
       before.mtimeMs !== after.mtimeMs ||
       before.ctimeMs !== after.ctimeMs
     )
-      throw new CrosslinkError("FILE_CHANGED", `読取中に内容が変わりました: ${file}`);
+      throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
     return { hash: hash.digest("hex"), identity: realpathSync(file) };
   } finally {
     closeSync(fd);

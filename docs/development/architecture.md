@@ -7,6 +7,7 @@ src/
   domain/                    グループと確認状態のルール
   application/               検査・登録・編集・確認の手順とポート
   infrastructure/filesystem/ JSON・ハッシュ・ファイル保存・探索
+  infrastructure/version-reader.ts アプリ同梱メタデータの取得
   interfaces/cli/            引数・出力・終了コードへの変換
   bootstrap.ts               実アダプターをポートへ接続
   cli.ts                     実行ファイルの入口
@@ -16,21 +17,23 @@ src/
 
 ## 各層が所有する判断
 
-| 層             | 実装                                                                         | 責務                                                               |
-| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| domain         | [group.ts](../../src/domain/group.ts)                                        | 名前・理由・メンバーの条件、検査可能な構成、定義の正規化           |
-| domain         | [confirmation.ts](../../src/domain/confirmation.ts)                          | 確認記録と現在の組み合わせの比較、変更ファイルと確認状態           |
-| domain         | [errors.ts](../../src/domain/errors.ts)                                      | 共通の診断型とエラー表現                                           |
-| application    | [ports.ts](../../src/application/ports.ts)                                   | 保存・対象ファイル・設定・ハッシュ計算に必要な外部機能の契約       |
-| application    | [inspect-group.ts](../../src/application/inspect-group.ts)                   | 定義と全メンバーを取得し、ドメインの判定とsnapshotを組み立てる     |
-| application    | [group-operations.ts](../../src/application/group-operations.ts)             | 明示的な登録・編集・削除・確認、保存前の検証と楽観ロック           |
-| infrastructure | [group-format.ts](../../src/infrastructure/filesystem/group-format.ts)       | JSON形式、kind・version、確認記録の構文検証                        |
-| infrastructure | [management-file.ts](../../src/infrastructure/filesystem/management-file.ts) | 管理ファイルの読み込みと、関連対象から除外するファイルの識別       |
-| infrastructure | [content-hash.ts](../../src/infrastructure/filesystem/content-hash.ts)       | SHA-256計算、バイト列の読み取り、読取中の変更検出                  |
-| infrastructure | [group-storage.ts](../../src/infrastructure/filesystem/group-storage.ts)     | ファイル単位のロック、既存ファイルを上書きしない新規作成、置換保存 |
-| infrastructure | [settings.ts](../../src/infrastructure/filesystem/settings.ts)               | 設定の既定値と検証、保存名の生成、管理ディレクトリの探索           |
-| infrastructure | [adapter.ts](../../src/infrastructure/filesystem/adapter.ts)                 | 上記の実装をapplicationのポートとして提供                          |
-| interfaces     | [commands.ts](../../src/interfaces/cli/commands.ts)                          | 引数検証、操作の選択、逆引き、結果と終了コード、人間向け表示       |
+| 層             | 実装                                                                         | 責務                                                                     |
+| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| domain         | [group.ts](../../src/domain/group.ts)                                        | 名前・理由・メンバーの条件、検査可能な構成、定義の正規化                 |
+| domain         | [confirmation.ts](../../src/domain/confirmation.ts)                          | 確認記録と現在の組み合わせの比較、変更ファイルと確認状態                 |
+| domain         | [errors.ts](../../src/domain/errors.ts)                                      | 共通の診断型とエラー表現                                                 |
+| application    | [ports.ts](../../src/application/ports.ts)                                   | 保存・対象ファイル・設定・ハッシュ計算・アプリメタデータの外部機能の契約 |
+| application    | [inspect-group.ts](../../src/application/inspect-group.ts)                   | 定義と全メンバーを取得し、ドメインの判定とsnapshotを組み立てる           |
+| application    | [group-operations.ts](../../src/application/group-operations.ts)             | 明示的な登録・編集・削除・確認、保存前の検証と楽観ロック                 |
+| infrastructure | [group-format.ts](../../src/infrastructure/filesystem/group-format.ts)       | JSON形式、kind・version、確認記録の構文検証                              |
+| infrastructure | [management-file.ts](../../src/infrastructure/filesystem/management-file.ts) | 管理ファイルの読み込みと、関連対象から除外するファイルの識別             |
+| infrastructure | [content-hash.ts](../../src/infrastructure/filesystem/content-hash.ts)       | SHA-256計算、バイト列の読み取り、読取中の変更検出                        |
+| infrastructure | [group-storage.ts](../../src/infrastructure/filesystem/group-storage.ts)     | ファイル単位のロック、既存ファイルを上書きしない新規作成、置換保存       |
+| infrastructure | [settings.ts](../../src/infrastructure/filesystem/settings.ts)               | 設定の既定値と検証、保存名の生成、管理ディレクトリの探索                 |
+| infrastructure | [adapter.ts](../../src/infrastructure/filesystem/adapter.ts)                 | 上記の実装をapplicationのポートとして提供                                |
+| interfaces     | [commands.ts](../../src/interfaces/cli/commands.ts)                          | 引数検証、操作の選択、逆引き、結果と終了コード                           |
+| infrastructure | [version-reader.ts](../../src/infrastructure/version-reader.ts)              | 実行先CWDに依存せず同梱package.jsonからversionを取得                     |
+| interfaces     | [output.ts](../../src/interfaces/cli/output.ts)                              | 簡潔/verboseの英語テキスト表示、全情報を持つJSON結果からの変換           |
 
 ## 依存方向と処理
 
@@ -43,6 +46,11 @@ src/
 検査は読み取り用ポートから定義と全メンバーを取得し、ドメインへ現在の内容ハッシュを渡して判定する。
 確認操作は保存用ポートのロック内で再検査し、利用者のsnapshotと一致する場合だけ記録を更新する。
 検査だけで保存操作を呼ぶことはない。
+
+version取得は `ApplicationMetadata` ポートで表し、bootstrapが `version-reader` をCLIへ接続する。
+`version-reader` は自身のモジュール位置から同梱ルートの `package.json` を参照する。domainはFS・packageの知識を持たない。
+SEAでは同じ相対位置の `dist/**` とルートpackage.jsonをVFSへ保持することで、この取得方法を共有できる。
+`commands` は完全なReportを作り、`output` が通常checkの省略とverboseの詳細表示を担当する。JSONはReport全体を直接出力する。
 
 ドメインのテストはファイルやCLIを使わず、判断ルールを直接検証する。
 applicationの隣接テストは実際のファイルアダプターを組み合わせ、検査・保存・競合の手順を検証する。

@@ -43,13 +43,13 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
         if (ports.files.isManagementFile(target, file, settings))
           throw new CrosslinkError(
             "MANAGEMENT_FILE",
-            `確認記録ファイルは関連対象にできません: ${member}`,
+            `Management files cannot be group members: ${member}`,
           );
         const current = ports.files.hash(target);
         if (identities.has(current.identity))
           throw new CrosslinkError(
             "DUPLICATE_MEMBER",
-            `同じ実ファイルが複数登録されています: ${member}`,
+            `The same physical file is registered more than once: ${member}`,
           );
         identities.add(current.identity);
         entry.hash = current.hash;
@@ -57,7 +57,7 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
         result.errors.push(
           error instanceof CrosslinkError
             ? problem(error)
-            : { code: "FILE_UNREADABLE", message: `ファイルを読み取れません: ${member}` },
+            : { code: "FILE_UNREADABLE", message: `Cannot read file: ${member}` },
         );
       }
     }
@@ -69,7 +69,7 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
     result.files = confirmation.files;
     if (result.errors.length === 0) {
       if (ports.groups.readRaw(file) !== raw)
-        throw new CrosslinkError("GROUP_CHANGED", "検査中に管理ファイルが変わりました");
+        throw new CrosslinkError("GROUP_CHANGED", "Management file changed during inspection.");
       result.snapshot = ports.digest(
         JSON.stringify({ file, raw, files: result.files.map((entry) => [entry.path, entry.hash]) }),
       );

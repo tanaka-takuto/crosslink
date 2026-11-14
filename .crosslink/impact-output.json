@@ -14,22 +14,26 @@
     "../src/domain/confirmation.test.ts",
     "../src/domain/confirmation.ts",
     "../src/interfaces/cli/commands.test.ts",
-    "../src/interfaces/cli/commands.ts"
+    "../src/interfaces/cli/commands.ts",
+    "../src/interfaces/cli/output.test.ts",
+    "../src/interfaces/cli/output.ts"
   ],
   "confirmation": {
-    "definition": "5f2e83d759f1b3444844c908dbbd45b126dd27115b3a5bc1b75557dc7e1d6553",
+    "definition": "4b334071d24582ed2e3a9cfff345f72d55f0d1d777dd9909833918acbd346582",
     "hashes": {
-      "../docs/requirements/impact-output.md": "aa47022257658de5a03e0ebe74735db4f6ae65132110c89462c02f07e386a10e",
-      "../docs/specifications/cli.md": "106b5a88cf9dc9b23b9afc4fa598da7b23c18b0146f2b0b07db4f1b493c8ba8f",
+      "../docs/requirements/impact-output.md": "b70c98f067d27d2b41e82b09a9f8a4075d7b484b1805de0789a7a04b47154074",
+      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
       "../src/application/inspect-group.test.ts": "dc598accc155476c3c72524e2c134cb69a215d20433a681a924b69d8fd53750e",
-      "../src/application/inspect-group.ts": "102b14042254a32a8d52164133fc7d956cacf57982c31ddcdd273d2a827cb6d5",
-      "../src/cli.test.ts": "3f97c4afab218be434b4cf345852a2551c64d8c1bf5081f11eb63ebf8b2c94da",
-      "../src/cli.ts": "010bb061bcdb2839ef01ac68722f15f568baf089a1257be272d009aedf78ea3e",
+      "../src/application/inspect-group.ts": "00040fc56d4df9e5726e2ba67770ec0702e4e0990e7e45596a81379bb0c742fc",
+      "../src/cli.test.ts": "da6142b334ea9d5d5c19128806697bc4519102fa70baade49ec885f0ae169a93",
+      "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "9c78a168d7c9ca5757a84e2f7b19b1752aa3da3387c564e8472e1edf044e5c0c",
       "../src/domain/confirmation.ts": "e9b3a852bc535b5ac46c5580480cf3ac498422a8ab8ec8bb55fa8b65012cd29a",
-      "../src/interfaces/cli/commands.test.ts": "6c03adc0d5d04b16a107f710ede4e0c546dc9c0a62a5f2c576a0d82ad8a8cb09",
-      "../src/interfaces/cli/commands.ts": "7de9ad7444c34b1a1e0ee007c10cad0296d954a4bb5607871ed1f9d1c0d76192"
+      "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
+      "../src/interfaces/cli/commands.ts": "10e05a3bcb6c0e71f182f7482a7eac430706e486fdf8cf18f1fbad07011d81a2",
+      "../src/interfaces/cli/output.test.ts": "8b13510b1e0cbb8f0586561c9034ead3b15766c410d593ec6a1d4fb3d8652981",
+      "../src/interfaces/cli/output.ts": "fc4142c616e50b4cb8408bff852515ef046296044bd40a4e50b21fde450ab7cd"
     }
   }
 }

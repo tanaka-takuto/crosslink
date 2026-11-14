@@ -7,24 +7,32 @@
     "../.node-version",
     "../README.md",
     "../docs/development/distribution.md",
+    "../docs/requirements/adoption.md",
+    "../docs/specifications/cli.md",
     "../package.json",
     "../script/build-binary.test.ts",
     "../script/build-binary.ts",
     "../script/tsconfig.binary.json",
     "../script/vitest.binary.config.ts",
+    "../src/infrastructure/version-reader.test.ts",
+    "../src/infrastructure/version-reader.ts",
     "../tsconfig.build.json"
   ],
   "confirmation": {
-    "definition": "990d6b9eab2191517489c4f7b400cbbeaab9c4a46d9869d068eb081b0e25dfe8",
+    "definition": "b26d4a90ee247a4c49f80ceb4ebc50016b3e5a93d1668b46e7284410d3a32d6f",
     "hashes": {
       "../.node-version": "5c293036fc0a61ad76e15d85f454c3c7cec157e181e035b69f95058a2c239144",
-      "../README.md": "d42cf9fb3d38250f0cb7a845c3acd9c0ebaf0539da9714676f20665407d1db9d",
-      "../docs/development/distribution.md": "200b0cf63af2dbb5b03c0af9c785cb9f4c674f585a54b764d9ea2371f8a065ae",
+      "../README.md": "b9550971e75a24a2b4471755ae4fddc60e3a91da1c974ec41caf6414487af36b",
+      "../docs/development/distribution.md": "c85d349987beae90585e3cdfb966c7fa5aa19bd362159b40e032c99edb9df2c7",
+      "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
+      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
       "../package.json": "737779eceb6260d57ae9e67cf83b4d05d65d63b1cd7e902df41e690e53bcfefa",
-      "../script/build-binary.test.ts": "1f2de4a3564b85b52671b1776ceed94b9c4092734853a52b9a1233dbc5f1ac40",
+      "../script/build-binary.test.ts": "3956f4c7e07ce99b906707d95e8b11ba8da4c78ac509044c97db581c5e1ce7d3",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../script/tsconfig.binary.json": "e12f104f1862db90c9a5bcceb61fe181f3c4c280b39bd064448b05ff56765618",
       "../script/vitest.binary.config.ts": "1f89ce706d4445cdcf1252b486783c2ae89d1e130dbe086d2943290268a5d201",
+      "../src/infrastructure/version-reader.test.ts": "32043b35c52c58004f350886714683157f4bf4c6be6864424fbd7dd5a6eacd8c",
+      "../src/infrastructure/version-reader.ts": "cc151cc05025ce8608d2fda465ea9ef0a48ff539031fdf6d92e4d6486a59e837",
       "../tsconfig.build.json": "f22e8e2bd7ecb3a731cc91eb003ba374a1beddde0dfbf722d559647cd78812a0"
     }
   }

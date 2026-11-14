@@ -66,7 +66,7 @@ describe("standalone SEA", () => {
     }
   });
 
-  it("runs help with only the executable and an empty PATH", () => {
+  it("runs English help with only the executable and an empty PATH", () => {
     const { root, call } = fixture();
     expect(readdirSync(root)).toEqual([binaryName()]);
     expect(existsSync(join(root, "node_modules"))).toBe(false);
@@ -77,16 +77,30 @@ describe("standalone SEA", () => {
     expect(help.stdout).toContain("crosslink");
     expect(help.stdout).toContain("create");
     expect(help.stdout).toContain("confirm");
+    expect(help.stdout).toContain("-v, --verbose");
+    expect(help.stdout).toContain("--version");
+    expect(help.stdout).not.toMatch(/[ぁ-んァ-ヶ一-龯]/);
   });
 
   it("reports its bundled version even when the working directory has a different package.json", () => {
     const { root, call } = fixture();
-    writeFileSync(join(root, "package.json"), '{"version":"999.0.0","type":"commonjs"}');
     const version = JSON.parse(readFileSync(join(project, "package.json"), "utf8")).version;
+    expect(call("--version").stdout).toBe(`${version}\n`);
+    writeFileSync(join(root, "package.json"), '{"version":"999.0.0","type":"commonjs"}');
+    writeFileSync(join(root, "crosslink.config.json"), "{");
     const result = call("--version");
     expect(result.status, result.stderr).toBe(0);
     expect(result.stderr).toBe("");
-    expect(result.stdout.trim()).toBe(version);
+    expect(result.stdout).toBe(`${version}\n`);
+    const json = call("--version", "--json");
+    expect(json.status, json.stderr).toBe(0);
+    expect(json.stderr).toBe("");
+    expect(JSON.parse(json.stdout)).toMatchObject({
+      version: 1,
+      operation: "version",
+      result: "ok",
+      messages: [version],
+    });
   });
 
   it("creates, checks, confirms and detects changes on the real working filesystem", () => {
@@ -119,7 +133,14 @@ describe("standalone SEA", () => {
     expect(JSON.parse(clean.stdout).groups[0].status).toBe("confirmed");
     const human = call("check");
     expect(human.status, human.stderr).toBe(0);
-    expect(human.stdout).toContain("配布");
+    expect(human.stdout).toBe("Groups: 1 confirmed, 0 unconfirmed, 0 invalid.\n");
+    const detailed = call("check", "--verbose");
+    expect(detailed.status, detailed.stderr).toBe(0);
+    expect(detailed.stdout).toContain("Confirmed: 配布");
+    expect(detailed.stdout).toContain("Reason: 仕様との整合性");
+    expect(detailed.stdout).toContain("Unchanged: ../a.md");
+    expect(detailed.stdout).toContain("Unchanged: ../b.bin");
+    expect(call("check", "-v").stdout).toBe(detailed.stdout);
     writeFileSync(join(root, "b.bin"), "changed\n");
     const changed = call("check", "--json");
     expect(changed.status, changed.stderr).toBe(1);
@@ -129,6 +150,14 @@ describe("standalone SEA", () => {
     expect(
       changedReport.groups[0].files.filter((file: { changed: boolean }) => file.changed),
     ).toHaveLength(1);
+    const changedHuman = call("check");
+    expect(changedHuman.status, changedHuman.stderr).toBe(1);
+    expect(changedHuman.stdout).toContain("Groups: 0 confirmed, 1 unconfirmed, 0 invalid.");
+    expect(changedHuman.stdout).toContain("Unconfirmed: 配布");
+    expect(changedHuman.stdout).toContain("Use --verbose");
+    const verboseJson = call("check", "--verbose", "--json");
+    expect(verboseJson.status, verboseJson.stderr).toBe(1);
+    expect(JSON.parse(verboseJson.stdout)).toEqual(changedReport);
     expect(call("confirm", ".crosslink/配布.json", "--snapshot", snapshot).status).toBe(2);
     expect(readFileSync(join(root, "b.bin"), "utf8")).toBe("changed\n");
   });
