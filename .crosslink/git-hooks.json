@@ -26,7 +26,7 @@
       "../.oxlintrc.json": "69fafc2664ec67ae0538000b59b1f51c1410494d0e5e932de9819e702d1cbd3f",
       "../CONTRIBUTING.md": "20232cc9ef288708ff3b284e3e281389bc98371246b9387f78227d6d57bfb365",
       "../docs/development/toolchain.md": "8c309bfc30301830d214ee9d50ac4ffc2689ee4e710f5a1e590a2e67bf24ad3e",
-      "../package.json": "6b69a413ebf6ac1460aaef61f58630b8b67e3819d6a5bb4b98d6944f3653c408",
+      "../package.json": "737779eceb6260d57ae9e67cf83b4d05d65d63b1cd7e902df41e690e53bcfefa",
       "../script/check-staged.mjs": "b5a0ca99c149e33670f9232913fddcf2f36d36e521e2c1d2346fb3167431880e",
       "../script/check-staged.test.mjs": "1246b5a6be3f31746ed5d4d1dea86a619b19ab804c91e743955606ebf91df018",
       "../script/test-githooks.sh": "f7c7e1b86b8a40ebc249f3b275484b9174d9cac5a2b0d8adb3b346f4bc866ac0"
