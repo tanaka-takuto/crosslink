@@ -26,7 +26,12 @@ export function validateGroup(group: Group): void {
 
 export function inspectionProblems(group: Group): Problem[] {
   return group.files.length < 2
-    ? [{ code: "TOO_FEW_FILES", message: "At least two files are required for inspection." }]
+    ? [
+        {
+          code: "TOO_FEW_FILES",
+          message: `At least two files are required for inspection (found ${group.files.length}). Add member files to this group, then run check and read all related files before confirming.`,
+        },
+      ]
     : [];
 }
 

@@ -27,21 +27,21 @@
     "hashes": {
       "../README.md": "b9550971e75a24a2b4471755ae4fddc60e3a91da1c974ec41caf6414487af36b",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
-      "../docs/specifications/cli.md": "03f9c2fa0636d98e9f556e144e4702b3d5c938d9360493d673fdeb7c40917d3d",
+      "../docs/specifications/cli.md": "5b3983ad982dfc2cde25b3c7928c5af434655f614786c10e5ffdb75f73ade244",
       "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../package.json": "f5aa1589664e1e8cbfe42c988bb62f9819ec29899c9ba57e62dec361d2b31da6",
+      "../package.json": "133b0e2d86622ea88d9fbdffe73531655dc08bf3b43b145cf62c5dac2d85197c",
       "../script/build-binary.test.ts": "3956f4c7e07ce99b906707d95e8b11ba8da4c78ac509044c97db581c5e1ce7d3",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../src/application/ports.ts": "1ecf93c30a2e617eec52d349655ab476fa30516ac9e81d857b5ade222721fe30",
       "../src/bootstrap.ts": "399579a738936256c1ba9b80ea30f15fdc6516a3071267ec9966d7c076ed17df",
-      "../src/cli.test.ts": "da6142b334ea9d5d5c19128806697bc4519102fa70baade49ec885f0ae169a93",
+      "../src/cli.test.ts": "5a27752046e0750a623f0233a84a808497817fdda2ed15bc154c117f3fea3b2b",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
       "../src/infrastructure/filesystem/settings.ts": "ea1e15d4e66f20da09981ef9e5f051fca64878910a028ddb87efb55df50e983a",
       "../src/infrastructure/version-reader.test.ts": "32043b35c52c58004f350886714683157f4bf4c6be6864424fbd7dd5a6eacd8c",
       "../src/infrastructure/version-reader.ts": "cc151cc05025ce8608d2fda465ea9ef0a48ff539031fdf6d92e4d6486a59e837",
       "../src/interfaces/cli/commands.test.ts": "d659c5f32dc85fc5bc9661e97e5770d0e31dfeaacd38a32a945a0837d680efdb",
-      "../src/interfaces/cli/commands.ts": "10e05a3bcb6c0e71f182f7482a7eac430706e486fdf8cf18f1fbad07011d81a2"
+      "../src/interfaces/cli/commands.ts": "0e8cc69816950eedc30a5a7431b6eb5b132024550f74fa4eea5f27dcdf31c669"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@tanaka-takuto/crosslink",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Track explicit consistency checks across related files",
   "license": "MIT",
