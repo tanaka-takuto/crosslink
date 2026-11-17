@@ -45,6 +45,16 @@ function diagnostics(errors: Problem[], heading: string): string {
     ? `<div class="errors"><h3>${escape(heading)}</h3><ul>${errors.map((error) => `<li><strong>${escape(error.code)}</strong>: ${escape(error.message)}</li>`).join("")}</ul></div>`
     : "";
 }
+function roleLabel(role: "both" | "source-only" | "target-only"): string {
+  return { both: "Both", "source-only": "Source only", "target-only": "Target only" }[role];
+}
+function roleMeaning(role: "both" | "source-only" | "target-only"): string {
+  return role === "source-only"
+    ? "Changes here trigger target review; source context only."
+    : role === "target-only"
+      ? "Receives review when sources change; edits here do not trigger source review."
+      : "Changes here trigger target review; also receives review when sources change.";
+}
 function comparison(file: Inspection["files"][number], added = false): string {
   if (file.hash === null) return badge("Unreadable", "unreadable");
   if (added) return badge("Added", "added");
@@ -98,6 +108,24 @@ export function renderHtmlReport(report: HtmlReport): string {
 <p class="label">Management file</p><code class="path">${escape(group.file)}</code>${local(group.file)}
 <p class="muted"><small>Local links may be blocked by your browser or unavailable on another computer. Use the adjacent Copy path button or select the displayed path.</small></p>
 ${diagnostics(group.errors, "Inspection errors")}
+${
+  group.roles
+    ? `<section aria-label="Direction and review"><p class="label">Sources → targets</p><p>All sources trigger review of all targets within this group. No cross-group propagation.</p><p class="notice">Confirmed: No unreviewed source impact. Target-only content may differ from the last confirmation; its current content is not thereby confirmed.</p><p class="label">Source changes</p>${group.sourceChanges === null ? (group.errors.length ? `<p>Source comparison unavailable because inspection failed.</p>` : `<p>No baseline. Explicit review is required before confirmation.</p>`) : group.sourceChanges?.length ? `<ul>${group.sourceChanges.map((path) => `<li><code class="path">${escape(path)}</code>${group.removed?.some((entry) => entry.path === path) ? " (Removed source, historical context)" : ""}</li>`).join("")}</ul>` : `<p>No source changes since last confirmation.</p>`}<p class="label">Review targets (${group.reviewTargets === null ? "unavailable" : (group.reviewTargets?.length ?? 0)})</p>${group.reviewTargets === null ? `<p class="notice">Review targets could not be fully verified. Collected member files below may be incomplete.</p>` : ""}<p class="muted">These current targets require review when the group has unreviewed source impact or a new definition. Source-only files provide context.</p><ul>${(group.reviewTargets ?? []).map((path) => `<li><code class="path">${escape(path)}</code></li>`).join("")}</ul><details><summary>Selector roles</summary><ul>${group.files
+        .filter((entry) => Object.hasOwn(group.roles!.files, entry.path))
+        .map(
+          (entry) =>
+            `<li><code class="path">${escape(entry.path)}</code>: ${roleLabel(group.roles!.files[entry.path]!)}</li>`,
+        )
+        .join("")}${Object.entries(group.roles.globs)
+        .map(
+          ([pattern, role]) =>
+            `<li>Glob <code class="path">${escape(pattern)}</code>: ${roleLabel(role)}</li>`,
+        )
+        .join(
+          "",
+        )}</ul><p>Selectors without an override use Both. Overlapping source and target selectors resolve to Both.</p></details></section>`
+    : ""
+}
 ${group.globs?.length ? `<p class="label">Glob selectors</p><ul>${group.globs.map((pattern) => `<li><code class="path">${escape(pattern)}</code></li>`).join("")}</ul><p class="muted">Patterns resolve from the management file. Path changes appear as Added and Removed.</p>${incompleteMembers(group) ? `<p class="notice">Membership comparison unavailable. Current member list may be incomplete; resolve the inspection errors and regenerate.</p>` : group.added === null ? `<p class="muted">No baseline for membership comparison.</p>` : `<p class="muted">${group.added?.length ?? 0} added · ${group.removed?.length ?? 0} removed since last confirmation.</p>`}` : ""}
 <p class="label">${!group.reason ? "Member files unavailable" : incompleteMembers(group) ? `Collected member files (${group.files.length}, incomplete)` : `${group.globs?.length ? "Current" : "All"} member files (${group.files.length})`}</p>
 ${
@@ -105,12 +133,12 @@ ${
     ? `<ul class="members">${group.files
         .map((file) => {
           const path = resolve(dirname(group.file), file.path);
-          return `<li class="member"><div><a data-internal href="#${members.get(path)!.id}"><code>${escape(file.path)}</code></a><small class="path">${escape(path)}</small></div>${comparison(file, group.added?.includes(file.path))}</li>`;
+          return `<li class="member"><div><a data-internal href="#${members.get(path)!.id}"><code>${escape(file.path)}</code></a><small class="path">${escape(path)}</small></div>${file.role ? `<div>${badge(roleLabel(file.role))}<small>${roleMeaning(file.role)}</small></div>` : ""}${comparison(file, group.added?.includes(file.path))}</li>`;
         })
         .join("")}</ul>`
     : `<p class="muted">${!group.reason ? "Member list unavailable." : incompleteMembers(group) ? "Member paths are unavailable from this incomplete inspection." : "No registered member files."}</p>`
 }
-${group.removed?.length ? `<div class="removed-list"><p class="label">Removed since last confirmation (${group.removed.length})</p><p class="muted">These paths are from the last confirmation and are outside the current member set.</p><ul class="members">${group.removed.map((file) => `<li class="member"><div><code class="path">${escape(file.path)}</code><small class="path">${escape(resolve(dirname(group.file), file.path))}</small></div>${badge("Removed", "removed")}</li>`).join("")}</ul></div>` : ""}
+${group.removed?.length ? `<div class="removed-list"><p class="label">Removed since last confirmation (${group.removed.length})</p><p class="muted">These paths are from the last confirmation and are outside the current member set.</p><ul class="members">${group.removed.map((file) => `<li class="member"><div><code class="path">${escape(file.path)}</code><small class="path">${escape(resolve(dirname(group.file), file.path))}</small></div>${file.role ? badge(roleLabel(file.role)) : ""}${badge("Removed", "removed")}</li>`).join("")}</ul></div>` : ""}
 </article>`;
     })
     .join("\n");
@@ -121,7 +149,10 @@ ${group.removed?.length ? `<div class="removed-list"><p class="label">Removed si
 <ul class="direct">${entry.groups
         .map((index) => {
           const group = groups[index]!;
-          return `<li><a data-internal href="#group-${index + 1}">${escape(group.name)}</a> ${badge(state(group), stateClass(group))}<code class="path">${escape(group.file)}</code></li>`;
+          const role = group.files.find(
+            (entry) => resolve(dirname(group.file), entry.path) === path,
+          )?.role;
+          return `<li>${role ? `${badge(roleLabel(role))}<p>${roleMeaning(role)}</p>` : ""}<a data-internal href="#group-${index + 1}">${escape(group.name)}</a> ${badge(state(group), stateClass(group))}<code class="path">${escape(group.file)}</code></li>`;
         })
         .join("")}</ul></article>`,
     )
@@ -139,7 +170,7 @@ ${group.removed?.length ? `<div class="removed-list"><p class="label">Removed si
 <body><a class="skip" href="#groups">Skip to groups</a>
 <header><div class="wrap"><p class="eyebrow">crosslink / Review report</p><h1>Related files. Review context.</h1>
 <p><span class="snapshot">Snapshot</span><time datetime="${escape(report.generatedAt)}">${escape(report.generatedAt)}</time> · crosslink ${escape(report.applicationVersion)}</p>
-<p class="notice">This is a saved snapshot, not a live view. Regenerate the report after changes.<br>Confirmed means the inspected content matches a recorded confirmation; it does not guarantee semantic correctness.</p>
+<p class="notice">This is a saved snapshot, not a live view. Regenerate the report after changes.<br>${groups.some((group) => group.roles) ? "For directional groups, Confirmed means no unreviewed source impact; target-only content may differ from the last confirmation. For groups using Both throughout, all current paths and hashes match the record. Confirmation does not guarantee semantic correctness." : "Confirmed means the inspected content matches a recorded confirmation; it does not guarantee semantic correctness."}</p>
 <nav class="nav" aria-label="Report sections"><a href="#groups">Groups (${groups.length}${scope.complete ? "" : " found"})</a><a href="#files">File index (${incompleteIndex ? (members.size ? `${members.size} found, incomplete` : "incomplete") : members.size})</a><a href="#scope">Inspection scope</a></nav></div></header>
 <main class="wrap">
 <div class="stats" aria-label="Inspection summary"><div class="stat" data-total="${groups.length}"><strong>${groups.length}</strong><span>Total groups${scope.complete ? "" : " found before failure"}</span></div><div class="stat" data-confirmed="${confirmed}"><strong>${confirmed}</strong><span>Confirmed</span></div><div class="stat" data-unconfirmed="${unconfirmed}"><strong>${unconfirmed}</strong><span>Unconfirmed</span></div><div class="stat" data-invalid="${invalid}"><strong>${invalid}</strong><span>Groups with errors</span></div></div>
@@ -150,7 +181,7 @@ ${errors.length ? `<div class="errors"><h2>${errors.length} inspection ${errors.
 <div class="toolbar"><div class="search"><label for="search">Search groups</label><input type="search" id="search" placeholder="Name, reason or file path" aria-describedby="search-help"></div><label class="check"><input type="checkbox" id="attention">Needs attention</label><button type="button" id="reset">Clear filters</button><small id="search-help">Search names, reasons and paths. Needs attention includes unconfirmed groups and inspection errors.</small></div>
 <noscript><p class="notice">JavaScript is disabled. All groups and links remain readable; use your browser's Find command. Select a displayed path to copy it.</p></noscript>
 <p class="count" id="shown" role="status">${groups.length} of ${groups.length} groups shown.</p>
-<p class="legend">Changed / Unchanged compare content with the last confirmation. No baseline means no confirmation to compare. Unreadable means a file could not be inspected. Added / Removed compare paths with the last confirmation. Removed paths are listed separately from current members and the File index. Group confirmation also depends on the group definition and the complete path set.</p>
+<p class="legend">Changed / Unchanged compare content with the last confirmation. No baseline means no confirmation to compare. Unreadable means a file could not be inspected. Added / Removed compare paths with the last confirmation. Removed paths are listed separately from current members and the File index. For groups using Both throughout, confirmation depends on the definition and all current paths and hashes. Directional groups compare the definition and source paths and hashes; target-only differences can coexist with Confirmed.</p>
 ${groups.length ? `<div class="cards">${cards}</div>` : `<div class="empty">${scope.complete ? "No registered groups." : "No groups could be inspected. Resolve the inspection error and regenerate."}</div>`}</section>
 <section id="files" class="file-section" tabindex="-1" aria-labelledby="files-heading"><h2 id="files-heading">File index</h2><p class="muted">${incompleteIndex ? `${members.size ? `${members.size} member paths collected. ` : ""}${scope.complete ? "Some member lists could not be fully inspected." : "The target scope could not be fully inspected."} This index is incomplete; the total member file count is unknown.` : `All ${members.size} member files in this scope.`} Group filters above do not hide this index. Links list direct memberships only; they do not propagate confirmation.</p>
 ${incompleteIndex ? `<p class="notice">Resolve the inspection errors, run check again, and regenerate this report.</p>` : ""}

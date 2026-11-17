@@ -493,7 +493,18 @@ it("runs dynamic membership with only Node, from another CWD and without Git or 
   };
   confirm();
   writeFileSync(join(project, "adr/added.md"), "same");
-  expect(check().status).toBe(1);
+  // 失敗した同じ一回のJSON/標準エラー/プロセス結果を残し、再実行で置き換えない。
+  const addedCheck = check();
+  expect(
+    addedCheck.status,
+    JSON.stringify({
+      stdout: addedCheck.stdout,
+      stderr: addedCheck.stderr,
+      status: addedCheck.status,
+      signal: addedCheck.signal,
+      error: addedCheck.error?.message ?? null,
+    }),
+  ).toBe(1);
   const before = readFileSync(file, "utf8");
   expect(call("confirm", file, "--snapshot", review).status).toBe(2);
   expect(readFileSync(file, "utf8")).toBe(before);
@@ -649,3 +660,90 @@ it.skipIf(process.platform === "win32")(
     expect(readFileSync(target, "utf8")).toBe("a");
   },
 );
+
+it("runs directional roles with Node alone, preserves source context and rejects stale target snapshots", () => {
+  const { root, call } = fixture();
+  const diagnostic = (result: ReturnType<typeof call>) =>
+    JSON.stringify({
+      stdout: result.stdout,
+      stderr: result.stderr,
+      status: result.status,
+      signal: result.signal,
+      error: result.error?.message ?? null,
+    });
+  const invoke = (...args: string[]) => {
+    const result = call(...args);
+    expect(result.status, diagnostic(result)).toBe(0);
+    return result;
+  };
+  invoke("create", "direction", "a", "--role", "source-only", "--reason", "ADR → code");
+  invoke("add", ".crosslink/direction.json", "b", "--role", "target-only");
+  const review = join(root, "review.json"),
+    file = join(root, ".crosslink/direction.json");
+  writeFileSync(review, call("check", "--json").stdout);
+  invoke("confirm", "--all", "--snapshot", review);
+  const snapshot = call("check", "--json");
+  writeFileSync(review, snapshot.stdout);
+  writeFileSync(join(root, "b"), "target changed");
+  invoke("check");
+  const before = readFileSync(file, "utf8");
+  const stale = call("confirm", "--all", "--snapshot", review, "--json");
+  expect(stale.status, diagnostic(stale)).toBe(2);
+  expect(JSON.parse(stale.stdout).errors[0].code).toBe("STALE_SNAPSHOT");
+  expect(readFileSync(file, "utf8")).toBe(before);
+  const related = invoke("related", "b", "--json");
+  expect(JSON.parse(related.stdout).groups[0].reviewTargets).toEqual(["../b"]);
+  const verbose = invoke("check", "-v");
+  expect(verbose.stdout).toContain("Target only · Changed: ../b");
+  expect(verbose.stdout).toContain("No unreviewed source impact");
+  writeFileSync(join(root, "a"), "source changed");
+  const changed = call("check", "--json");
+  expect(changed.status, diagnostic(changed)).toBe(1);
+  expect(JSON.parse(changed.stdout).groups[0].sourceChanges).toEqual(["../a"]);
+  writeFileSync(join(root, "a"), "a");
+  invoke("check");
+});
+it("preserves a confirmed version 2 record produced by the 0.5.0 CLI byte for byte", () => {
+  const { root, call } = fixture();
+  writeFileSync(join(root, "b"), "b");
+  mkdirSync(join(root, ".crosslink"));
+  // main 3b8ed13 のCLIで生成・確認した記録。現実装で再生成しない。
+  const record =
+    JSON.stringify(
+      {
+        kind: "crosslink-group",
+        version: 2,
+        name: "legacy-glob",
+        reason: "old",
+        files: ["../a"],
+        globs: ["../b"],
+        confirmation: {
+          definition: "58ac3f10e8903005e6575302884c84e82ebf116b255642a7bc30875c59db962c",
+          hashes: {
+            "../a": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "../b": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+          },
+        },
+      },
+      null,
+      2,
+    ) + "\n";
+  const file = join(root, ".crosslink/legacy-glob.json");
+  writeFileSync(file, record);
+  const checked = call("check", "--json");
+  expect(checked.status, checked.stdout + checked.stderr).toBe(0);
+  expect(JSON.parse(checked.stdout).groups[0]).not.toHaveProperty("roles");
+  expect(readFileSync(file, "utf8")).toBe(record);
+});
+
+it("edits glob roles through a group parent alias using the same selectors as creation", () => {
+  const { root, call } = fixture();
+  expect(
+    call("create", "alias-base", "a", "--glob", "b", "--role", "source-only", "--reason", "alias")
+      .status,
+  ).toBe(0);
+  const file = join(root, ".crosslink/alias-base.json");
+  const result = call("role", file, "--glob", "b", "--role", "target-only", "--json");
+  expect(result.status, result.stdout + result.stderr).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).roles.globs).toEqual({ "../b": "target-only" });
+});

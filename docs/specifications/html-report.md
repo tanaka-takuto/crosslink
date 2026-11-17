@@ -69,3 +69,9 @@ File index内に総件数が不明であることと、`Resolve the inspection e
 正常に全範囲を列挙して0件だった場合は、従来の0件・空一覧表示を維持する。
 内容だけがFILE_UNREADABLEであっても、全メンバーパスが判明している場合は既知の対象件数を維持し、対象行をUnreadableにする。全エラーを一律の列挙未完了として扱わない。
 この表示変更でJSONトップ構造・終了コード・確認操作を変更しない。
+
+## 方向付きグループ
+
+v3ではSource only/Target only/Bothの実効役割を全unionの各行とFile indexの直接所属に表示する。グループにはSources → targets、Source changes、Review targetsを分けて提示する。source-onlyは文脈であり確認先ではない。target-onlyの逆引きには、source変更時に確認を受けるが自身の編集からsource確認は要求しないと示す。Removedは前回役割付きの履歴として現在一覧/索引から分離する。
+
+ConfirmedはNo unreviewed source impactと説明し、Target-only content may differと明記する。全bothの全集合/hash一致の説明はその範囲に限定する。Changed targetとConfirmedを矛盾した状態や現在内容の再確認済みと表示しない。初回比較元なし、検査不完全、読取不能、定義再検証不能は従来の診断を保つ。レポートはNot liveの読み取り専用snapshotで、意味的整合性の保証ではない。

@@ -344,3 +344,117 @@ it("refuses confirmation when the last match disappears even with two fixed file
   expect(() => confirm(file)).toThrow(expect.objectContaining({ code: "INVALID_GROUP" }));
   expect(readFileSync(file, "utf8")).toBe(before);
 });
+
+it.each(["a", "b"])(
+  "rejects stale directional %s snapshot with zero writes to every selected group",
+  (changed) => {
+    const { root, file, group } = fixture();
+    const direction: Group = {
+      ...group,
+      roles: { files: { "../a": "source-only", "../b": "target-only" }, globs: {} },
+    };
+    filesystemPorts.groups.write(file, direction);
+    confirm(file);
+    const other = join(root, ".crosslink/other.json");
+    createGroup(other, { ...group, name: "other" });
+    const files = [file, other];
+    const expected = new Map(files.map((f) => [f, inspectGroup(f).snapshot!]));
+    writeFileSync(join(root, changed), "changed");
+    const writes: string[] = [];
+    const ports = {
+      ...filesystemPorts,
+      groups: {
+        ...filesystemPorts.groups,
+        write: (f: string) => {
+          writes.push(f);
+        },
+      },
+    };
+    expect(() => operations.confirmGroups(files, expected, ports, defaults)).toThrow(
+      expect.objectContaining({ code: "STALE_SNAPSHOT" }),
+    );
+    expect(writes).toEqual([]);
+    expect(inspectGroup(file).status).toBe(changed === "a" ? "unconfirmed" : "confirmed");
+    expect(inspectGroup(other).status).toBe("unconfirmed");
+  },
+);
+
+it.each(["both", "source-only", "target-only"] as const)(
+  "binds all %s glob content and membership to confirmation snapshots",
+  (role) => {
+    for (const mutation of ["content", "add", "delete", "rename"] as const) {
+      const { root, file, group } = fixture();
+      mkdirSync(join(root, "members"));
+      writeFileSync(join(root, "members/one"), "same");
+      writeFileSync(join(root, "members/two"), "same");
+      filesystemPorts.groups.write(file, {
+        ...group,
+        files: ["../a"],
+        globs: ["../members/*"],
+        roles: { files: {}, globs: role === "both" ? {} : { "../members/*": role } },
+      });
+      confirm(file);
+      const expected = new Map([[file, inspectGroup(file).snapshot!]]),
+        before = readFileSync(file, "utf8");
+      if (mutation === "content") writeFileSync(join(root, "members/one"), "changed");
+      if (mutation === "add") writeFileSync(join(root, "members/new"), "same");
+      if (mutation === "delete") rmSync(join(root, "members/one"));
+      if (mutation === "rename") renameSync(join(root, "members/one"), join(root, "members/new"));
+      expect(inspectGroup(file).status, `${role}: ${mutation}`).toBe(
+        role === "target-only" ? "confirmed" : "unconfirmed",
+      );
+      const writes: string[] = [];
+      const ports = {
+        ...filesystemPorts,
+        groups: {
+          ...filesystemPorts.groups,
+          write: (f: string) => {
+            writes.push(f);
+          },
+        },
+      };
+      expect(
+        () => operations.confirmGroups([file], expected, ports, defaults),
+        `${role}: ${mutation}`,
+      ).toThrow(expect.objectContaining({ code: "STALE_SNAPSHOT" }));
+      expect(writes).toEqual([]);
+      expect(readFileSync(file, "utf8")).toBe(before);
+    }
+  },
+);
+it.each(["a", "b"])("revalidates an earlier directional %s before any batch write", (path) => {
+  const { root, file, group } = fixture();
+  filesystemPorts.groups.write(file, {
+    ...group,
+    roles: { files: { "../a": "source-only", "../b": "target-only" }, globs: {} },
+  });
+  for (const member of ["c", "d"]) writeFileSync(join(root, member), member);
+  const later = join(root, ".crosslink/z.json");
+  createGroup(later, { ...group, name: "later", files: ["../c", "../d"] });
+  const expected = new Map([file, later].map((f) => [f, inspectGroup(f).snapshot!]));
+  const writes: string[] = [];
+  let changed = false;
+  const ports = {
+    ...filesystemPorts,
+    groups: {
+      ...filesystemPorts.groups,
+      write: (f: string) => {
+        writes.push(f);
+      },
+    },
+    files: {
+      ...filesystemPorts.files,
+      hash: (f: string) => {
+        if (!changed && f === join(root, "c")) {
+          changed = true;
+          writeFileSync(join(root, path), "changed during later inspection");
+        }
+        return filesystemPorts.files.hash(f);
+      },
+    },
+  };
+  expect(() => operations.confirmGroups([file, later], expected, ports, defaults)).toThrow(
+    expect.objectContaining({ code: "STALE_SNAPSHOT" }),
+  );
+  expect(writes).toEqual([]);
+});

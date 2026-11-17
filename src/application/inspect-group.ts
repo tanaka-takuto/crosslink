@@ -1,7 +1,13 @@
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { inspectConfirmation } from "../domain/confirmation.js";
 import { CrosslinkError, problem, type Problem } from "../domain/errors.js";
-import { canonicalDefinition, inspectionProblems, type Group } from "../domain/group.js";
+import {
+  canonicalDefinition,
+  inspectionProblems,
+  type Group,
+  type Role,
+  type SelectorRoles,
+} from "../domain/group.js";
 import type { CrosslinkPorts, Settings } from "./ports.js";
 
 export interface Inspection {
@@ -9,10 +15,13 @@ export interface Inspection {
   name: string;
   reason: string;
   status: "confirmed" | "unconfirmed";
-  files: { path: string; hash: string | null; changed: boolean | null }[];
+  files: { path: string; hash: string | null; changed: boolean | null; role?: Role }[];
+  roles?: SelectorRoles;
+  sourceChanges?: string[] | null;
+  reviewTargets?: string[] | null;
   globs?: string[];
   added?: string[] | null;
-  removed?: { path: string; hash: string }[] | null;
+  removed?: { path: string; hash: string; role?: Role }[] | null;
   membershipComplete?: boolean;
   /** False if reading or revalidating the definition failed; omitted on ordinary inspections. */
   definitionVerified?: boolean;
@@ -24,10 +33,30 @@ function selectMembers(
   file: string,
   group: Group,
   ports: CrosslinkPorts,
-): { members: string[]; errors: Problem[]; complete: boolean } {
-  const members = [...group.files];
-  const selected = new Set(members.map((member) => resolve(dirname(file), member)));
+): { members: string[]; roles: Map<string, Role>; errors: Problem[]; complete: boolean } {
+  const role = (kind: "files" | "globs", selector: string): Role =>
+    group.roles && Object.hasOwn(group.roles[kind], selector)
+      ? group.roles[kind][selector]!
+      : "both";
+  const selected = new Map<string, { path: string; role: Role }>();
+  const add = (member: string, role: Role) => {
+    const target = resolve(dirname(file), member);
+    const old = selected.get(target);
+    if (old) old.role = old.role === role ? role : "both";
+    else selected.set(target, { path: relative(dirname(file), target).split(sep).join("/"), role });
+  };
   const errors: Problem[] = [];
+  const fixed = new Set<string>();
+  for (const member of group.files) {
+    const path = resolve(dirname(file), member);
+    if (fixed.has(path))
+      errors.push({
+        code: "DUPLICATE_MEMBER",
+        message: `The same resolved fixed path is registered more than once: ${member}`,
+      });
+    fixed.add(path);
+    add(member, role("files", member));
+  }
   let complete = true;
   for (const pattern of [...new Set(group.globs ?? [])].sort()) {
     try {
@@ -37,18 +66,33 @@ function selectMembers(
           code: "GLOB_NO_MATCH",
           message: `Glob matches no files: ${pattern}. Add matching files or edit the selector, then run check and read all related files before confirming.`,
         });
-      for (const match of matches) {
-        const target = resolve(dirname(file), match);
-        if (selected.has(target)) continue;
-        selected.add(target);
-        members.push(relative(dirname(file), target).split(sep).join("/"));
-      }
+      for (const match of matches) add(match, role("globs", pattern));
     } catch (error) {
       complete = false;
       errors.push(problem(error));
     }
   }
-  return { members: members.sort(), errors, complete };
+  // 固定パスの表記は既存形式のhash key契約を保つ。同じ解決パスのglob重複は一件。
+  for (const member of group.files) selected.get(resolve(dirname(file), member))!.path = member;
+  const entries = [...selected.values()].sort((a, b) =>
+    a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
+  );
+  return {
+    members: entries.map((entry) => entry.path),
+    roles: new Map(entries.map((entry) => [entry.path, entry.role])),
+    errors,
+    complete,
+  };
+}
+
+export function inspectionSnapshot(file: string, raw: string, files: Inspection["files"]): string {
+  return JSON.stringify({
+    file,
+    raw,
+    files: files.map((entry) =>
+      entry.role ? [entry.path, entry.hash, entry.role] : [entry.path, entry.hash],
+    ),
+  });
 }
 
 export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Settings): Inspection {
@@ -70,6 +114,21 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
     result.reason = group.reason;
     const selection = selectMembers(file, group, ports);
     result.errors.push(...selection.errors, ...inspectionProblems(group, selection.members.length));
+    if (group.roles) {
+      result.roles = group.roles;
+      result.reviewTargets = selection.members.filter(
+        (path) => selection.roles.get(path) !== "source-only",
+      );
+      for (const [side, excluded] of [
+        ["source", "target-only"],
+        ["target", "source-only"],
+      ] as const)
+        if (!selection.members.some((path) => selection.roles.get(path) !== excluded))
+          result.errors.push({
+            code: "MISSING_ROLE",
+            message: `At least one effective ${side} is required. Edit selector roles, then inspect and read all related files before confirming.`,
+          });
+    }
     if (group.globs?.length) {
       result.globs = [...new Set(group.globs)].sort();
       result.membershipComplete = selection.complete;
@@ -83,7 +142,11 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
           ? Object.keys(baseline)
               .sort()
               .filter((member) => !selection.members.includes(member))
-              .map((path) => ({ path, hash: baseline[path]! }))
+              .map((path) => ({
+                path,
+                hash: baseline[path]!,
+                ...(group.roles ? { role: group.confirmation!.roles![path]! } : {}),
+              }))
           : null;
     }
     const identities = new Set<string>();
@@ -93,6 +156,7 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
         path: member,
         hash: null,
         changed: null,
+        ...(group.roles ? { role: selection.roles.get(member)! } : {}),
       };
       result.files.push(entry);
       try {
@@ -128,7 +192,30 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
       result.files,
     );
     result.files = confirmation.files;
-    if (group.globs?.length && result.errors.length === 0) {
+    if (group.roles) {
+      const baseline = group.confirmation;
+      result.sourceChanges =
+        baseline && selection.complete
+          ? [
+              ...new Set([
+                ...result.files
+                  .filter(
+                    (entry) =>
+                      entry.role !== "target-only" &&
+                      (entry.changed !== false || baseline.roles![entry.path] === "target-only"),
+                  )
+                  .map((entry) => entry.path),
+                ...Object.keys(baseline.hashes).filter(
+                  (path) =>
+                    baseline.roles![path] !== "target-only" &&
+                    (!selection.members.includes(path) ||
+                      selection.roles.get(path) === "target-only"),
+                ),
+              ]),
+            ].sort()
+          : null;
+    }
+    if ((group.globs?.length || group.roles) && result.errors.length === 0) {
       // 後の対象を読んでいる間に、先に読んだ内容が変わった場合も拒否する。
       for (const entry of result.files) {
         try {
@@ -157,11 +244,14 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
       const after = selectMembers(file, group, ports);
       if (
         after.errors.length ||
-        JSON.stringify(after.members) !== JSON.stringify(selection.members)
+        JSON.stringify([...after.roles]) !== JSON.stringify([...selection.roles])
       ) {
-        result.membershipComplete = false;
-        result.added = null;
-        result.removed = null;
+        if (group.globs?.length) result.membershipComplete = false;
+        if (group.globs?.length) {
+          result.added = null;
+          result.removed = null;
+        }
+        if (group.roles) result.sourceChanges = null;
         result.errors.push(...after.errors, {
           code: "MEMBERS_CHANGED",
           message:
@@ -174,17 +264,19 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
       if (ports.groups.readRaw(file) !== raw)
         throw new CrosslinkError("GROUP_CHANGED", "Management file changed during inspection.");
       delete result.definitionVerified;
-      result.snapshot = ports.digest(
-        JSON.stringify({ file, raw, files: result.files.map((entry) => [entry.path, entry.hash]) }),
-      );
+      result.snapshot = ports.digest(inspectionSnapshot(file, raw, result.files));
       result.status = confirmation.status;
     }
   } catch (error) {
     result.errors.push(problem(error));
+    if (result.definitionVerified === false && result.roles) result.sourceChanges = null;
     if (result.definitionVerified === false && result.globs) {
       result.added = null;
       result.removed = null;
     }
   }
+  if (result.roles && result.errors.length) result.sourceChanges = null;
+  if (result.roles && (result.definitionVerified === false || result.membershipComplete === false))
+    result.reviewTargets = null;
   return result;
 }

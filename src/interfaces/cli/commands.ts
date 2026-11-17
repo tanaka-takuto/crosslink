@@ -1,8 +1,8 @@
 import { storedGlob } from "./member-path.js";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
 import { CrosslinkError, problem } from "../../domain/errors.js";
-import type { Group } from "../../domain/group.js";
+import type { Group, Role } from "../../domain/group.js";
 import { inspectGroup } from "../../application/inspect-group.js";
 import {
   confirmGroups,
@@ -80,6 +80,7 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
 const help = [
   "crosslink create <name> [files...] [--glob <pattern>] --reason <reason> [--file <destination>]",
   "crosslink add|remove <group-file> [files...] [--glob <pattern>]",
+  "crosslink role <group-file> [files...] [--glob <pattern>] --role both|source-only|target-only",
   "crosslink set <group-file> [--name <name>] [--reason <reason>]",
   "crosslink delete <group-file>",
   "crosslink migrate <legacy-group-file>",
@@ -89,6 +90,8 @@ const help = [
   "crosslink confirm <group-file> --snapshot <report.json>",
   "crosslink confirm --all --snapshot <report.json>",
   "crosslink --version",
+  "Roles: create/add accept --role for all selected files and globs (default: both). Use role to edit registered selectors.",
+  "Source changes require review of targets; target-only changes do not invalidate confirmation. No file is edited automatically.",
   "Glob selectors: repeat --glob and quote patterns to prevent shell expansion.",
   "Options: --config <config.json>, --json, -h, --help",
   "Check details: -v, --verbose (all groups, files and reasons)",
@@ -110,6 +113,7 @@ export function run(
       options: {
         file: { type: "string", multiple: true },
         glob: { type: "string", multiple: true },
+        role: { type: "string" },
         reason: { type: "string" },
         name: { type: "string" },
         format: { type: "string" },
@@ -137,8 +141,9 @@ export function run(
         },
       };
     const allowed: Record<string, string[]> = {
-      create: ["reason", "file", "glob"],
-      add: ["glob"],
+      create: ["reason", "file", "glob", "role"],
+      add: ["glob", "role"],
+      role: ["glob", "role"],
       remove: ["glob"],
       set: ["name", "reason"],
       delete: [],
@@ -157,6 +162,55 @@ export function run(
           "INVALID_ARGUMENT",
           `Option --${key} is not supported by this command.`,
         );
+    if (
+      values.role !== undefined &&
+      (!["both", "source-only", "target-only"].includes(values.role) ||
+        tokens.filter((token) => token.kind === "option" && token.name === "role").length !== 1)
+    )
+      throw new CrosslinkError(
+        "INVALID_ARGUMENT",
+        "Use --role both, source-only or target-only exactly once.",
+      );
+    if (operation === "role" && values.role === undefined)
+      throw new CrosslinkError(
+        "INVALID_ARGUMENT",
+        "Provide --role both, source-only or target-only.",
+      );
+    const assign = (group: Group, files: string[], globs: string[]) => {
+      if (values.role !== undefined) {
+        if (values.role === "both" && !group.roles) return group;
+        group.roles ??= { files: {}, globs: {} };
+        const hadOverrides =
+          Object.keys(group.roles.files).length + Object.keys(group.roles.globs).length > 0;
+        for (const [kind, selectors] of [
+          ["files", files],
+          ["globs", globs],
+        ] as const)
+          for (const selector of selectors) {
+            if (values.role === "both") delete group.roles[kind][selector];
+            else
+              group.roles[kind] = {
+                ...group.roles[kind],
+                [selector]: values.role as Exclude<Role, "both">,
+              };
+          }
+        if (
+          hadOverrides &&
+          !Object.keys(group.roles.files).length &&
+          !Object.keys(group.roles.globs).length
+        )
+          delete group.roles;
+      }
+      return group;
+    };
+    // 実行CWDと管理ファイルの親がOSの別名表記でも、同じselector基準へ変換する。
+    // 管理ファイルそのものはcanonical化せず、symlink管理JSONの拒否を維持する。
+    const patternFor = (pattern: string, file: string) =>
+      storedGlob(
+        pattern,
+        resolve(ports.files.canonical(dirname(file)), basename(file)),
+        ports.files.canonical(cwd),
+      );
     if (operation === "version") {
       if (positionals.length || values.config !== undefined)
         throw new CrosslinkError(
@@ -253,10 +307,9 @@ export function run(
         name: positional[0],
         reason: values.reason,
         files: positional.slice(1).map((member) => stored(member, file, cwd)),
-        ...(values.glob
-          ? { globs: values.glob.map((pattern) => storedGlob(pattern, file, cwd)) }
-          : {}),
+        ...(values.glob ? { globs: values.glob.map((pattern) => patternFor(pattern, file)) } : {}),
       };
+      assign(group, group.files, group.globs ?? []);
       createGroup(file, group, ports, settings);
     } else {
       file = resolve(cwd, positional[0]);
@@ -284,7 +337,7 @@ export function run(
       )
         throw new CrosslinkError("INVALID_ARGUMENT", "Provide --name or --reason.");
       if (
-        (operation === "add" || operation === "remove") &&
+        (operation === "add" || operation === "remove" || operation === "role") &&
         positional.length < 2 &&
         !values.glob?.length
       )
@@ -300,14 +353,30 @@ export function run(
               reason: values.reason ?? group.reason,
             };
           const members = positional.slice(1);
-          const patterns = values.glob?.map((pattern) => storedGlob(pattern, file, cwd)) ?? [];
+          const patterns = values.glob?.map((pattern) => patternFor(pattern, file)) ?? [];
           const globs = group.globs ?? [];
-          if (operation === "add")
-            return {
-              ...group,
-              files: [...group.files, ...members.map((member) => stored(member, file, cwd))],
-              globs: [...new Set([...globs, ...patterns])],
-            };
+          if (operation === "add") {
+            for (const pattern of patterns) {
+              const oldRole =
+                group.roles && Object.hasOwn(group.roles.globs, pattern)
+                  ? group.roles.globs[pattern]
+                  : "both";
+              if (globs.includes(pattern) && values.role !== undefined && values.role !== oldRole)
+                throw new CrosslinkError(
+                  "ROLE_EDIT_REQUIRED",
+                  "Use the role command to change an existing glob role.",
+                );
+            }
+            return assign(
+              {
+                ...group,
+                files: [...group.files, ...members.map((member) => stored(member, file, cwd))],
+                globs: [...new Set([...globs, ...patterns])],
+              },
+              members.map((member) => stored(member, file, cwd)),
+              patterns.filter((pattern) => !globs.includes(pattern)),
+            );
+          }
           const targets = new Set(
             members.map((member) => ports.files.canonical(resolve(cwd, member))),
           );
@@ -321,6 +390,16 @@ export function run(
           for (const pattern of patterns)
             if (!globs.includes(pattern))
               throw new CrosslinkError("NOT_A_MEMBER", `Not a registered glob: ${pattern}`);
+          const registered = group.files.filter((member) =>
+            targets.has(ports.files.canonical(resolve(dirname(file), member))),
+          );
+          if (operation === "role") return assign(group, registered, patterns);
+          if (group.roles) {
+            for (const member of registered) delete group.roles.files[member];
+            for (const pattern of patterns) delete group.roles.globs[pattern];
+            if (!Object.keys(group.roles.files).length && !Object.keys(group.roles.globs).length)
+              delete group.roles;
+          }
           return {
             ...group,
             globs: globs.filter((pattern) => !patterns.includes(pattern)),
@@ -331,6 +410,7 @@ export function run(
         },
         ports,
         settings,
+        operation === "role" || operation === "add",
       );
     }
     const current = inspectGroup(file, ports, settings);

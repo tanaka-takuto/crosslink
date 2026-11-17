@@ -56,9 +56,13 @@ function diagnostics(report, snapshot) {
     if (group.status === "confirmed" && group.errors.length === 0) continue;
     console.error(`${group.errors.length ? "Invalid" : "Unconfirmed"}: ${group.name} (${relative(snapshot, group.file)})`);
     console.error(`  Reason: ${group.reason}`);
+    if (group.roles) {
+      console.error(`  Source changes: ${group.sourceChanges === null ? "comparison unavailable" : group.sourceChanges?.join(", ") || "none"}`);
+      console.error(`  Review targets: ${group.reviewTargets === null ? "unavailable" : group.reviewTargets?.join(", ") || "none"}`);
+    }
     for (const file of group.files)
       console.error(
-        `  ${file.changed === null ? "New" : file.changed ? "Changed" : "Unchanged"}: ${file.path}`,
+        `  ${file.role ? file.role + " · " : ""}${file.changed === null ? "New" : file.changed ? "Changed" : "Unchanged"}: ${file.path}`,
       );
     for (const error of group.errors) console.error(`  ${error.code}: ${error.message}`);
   }

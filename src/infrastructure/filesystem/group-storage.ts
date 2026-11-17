@@ -55,12 +55,13 @@ export function saveGroup(file: string, group: Group, create = false): void {
     try {
       const stored: GroupRecord = {
         kind: groupKind,
-        version: group.globs?.length ? 2 : 1,
+        version: group.roles ? 3 : group.globs?.length ? 2 : 1,
         name: group.name,
         reason: group.reason,
         files: group.files,
       };
       if (group.globs?.length) stored.globs = [...new Set(group.globs)].sort();
+      if (group.roles) stored.roles = group.roles;
       if (group.confirmation) stored.confirmation = group.confirmation;
       writeFileSync(fd, JSON.stringify(stored, null, 2) + "\n");
       fsyncSync(fd);

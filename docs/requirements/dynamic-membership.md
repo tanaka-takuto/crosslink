@@ -11,7 +11,7 @@
 - リテラルの個別指定と、永続化したglobを併用する。既存files中のメタ文字をglobと推測しない。
 - 検査ごとにglobを展開する。最低2件は重複しない実ファイルの件数で判定し、各globが0一致ならほかに固定ファイルがあっても検査を失敗させる。0/1件や0一致の定義は保存できる。
 - 重なるglobと個別指定の同じパスを一つにする。個別指定同士の重複、別パスが同じrealpathを参照する重複はエラーとする。
-- 確認済みには、選択定義・現在の全パス集合・各内容ハッシュの一致を必要とする。同内容の追加・renameも未確認になる。
+- 既定の全bothでの確認済みには、選択定義・現在の全パス集合・各内容ハッシュの一致を必要とする。同内容の追加・renameも未確認になる。
 - 以前globに一致して現在は外れたパスをremoved、新しく一致したパスをaddedとして提示する。renameは削除と追加で表す。初回の比較元なしと区別する。
 - 個別指定の消失は従来どおり検査不能とする。globからの通常削除では、有効な構成が残れば新しい集合を明示確認できる。
 - 検査時と確認時に再展開し、途中の集合・内容変更や古いsnapshotを拒否する。失敗では確認記録を更新しない。検査だけでは定義・記録・対象を書き換えない。
@@ -70,3 +70,5 @@
 - 定義の最終再確認に失敗した場合は、列挙が完了していても追加/削除の比較を未検証として扱い、確定した増減やNo baselineと混同しない。上記HTML要件の実ENOENT/EACCES統合テストと、`invalidates membership comparison when the final readable definition differs` (inspect-group.test.ts)で確認する。
 - Windows絶対globのliteral prefixがOS aliasを含んでも実対象を選択する。既存`supports absolute patterns and parent paths without interpreting metacharacters in cwd`の2件期待を全OSで維持する。`matches existing native literal aliases without folding case or changing returned paths` (glob-members.test.ts)、`uses one physical identity for existing native path aliases` (content-hash.test.ts)、`protects prospective glob outputs through existing native directory aliases` (application/report.test.ts)でcase/dirlink/重複識別/未作成出力保護を確認する。aliasが存在しないFSの0一致と、存在するOS別表記を区別し、実Windows CIは別に確認する。
 - staged symlinkはcheckout表現だけでなくindex mode120000/targetの意図を再現し、不能なら専用診断で拒否する。`core.symlinks=falseでもindexの外部file linkを専用診断で拒否し全入力を保持する`、`core.symlinks=falseでもindexの内部file linkを通常ファイル本文と混同せず検査する`、`core.symlinks=falseでもindexのdirectory linkへ降りず0一致を正しく診断する`、`core.symlinks=falseでもstatic-onlyの外部file link互換を維持する`、`core.symlinks=falseで再現不能なindex mode120000を同hashの通常ファイルとして通さない` (check-staged.test.mjs)で実Git/実hookとindex/worktree/設定不変を確認する。
+
+明示したroleを含む動的集合は[検出元と確認先](directional-impact.md)に従う。target-onlyの通常集合変化は失効させないが、各glob0一致・union二件未満・片側欠落は拒否する。snapshotは[方向付き確認](directional-confirmation.md)の全union比較を適用する。

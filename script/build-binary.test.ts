@@ -232,3 +232,25 @@ it("preserves a literal leading bang CWD with a parent management file in standa
   expect(call("add", "../bang.record", "--glob", "*.md", "--json").status).toBe(0);
   confirm();
 });
+
+it("tracks directional source impact and rejects stale target snapshots with SEA alone", () => {
+  const { root, call } = fixture();
+  mkdirSync(join(root, "adr"));
+  writeFileSync(join(root, "adr/a.md"), "ADR"); writeFileSync(join(root, "code"), "code");
+  expect(call("create", "direction", "--glob", "adr/*.md", "--role", "source-only", "--reason", "impact").status).toBe(0);
+  expect(call("add", ".crosslink/direction.json", "code", "--role", "target-only").status).toBe(0);
+  const review = join(root, "snapshot.json"), file = join(root, ".crosslink/direction.json");
+  const confirm = () => { writeFileSync(review, call("check", "--json").stdout); const result = call("confirm", "--all", "--snapshot", review); expect(result.status, result.stdout + result.stderr).toBe(0); };
+  confirm(); writeFileSync(review, call("check", "--json").stdout);
+  writeFileSync(join(root, "code"), "target changed");
+  expect(call("check").status).toBe(0);
+  const before = readFileSync(file, "utf8");
+  expect(call("confirm", "--all", "--snapshot", review).status).toBe(2); expect(readFileSync(file, "utf8")).toBe(before);
+  writeFileSync(join(root, "adr/new.md"), "ADR"); expect(call("check").status).toBe(1);
+  expect(call("report", "--format", "html", "--output", "direction.html").status).toBe(1);
+  const html = readFileSync(join(root, "direction.html"), "utf8"); expect(html).toContain("Source only"); expect(html).toContain("Review targets");
+  confirm(); expect(call("check").status).toBe(0);
+  expect(call("role", file, "code", "--role", "source-only").status).toBe(0);
+  expect(call("role", file, "--glob", "adr/*.md", "--role", "target-only").status).toBe(0);
+  confirm(); writeFileSync(join(root, "code"), "new source changed"); expect(call("check").status).toBe(1);
+});

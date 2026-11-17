@@ -31,3 +31,5 @@
 ## globによる動的集合
 
 個別指定に加え、[動的集合の要件](dynamic-membership.md)を適用する。globの追加・削除は現在の全パス集合として比較し、通常のglob削除は個別指定の消失とは区別する。選択・検査・確認・表示の受入条件と対応テストは同文書を正本とする。
+
+明示した片方向の役割・失効条件は[検出元と確認先](directional-impact.md)、全union snapshotとConfirmed表示は[方向付き確認](directional-confirmation.md)に従う。既定の全bothの挙動は維持する。
