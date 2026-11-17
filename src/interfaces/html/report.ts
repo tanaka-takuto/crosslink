@@ -52,9 +52,18 @@ function comparison(file: Inspection["files"][number], added = false): string {
   return file.changed ? badge("Changed", "changed") : badge("Unchanged");
 }
 
+function incompleteMembers(group: Inspection): boolean {
+  // 有効な定義は空でないreasonを持つ。未取得の定義は既存の空reasonで区別する。
+  return (
+    group.membershipComplete === false ||
+    !group.reason ||
+    group.errors.some((error) => error.code === "GROUP_CHANGED")
+  );
+}
+
 export function renderHtmlReport(report: HtmlReport): string {
   const { groups, errors } = report.inspection;
-  const incompleteMembership = groups.some((group) => group.membershipComplete === false);
+  const incompleteIndex = !report.scope.complete || groups.some(incompleteMembers);
   const invalid = groups.filter((group) => group.errors.length).length;
   const confirmed = groups.filter(
     (group) => !group.errors.length && group.status === "confirmed",
@@ -89,7 +98,7 @@ export function renderHtmlReport(report: HtmlReport): string {
 <p class="muted"><small>Local links may be blocked by your browser or unavailable on another computer. Use the adjacent Copy path button or select the displayed path.</small></p>
 ${diagnostics(group.errors, "Inspection errors")}
 ${group.globs?.length ? `<p class="label">Glob selectors</p><ul>${group.globs.map((pattern) => `<li><code class="path">${escape(pattern)}</code></li>`).join("")}</ul><p class="muted">Patterns resolve from the management file. Path changes appear as Added and Removed.</p>${group.membershipComplete === false ? `<p class="notice">Membership comparison unavailable. Current member list may be incomplete; resolve the inspection errors and regenerate.</p>` : group.added === null ? `<p class="muted">No baseline for membership comparison.</p>` : `<p class="muted">${group.added?.length ?? 0} added · ${group.removed?.length ?? 0} removed since last confirmation.</p>`}` : ""}
-<p class="label">${group.globs?.length ? "Current" : "All"} member files (${group.files.length})</p>
+<p class="label">${!group.reason ? "Member files unavailable" : incompleteMembers(group) ? `Collected member files (${group.files.length}, incomplete)` : `${group.globs?.length ? "Current" : "All"} member files (${group.files.length})`}</p>
 ${
   group.files.length
     ? `<ul class="members">${group.files
@@ -98,7 +107,7 @@ ${
           return `<li class="member"><div><a data-internal href="#${members.get(path)!.id}"><code>${escape(file.path)}</code></a><small class="path">${escape(path)}</small></div>${comparison(file, group.added?.includes(file.path))}</li>`;
         })
         .join("")}</ul>`
-    : `<p class="muted">${group.reason ? "No registered member files." : "Member list unavailable."}</p>`
+    : `<p class="muted">${!group.reason ? "Member list unavailable." : incompleteMembers(group) ? "Member paths are unavailable from this incomplete inspection." : "No registered member files."}</p>`
 }
 ${group.removed?.length ? `<div class="removed-list"><p class="label">Removed since last confirmation (${group.removed.length})</p><p class="muted">These paths are from the last confirmation and are outside the current member set.</p><ul class="members">${group.removed.map((file) => `<li class="member"><div><code class="path">${escape(file.path)}</code><small class="path">${escape(resolve(dirname(group.file), file.path))}</small></div>${badge("Removed", "removed")}</li>`).join("")}</ul></div>` : ""}
 </article>`;
@@ -130,7 +139,7 @@ ${group.removed?.length ? `<div class="removed-list"><p class="label">Removed si
 <header><div class="wrap"><p class="eyebrow">crosslink / Review report</p><h1>Related files. Review context.</h1>
 <p><span class="snapshot">Snapshot</span><time datetime="${escape(report.generatedAt)}">${escape(report.generatedAt)}</time> · crosslink ${escape(report.applicationVersion)}</p>
 <p class="notice">This is a saved snapshot, not a live view. Regenerate the report after changes.<br>Confirmed means the inspected content matches a recorded confirmation; it does not guarantee semantic correctness.</p>
-<nav class="nav" aria-label="Report sections"><a href="#groups">Groups (${groups.length})</a><a href="#files">File index (${members.size})</a><a href="#scope">Inspection scope</a></nav></div></header>
+<nav class="nav" aria-label="Report sections"><a href="#groups">Groups (${groups.length}${scope.complete ? "" : " found"})</a><a href="#files">File index (${incompleteIndex ? (members.size ? `${members.size} found, incomplete` : "incomplete") : members.size})</a><a href="#scope">Inspection scope</a></nav></div></header>
 <main class="wrap">
 <div class="stats" aria-label="Inspection summary"><div class="stat" data-total="${groups.length}"><strong>${groups.length}</strong><span>Total groups${scope.complete ? "" : " found before failure"}</span></div><div class="stat" data-confirmed="${confirmed}"><strong>${confirmed}</strong><span>Confirmed</span></div><div class="stat" data-unconfirmed="${unconfirmed}"><strong>${unconfirmed}</strong><span>Unconfirmed</span></div><div class="stat" data-invalid="${invalid}"><strong>${invalid}</strong><span>Groups with errors</span></div></div>
 <section class="scope" id="scope"><details><summary>Inspection scope and snapshot details</summary><dl><dt>Working directory</dt><dd class="path">${escape(scope.cwd)}</dd><dt>Selection</dt><dd>${scopeDescription}${scope.selection ? `<ul>${scope.selection.map((path) => `<li class="path">${escape(path)}</li>`).join("")}</ul>` : " under the working directory, excluding .git, node_modules and directory symlinks."}</dd><dt>Configuration path</dt><dd class="path">${escape(scope.configuration)}</dd><dt>Inspection completed</dt><dd>${scope.complete ? "Yes. Individual group errors are listed separately." : "No. The target scope could not be fully inspected."}</dd></dl></details></section>
@@ -142,9 +151,10 @@ ${errors.length ? `<div class="errors"><h2>${errors.length} inspection ${errors.
 <p class="count" id="shown" role="status">${groups.length} of ${groups.length} groups shown.</p>
 <p class="legend">Changed / Unchanged compare content with the last confirmation. No baseline means no confirmation to compare. Unreadable means a file could not be inspected. Added / Removed compare paths with the last confirmation. Removed paths are listed separately from current members and the File index. Group confirmation also depends on the group definition and the complete path set.</p>
 ${groups.length ? `<div class="cards">${cards}</div>` : `<div class="empty">${scope.complete ? "No registered groups." : "No groups could be inspected. Resolve the inspection error and regenerate."}</div>`}</section>
-<section id="files" class="file-section" tabindex="-1" aria-labelledby="files-heading"><h2 id="files-heading">File index</h2><p class="muted">${incompleteMembership ? `At least ${members.size} member paths found. This index may be incomplete because member enumeration failed.` : `All ${members.size} member files in this scope.`} Group filters above do not hide this index. Links list direct memberships only; they do not propagate confirmation.</p>
+<section id="files" class="file-section" tabindex="-1" aria-labelledby="files-heading"><h2 id="files-heading">File index</h2><p class="muted">${incompleteIndex ? `${members.size ? `${members.size} member paths collected. ` : ""}${scope.complete ? "Some member lists could not be fully inspected." : "The target scope could not be fully inspected."} This index is incomplete; the total member file count is unknown.` : `All ${members.size} member files in this scope.`} Group filters above do not hide this index. Links list direct memberships only; they do not propagate confirmation.</p>
+${incompleteIndex ? `<p class="notice">Resolve the inspection errors, run check again, and regenerate this report.</p>` : ""}
 <p class="notice">Local links point to the original absolute paths and may not open on another computer or in every browser. Use Copy path, or select the displayed path if clipboard access is unavailable.</p>
-${members.size ? `<div class="cards">${fileCards}</div>` : `<p class="empty">No member files available in this scope.</p>`}</section>
+${members.size ? `<div class="cards">${fileCards}</div>` : `<p class="empty">${incompleteIndex ? "Member paths are unavailable from this incomplete inspection." : "No member files available in this scope."}</p>`}</section>
 <footer>Read-only report · No file contents or diffs are embedded. Files and confirmation records are not updated by this report. <a href="#groups">Back to groups</a></footer>
 </main><script>${behavior}</script></body></html>\n`;
 }

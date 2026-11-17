@@ -205,3 +205,30 @@ it("tracks glob additions, deletion and same-content rename with SEA alone and a
   confirm();
   expect(check().status).toBe(0);
 });
+
+it("preserves a literal leading bang CWD with a parent management file in standalone SEA", () => {
+  const { root, executable } = fixture(), cwd = join(root, "!inputs");
+  mkdirSync(cwd);
+  for (const file of ["a.md", "b.md"]) writeFileSync(join(cwd, file), "ADR\n");
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !["path", "node_path", "node_options"].includes(key.toLowerCase())));
+  const call = (...args: string[]) => spawnSync(executable, args, { cwd, encoding: "utf8", env: { ...env, PATH: "", NODE_PATH: "", NODE_OPTIONS: "" } });
+  const created = call("create", "bang", "--file", "../bang.record", "--glob", "*.md", "--reason", "literal CWD", "--json");
+  expect(created.status, created.stdout + created.stderr).toBe(0);
+  const record = join(root, "bang.record"), review = join(root, "review.json");
+  expect(JSON.parse(readFileSync(record, "utf8"))).toMatchObject({ files: [], globs: ["./!inputs/*.md"] });
+  function confirm() {
+    const checked = call("check", "--file", "../bang.record", "--json");
+    expect(checked.status).toBe(1);
+    expect(JSON.parse(checked.stdout).groups[0].files).toHaveLength(2);
+    writeFileSync(review, checked.stdout);
+    const result = call("confirm", "../bang.record", "--snapshot", "../review.json", "--json");
+    expect(result.status, result.stdout + result.stderr).toBe(0);
+  }
+  confirm();
+  const before = readFileSync(record, "utf8");
+  expect(call("add", "../bang.record", "--glob", "!*.md", "--json").status).toBe(2);
+  expect(readFileSync(record, "utf8")).toBe(before);
+  expect(call("remove", "../bang.record", "--glob", "*.md", "--json").status).toBe(0);
+  expect(call("add", "../bang.record", "--glob", "*.md", "--json").status).toBe(0);
+  confirm();
+});

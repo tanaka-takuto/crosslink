@@ -37,3 +37,25 @@ it("allows parent paths after literal CWD metacharacters while retaining their l
     "../base[{]1[}]/../adr/*.md",
   );
 });
+
+it.each([
+  { paths: posix, file: "/repo/group.json", cwd: "/repo/!inputs" },
+  { paths: win32, file: "C:\\repo\\group.json", cwd: "C:\\repo\\!inputs" },
+])("preserves a literal leading bang introduced by CWD rebasing: $cwd", ({ paths, file, cwd }) => {
+  const pattern = storedGlob("*.md", file, cwd, paths);
+  expect(() => validateGlob(pattern)).not.toThrow();
+  expect(pattern).toBe("./!inputs/*.md");
+});
+
+it("keeps direct exclusion input rejected while preserving explicitly relative literal bangs", () => {
+  expect(() => storedGlob("!*.md", "/repo/group.json", "/repo/!inputs", posix)).toThrow();
+  expect(() =>
+    validateGlob(storedGlob("./!name.md", "/repo/group.json", "/repo", posix)),
+  ).not.toThrow();
+  expect(storedGlob("*.md", "/repo/.crosslink/group.json", "/repo/!inputs", posix)).toBe(
+    "../!inputs/*.md",
+  );
+  expect(storedGlob("*.md", "/repo/group.json", "/repo/docs/!inputs", posix)).toBe(
+    "docs/!inputs/*.md",
+  );
+});

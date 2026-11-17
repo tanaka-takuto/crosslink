@@ -27,7 +27,7 @@
   "confirmation": {
     "definition": "5038dbddd75cf2873b77c3654863528797e3fefc3376b989f2a75fc2020a161c",
     "hashes": {
-      "../docs/requirements/html-report.md": "79538afc84d311249e7e835a3a064af7a6601bd9a16d81ea01ec6374bd740c39",
+      "../docs/requirements/html-report.md": "affbb6428af139d36ae0c3ee585d7520ed3060c88cd91b96bde01b7b7dc948db",
       "../docs/requirements/impact-output.md": "aa9db39fd62375ac777507b9674f8d5d9dc178a5077428cb3cff0c9c7147a2ce",
       "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
@@ -35,7 +35,7 @@
       "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
-      "../src/cli.test.ts": "e318d1b5b28ccd716de969be5aa5e7ac44738c88f6ad44e0c3acd0e9205f01a7",
+      "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "8aa547ad7d41e3a0c1c85da179758d1b834db30638de615445f4fad26ff472c4",
@@ -44,8 +44,8 @@
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
       "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd",
       "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
-      "../src/interfaces/html/report.test.ts": "5b0a0e655a793bdd70a303cf8ff5775f9964b1f393cdbe7911ef7f9e3e41ccc3",
-      "../src/interfaces/html/report.ts": "5decbb5ae1d66fcce0101501f5ccbb10250c84ab0f9e4f3b24bee54e8d76d385"
+      "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
+      "../src/interfaces/html/report.ts": "5f5afbd39e9174ce85d5013edc58bd073399011061a357dd2368e4287f0e3f55"
     }
   }
 }

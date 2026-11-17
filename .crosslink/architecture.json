@@ -67,7 +67,7 @@
       "../src/application/report.test.ts": "df0ae5a0116d4d2e145d373fbb568f8af413d01e928d52093790da9cf8e113b1",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
-      "../src/cli.test.ts": "e318d1b5b28ccd716de969be5aa5e7ac44738c88f6ad44e0c3acd0e9205f01a7",
+      "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "8aa547ad7d41e3a0c1c85da179758d1b834db30638de615445f4fad26ff472c4",
@@ -95,13 +95,13 @@
       "../src/infrastructure/version-reader.ts": "cc151cc05025ce8608d2fda465ea9ef0a48ff539031fdf6d92e4d6486a59e837",
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
       "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c",
-      "../src/interfaces/cli/member-path.test.ts": "573ef1765c3214da56568aa320f09c424d230d51519e77b82dbf0d5c60592a35",
-      "../src/interfaces/cli/member-path.ts": "bace94cfd208e4ef96161f2fc677db11b84ca80dd30205819c406357face9193",
+      "../src/interfaces/cli/member-path.test.ts": "c939775534b33c157bab7098ba66c817fc9504b11cac434da713d4f317dc0483",
+      "../src/interfaces/cli/member-path.ts": "c028d67de6ad1c5aef52a0af8115de49ebe0bd36b2190183e8f24efc79cb908e",
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
       "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd",
       "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
-      "../src/interfaces/html/report.test.ts": "5b0a0e655a793bdd70a303cf8ff5775f9964b1f393cdbe7911ef7f9e3e41ccc3",
-      "../src/interfaces/html/report.ts": "5decbb5ae1d66fcce0101501f5ccbb10250c84ab0f9e4f3b24bee54e8d76d385"
+      "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
+      "../src/interfaces/html/report.ts": "5f5afbd39e9174ce85d5013edc58bd073399011061a357dd2368e4287f0e3f55"
     }
   }
 }

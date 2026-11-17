@@ -27,7 +27,7 @@
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
       "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
       "../package.json": "1373120e2df0275272f0f119d69edfa1f51827f0dc34edab046a9318c3d202bf",
-      "../script/build-binary.test.ts": "bb03256e9f8e69ada938d42bb63916c9ec4f43a782034efe2e207c2c43006804",
+      "../script/build-binary.test.ts": "2f3fbcbbde2d1cad23322bf95dbe2175dea8e23008ba7eb1a5e4445bce7cfbb5",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../script/tsconfig.binary.json": "e12f104f1862db90c9a5bcceb61fe181f3c4c280b39bd064448b05ff56765618",
       "../script/vitest.binary.config.ts": "1f89ce706d4445cdcf1252b486783c2ae89d1e130dbe086d2943290268a5d201",

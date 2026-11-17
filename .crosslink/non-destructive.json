@@ -22,7 +22,7 @@
   "confirmation": {
     "definition": "aaa7003361bb4f782ac745bf58cd1919934b90f6eaa9dc3e3b76ab0a3f1c38e9",
     "hashes": {
-      "../docs/requirements/html-report.md": "79538afc84d311249e7e835a3a064af7a6601bd9a16d81ea01ec6374bd740c39",
+      "../docs/requirements/html-report.md": "affbb6428af139d36ae0c3ee585d7520ed3060c88cd91b96bde01b7b7dc948db",
       "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
       "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",

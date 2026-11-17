@@ -51,12 +51,12 @@
     "hashes": {
       "../CONTRIBUTING.md": "0d383e64a4d495bddd88a26be472f1ad0e34b330d8336976e6d9a4d0b5d3b977",
       "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
-      "../docs/requirements/dynamic-membership.md": "4a729d7663ab4d86a84134f3e4515a8155725c87aaba0996071142bd12b3b787",
+      "../docs/requirements/dynamic-membership.md": "7b37b794f26e64e28202508c21f67031ff6cca5419d4cf341c2e6a28f11ff665",
       "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
-      "../docs/specifications/glob-selection.md": "c77bf3fdd518b576a40282f1fdc5ebb161bf5e0b9c95a5fd958649a1ebe883cb",
-      "../docs/specifications/html-report.md": "ae00768b685e2f752a378046c60b615681c3378b5f8e271cfca761a8d71c7b36",
+      "../docs/specifications/glob-selection.md": "25bd51b512292299464e4194d7e412db3f925624282ae45865158b43054987f3",
+      "../docs/specifications/html-report.md": "4c60450d91835c424eae939fde0f71b17ffa3a9e0869743fd112071acdc4df0e",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../script/build-binary.test.ts": "bb03256e9f8e69ada938d42bb63916c9ec4f43a782034efe2e207c2c43006804",
+      "../script/build-binary.test.ts": "2f3fbcbbde2d1cad23322bf95dbe2175dea8e23008ba7eb1a5e4445bce7cfbb5",
       "../script/check-staged.mjs": "198ab9a3cda1be64b68733b6bd347bec92945cfa93f099bdced3425185f26594",
       "../script/check-staged.test.mjs": "1abb315876c78eb3e5cba72c610dc7c597881b659374042a8ecc69863894bf43",
       "../src/application/group-operations.test.ts": "cd2b01e9435964fecdb25911014fdc77371c7918b0681637ecf15ff2954e7c8a",
@@ -66,7 +66,7 @@
       "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",
       "../src/application/report.test.ts": "df0ae5a0116d4d2e145d373fbb568f8af413d01e928d52093790da9cf8e113b1",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
-      "../src/cli.test.ts": "e318d1b5b28ccd716de969be5aa5e7ac44738c88f6ad44e0c3acd0e9205f01a7",
+      "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "8aa547ad7d41e3a0c1c85da179758d1b834db30638de615445f4fad26ff472c4",
       "../src/domain/glob.test.ts": "c227b6d1b0c2c953165b983ca5d1a994642b7a29045a1195f36989d3017ab8f1",
@@ -83,13 +83,13 @@
       "../src/infrastructure/filesystem/group-storage.ts": "84eae7c8722de6f0a68db010628f0504c3e24a648cd7d4ac0f5ab6a3dc4976ff",
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
       "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c",
-      "../src/interfaces/cli/member-path.test.ts": "573ef1765c3214da56568aa320f09c424d230d51519e77b82dbf0d5c60592a35",
-      "../src/interfaces/cli/member-path.ts": "bace94cfd208e4ef96161f2fc677db11b84ca80dd30205819c406357face9193",
+      "../src/interfaces/cli/member-path.test.ts": "c939775534b33c157bab7098ba66c817fc9504b11cac434da713d4f317dc0483",
+      "../src/interfaces/cli/member-path.ts": "c028d67de6ad1c5aef52a0af8115de49ebe0bd36b2190183e8f24efc79cb908e",
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
       "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd",
       "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
-      "../src/interfaces/html/report.test.ts": "5b0a0e655a793bdd70a303cf8ff5775f9964b1f393cdbe7911ef7f9e3e41ccc3",
-      "../src/interfaces/html/report.ts": "5decbb5ae1d66fcce0101501f5ccbb10250c84ab0f9e4f3b24bee54e8d76d385"
+      "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
+      "../src/interfaces/html/report.ts": "5f5afbd39e9174ce85d5013edc58bd073399011061a357dd2368e4287f0e3f55"
     }
   }
 }

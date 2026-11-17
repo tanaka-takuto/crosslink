@@ -258,6 +258,100 @@ it("labels incomplete glob membership without asserting additions or removals", 
   );
   expect(html).toContain("Membership comparison unavailable");
   expect(html).toContain("Current member list may be incomplete");
-  expect(html).toContain("This index may be incomplete because member enumeration failed");
+  expect(html).toContain("This index is incomplete; the total member file count is unknown");
   expect(html).not.toContain("Removed since last confirmation (");
+});
+
+function fileIndex(html: string): string {
+  return html.slice(
+    html.indexOf('<section id="files"'),
+    html.indexOf("</section>", html.indexOf('<section id="files"')),
+  );
+}
+
+it("does not present an undiscovered file index as a complete empty scope", () => {
+  const report = model([]);
+  report.scope.complete = false;
+  report.inspection.errors = [{ code: "IO_ERROR", message: "Discovery failed" }];
+  const html = renderHtmlReport(report),
+    index = fileIndex(html);
+  expect(index).not.toContain("All 0");
+  expect(index).not.toContain("No member files available");
+  expect(index).toContain("total member file count is unknown");
+  expect(index).toContain("run check again, and regenerate");
+  expect(html).toContain('href="#files">File index (incomplete)');
+  expect(html).toContain('href="#groups">Groups (0 found)');
+});
+
+it.each([0, 2])(
+  "marks partial member indexes with %i collected paths without claiming completeness",
+  (count) => {
+    const report = model([
+      group({
+        membershipComplete: false,
+        files: group().files.slice(0, count),
+        errors: [{ code: "GLOB_UNREADABLE", message: "Cannot enumerate" }],
+      }),
+    ]);
+    const html = renderHtmlReport(report),
+      index = fileIndex(html);
+    expect(index).not.toContain(`All ${count}`);
+    expect(index).not.toContain("No member files available");
+    expect(index).toContain("total member file count is unknown");
+    expect(index).toContain("run check again, and regenerate");
+    expect(html).toContain(
+      `href="#files">File index (${count ? count + " found, incomplete" : "incomplete"})`,
+    );
+    if (!count) expect(html).not.toContain("No registered member files.");
+    expect(html).toContain(`Collected member files (${count}, incomplete)`);
+    if (count) expect(index).toContain('href="#group-1"');
+  },
+);
+
+it("keeps member indexes incomplete when a management definition cannot be read or interpreted", () => {
+  const html = renderHtmlReport(
+    model([
+      group(),
+      group({
+        file: resolve(root, ".crosslink/broken.json"),
+        reason: "",
+        files: [],
+        errors: [{ code: "INVALID_JSON", message: "Invalid management JSON" }],
+      }),
+    ]),
+  );
+  const index = fileIndex(html);
+  expect(index).not.toContain("All 2");
+  expect(index).toContain("total member file count is unknown");
+  expect(index).toContain('href="#group-1"');
+  expect(html).toContain('href="#files">File index (2 found, incomplete)');
+  expect(html).not.toContain("All member files (0)");
+  expect(html).toContain("Member files unavailable");
+});
+
+it("marks the index incomplete when the inspected definition changed during reading", () => {
+  const html = renderHtmlReport(
+    model([group({ errors: [{ code: "GROUP_CHANGED", message: "Definition changed" }] })]),
+  );
+  expect(fileIndex(html)).toContain("total member file count is unknown");
+});
+
+it("preserves complete empty indexes and known paths whose contents are unreadable", () => {
+  const empty = renderHtmlReport(model([]));
+  expect(empty).toContain('href="#files">File index (0)');
+  expect(fileIndex(empty)).toContain("All 0 member files");
+  expect(fileIndex(empty)).toContain("No member files available");
+  const unreadable = renderHtmlReport(
+    model([
+      group({
+        membershipComplete: true,
+        files: [{ path: "../known", hash: null, changed: true }],
+        errors: [{ code: "FILE_UNREADABLE", message: "Permission denied" }],
+      }),
+    ]),
+  );
+  expect(unreadable).toContain('href="#files">File index (1)');
+  expect(fileIndex(unreadable)).toContain("All 1 member files");
+  expect(fileIndex(unreadable)).not.toContain("incomplete");
+  expect(unreadable).toContain('class="badge unreadable">Unreadable');
 });

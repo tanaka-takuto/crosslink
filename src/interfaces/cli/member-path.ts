@@ -15,5 +15,7 @@ export function storedGlob(
   const literal = prefix.replace(/[?*[\]{}()]/g, (character) =>
     character === "]" ? "[]]" : `[${character}]`,
   );
-  return [literal, portable.replace(/^(\.\/)+/, "")].filter(Boolean).join("/");
+  const stored = [literal, portable.replace(/^(\.\/)+/, "")].filter(Boolean).join("/");
+  // 変換後のliteral先頭!を、入力時の除外構文と混同させない。
+  return stored.startsWith("!") ? "./" + stored : stored;
 }

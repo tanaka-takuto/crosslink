@@ -34,3 +34,10 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 ## globによる動的集合
 
 個別指定に加え、[動的集合の要件](dynamic-membership.md)を適用する。globの追加・削除は現在の全パス集合として比較し、通常のglob削除は個別指定の消失とは区別する。選択・検査・確認・表示の受入条件と対応テストは同文書を正本とする。
+
+## 不完全なFile indexの受入条件
+
+- 完全な0件、範囲探索不能、部分列挙の0件/非0件、定義不明、全パス既知で内容だけ読取不能を区別する。File index局所とnavが同じ完全性を示し、不完全な索引を全0件と断定しない。診断解決後の再検査・再生成を案内する。
+- `does not present an undiscovered file index as a complete empty scope`、`marks partial member indexes with %i collected paths without claiming completeness`、`keeps member indexes incomplete when a management definition cannot be read or interpreted`、`marks the index incomplete when the inspected definition changed during reading` (interfaces/html/report.test.ts)で局所とnavを確認する。
+- `preserves complete empty indexes and known paths whose contents are unreadable`で正常な空と既知パス数を保護する。`keeps built HTML file indexes incomplete for failed scope and unreadable definitions`、`keeps a known file index complete when a real member file becomes unreadable` (cli.test.ts)で実CLIと実読取権限の境界を確認する。
+- 独立UI/UXレビューへ渡す固定HTMLには、探索権限を保った実在ファイル自体の読取不能から生成したUnreadable行を含める。探索失敗や凡例の表示で代用しない。

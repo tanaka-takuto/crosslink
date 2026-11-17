@@ -1,12 +1,14 @@
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  chmodSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
   renameSync,
   rmSync,
+  statSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -538,3 +540,112 @@ it("preserves a confirmed version 1 record produced by the 0.4.0 CLI byte for by
   expect(JSON.parse(result.stdout).groups[0].status).toBe("confirmed");
   expect(readFileSync(file, "utf8")).toBe(before);
 });
+
+it("preserves leading bang CWD selectors through built CLI create, confirm, add and remove", () => {
+  const { root } = fixture(),
+    cwd = join(root, "!inputs");
+  mkdirSync(cwd);
+  for (const file of ["a.md", "b.md"]) writeFileSync(join(cwd, file), "ADR\n");
+  const call = (...args: string[]) =>
+    spawnSync(process.execPath, [join(root, "dist/cli.js"), ...args], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, PATH: "", NODE_PATH: "", NODE_OPTIONS: "" },
+    });
+  const created = call(
+    "create",
+    "bang",
+    "--file",
+    "../bang.record",
+    "--glob",
+    "*.md",
+    "--reason",
+    "literal CWD",
+    "--json",
+  );
+  expect(created.status, created.stdout + created.stderr).toBe(0);
+  const record = join(root, "bang.record"),
+    review = join(root, "review.json");
+  expect(JSON.parse(readFileSync(record, "utf8"))).toMatchObject({
+    files: [],
+    globs: ["./!inputs/*.md"],
+  });
+  function confirm() {
+    const checked = call("check", "--file", "../bang.record", "--json");
+    expect(checked.status).toBe(1);
+    expect(JSON.parse(checked.stdout).groups[0].files).toHaveLength(2);
+    writeFileSync(review, checked.stdout);
+    const confirmed = call("confirm", "../bang.record", "--snapshot", "../review.json", "--json");
+    expect(confirmed.status, confirmed.stdout + confirmed.stderr).toBe(0);
+  }
+  confirm();
+  const before = readFileSync(record, "utf8");
+  expect(call("add", "../bang.record", "--glob", "!*.md", "--json").status).toBe(2);
+  expect(readFileSync(record, "utf8")).toBe(before);
+  expect(call("remove", "../bang.record", "--glob", "*.md", "--json").status).toBe(0);
+  expect(call("add", "../bang.record", "--glob", "*.md", "--json").status).toBe(0);
+  expect(JSON.parse(readFileSync(record, "utf8")).globs).toEqual(["./!inputs/*.md"]);
+  confirm();
+});
+
+it("keeps built HTML file indexes incomplete for failed scope and unreadable definitions", () => {
+  const { root, call } = fixture();
+  writeFileSync(join(root, "crosslink.config.json"), "{ broken");
+  const scope = call("report", "--format", "html", "--output", "scope.html", "--json");
+  expect(scope.status).toBe(2);
+  function assertIncomplete(file: string) {
+    const html = readFileSync(join(root, file), "utf8");
+    const index = html.slice(html.indexOf('<section id="files"'));
+    expect(index).not.toContain("All 0 member files");
+    expect(index).not.toContain("No member files available");
+    expect(index).toContain("total member file count is unknown");
+    expect(html).toContain('href="#files">File index (incomplete)');
+  }
+  assertIncomplete("scope.html");
+  rmSync(join(root, "crosslink.config.json"));
+  mkdirSync(join(root, ".crosslink"));
+  writeFileSync(join(root, ".crosslink/broken.json"), "{ broken");
+  expect(call("report", "--format", "html", "--output", "definition.html", "--json").status).toBe(
+    2,
+  );
+  assertIncomplete("definition.html");
+});
+
+it.skipIf(process.platform === "win32")(
+  "keeps a known file index complete when a real member file becomes unreadable",
+  () => {
+    const { root, call } = fixture();
+    expect(call("create", "unreadable", "b", "--glob", "a", "--reason", "readability").status).toBe(
+      0,
+    );
+    const review = join(root, "review.json"),
+      record = join(root, ".crosslink/unreadable.json");
+    writeFileSync(review, call("check", "--json").stdout);
+    expect(call("confirm", ".crosslink/unreadable.json", "--snapshot", review).status).toBe(0);
+    const before = readFileSync(record, "utf8"),
+      target = join(root, "a"),
+      mode = statSync(target).mode & 0o777;
+    chmodSync(target, 0);
+    try {
+      expect(() => readFileSync(target)).toThrow(expect.objectContaining({ code: "EACCES" }));
+      const result = call("report", "--format", "html", "--output", "unreadable.html", "--json");
+      expect(result.status).toBe(2);
+      const group = JSON.parse(result.stdout).groups[0];
+      expect(group.membershipComplete).toBe(true);
+      expect(group.files.find((file: { path: string }) => file.path === "../a").hash).toBeNull();
+      expect(group.errors.map((error: { code: string }) => error.code)).toEqual([
+        "FILE_UNREADABLE",
+      ]);
+      const html = readFileSync(join(root, "unreadable.html"), "utf8"),
+        index = html.slice(html.indexOf('<section id="files"'));
+      expect(html).toContain('class="badge unreadable">Unreadable');
+      expect(html).toContain('href="#files">File index (2)');
+      expect(index).toContain("All 2 member files");
+      expect(index).not.toContain("total member file count is unknown");
+      expect(readFileSync(record, "utf8")).toBe(before);
+    } finally {
+      chmodSync(target, mode);
+    }
+    expect(readFileSync(target, "utf8")).toBe("a");
+  },
+);

@@ -60,3 +60,8 @@
 基点0.4.0のCLIで生成した確認済み記録の互換性は `preserves a confirmed version 1 record produced by the 0.4.0 CLI byte for byte` (cli.test.ts) で確認する。
 
 再照合で読取不能になった場合の旧hash露出防止は `does not expose an earlier hash as current when the final content recheck becomes unreadable` (inspect-group.test.ts) で確認する。
+
+## 独立レビュー後の回帰条件
+
+- 環境由来のCWD先頭`!`はliteralとして保持し、生の利用者入力の除外構文と混同しない。`preserves a literal leading bang introduced by CWD rebasing: $cwd`、`keeps direct exclusion input rejected while preserving explicitly relative literal bangs` (member-path.test.ts)、`preserves leading bang CWD selectors through built CLI create, confirm, add and remove` (cli.test.ts)、`preserves a literal leading bang CWD with a parent management file in standalone SEA` (build-binary.test.ts)で確認する。
+- File indexは範囲/メンバー列挙/定義が不明な場合に完全な0件と断定しない。正常な0件・取得済みパス・内容だけUnreadableは維持する。受入テストと実HTMLの条件は[HTML要件](html-report.md#不完全なfile-indexの受入条件)を正本とする。
