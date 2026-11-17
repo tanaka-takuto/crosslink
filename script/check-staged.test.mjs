@@ -12,6 +12,7 @@ import {
   readdirSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -194,7 +195,7 @@ test("作業ツリーの古いdistと未ステージのCLI改変を使わない"
 
 test("必要な開発依存がなければ案内して失敗する", () => {
   const f = fixture();
-  rmSync(join(f.root, "node_modules"));
+  unlinkSync(join(f.root, "node_modules"));
   const result = f.commit();
   assert.notEqual(result.status, 0, f.output(result));
   assert.match(f.output(result), /pnpm install/);
@@ -392,7 +393,7 @@ test("globへ検査用distを混入させず、stageされたdistは保持する
 
 test("stageされたnode_modules実ファイルを注入リンク扱いで削除しない", () => {
   const f = fixture({ groups: false });
-  rmSync(join(f.root, "node_modules"));
+  unlinkSync(join(f.root, "node_modules"));
   mkdirSync(join(f.root, "node_modules/manual"), { recursive: true });
   writeFileSync(join(f.root, "node_modules/manual/kept.txt"), "kept");
   assert.equal(f.cli("create", "manual", "a", "--glob", "node_modules/manual/*.txt", "--reason", "review").status, 0);

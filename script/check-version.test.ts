@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { validateVersion } from "./check-version.ts";
 
@@ -83,7 +84,22 @@ it("CLI compares the specified base package and fails closed for a missing base"
     spawnSync(process.execPath, [script, "--base", ref], { cwd, encoding: "utf8" });
   expect(run(base).status).toBe(1);
   writeFileSync(join(cwd, "package.json"), JSON.stringify({ version: "0.3.1", private: true }));
-  expect(run(base).status).toBe(0);
+  const valid = run(base);
+  expect(valid.status, valid.stderr).toBe(0);
+  expect(valid.stdout).toBe("Version policy passed: 0.3.1\n");
   expect(run("f".repeat(40)).status).toBe(1);
   expect(run("--help").status).toBe(1);
+});
+
+it("does not run the version CLI when imported by a module or eval", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "crosslink-version-import-"));
+  directories.push(cwd);
+  const code = `const module = await import(${JSON.stringify(pathToFileURL(resolve("script/check-version.ts")).href)}); if (module.validateVersion({version:"1.0.0",private:true}) !== "1.0.0") throw Error("Import failed"); console.log("imported");`;
+  const runner = join(cwd, "runner.mjs");
+  writeFileSync(runner, code);
+  for (const args of [[runner, "--unsupported"], ["--input-type=module", "--eval", code, "missing-entry"]]) {
+    const result = spawnSync(process.execPath, args, { cwd, encoding: "utf8" });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toBe("imported\n");
+  }
 });

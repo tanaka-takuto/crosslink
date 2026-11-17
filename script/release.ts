@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
-import { appendFileSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { validateVersion } from "./check-version.ts";
 
 export type Release = {
@@ -310,7 +311,12 @@ export class GitHubReleaseApi implements ReleaseApi {
   }
 }
 
-if (import.meta.main) {
+const entryPoint = process.argv[1];
+if (
+  import.meta.main ??
+  (entryPoint !== undefined && existsSync(entryPoint) &&
+    realpathSync.native(entryPoint) === realpathSync.native(fileURLToPath(import.meta.url)))
+) {
   try {
     const [command, directory, ...extra] = process.argv.slice(2);
     if (!directory || extra.length || !["manifest", "publish"].includes(command ?? ""))

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, unlinkSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep, win32 } from "node:path";
@@ -68,8 +68,9 @@ function diagnostics(report, snapshot) {
 // 動的グループは、全参照をindexツリー内で再現できる場合だけ検査する。
 // 既存の静的グループに対する外部参照契約はここでは変更しない。
 function validateStagedReferences(report, snapshot, staged) {
-  const inside = (target) => {
-    const path = relative(snapshot, target);
+  const canonicalSnapshot = realpathSync.native(snapshot);
+  const inside = (target, base = snapshot) => {
+    const path = relative(base, target);
     return path !== ".." && !path.startsWith(".." + sep) && !isAbsolute(path);
   };
   for (const group of report.groups) {
@@ -91,7 +92,7 @@ function validateStagedReferences(report, snapshot, staged) {
     for (const member of group.files) {
       const target = resolve(dirname(group.file), member.path);
       if (isAbsolute(member.path) || win32.isAbsolute(member.path) || !inside(target)) reject(member.path);
-      if (existsSync(target) && !inside(realpathSync(target))) reject(member.path);
+      if (existsSync(target) && !inside(realpathSync.native(target), canonicalSnapshot)) reject(member.path);
     }
   }
 }
@@ -208,7 +209,7 @@ function checkStaged() {
       process.stderr.write(built.stdout + built.stderr);
       throw new Error("Cannot build the staged CLI. Check the source and configuration.");
     }
-    if (injected) rmSync(dependencies);
+    if (injected) unlinkSync(dependencies);
     const checked = node(join(dist, "cli.js"), ["check", "--json"], snapshot);
     let report;
     try {

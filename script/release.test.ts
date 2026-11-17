@@ -235,21 +235,49 @@ it("marks prerelease identifiers, but not a hyphen in build metadata, as prerele
 it("runs the manifest CLI with Node native TypeScript and blocks publication outside main push", () => {
   const input = fixture();
   const script = new URL("./release.ts", import.meta.url);
+  const target = `crosslink-${process.platform}-${process.arch}`;
+  const binary = target + (process.platform === "win32" ? ".exe" : "");
+  const targetManifest = join(input.directory, `${target}.json`);
+  const output = join(input.directory, "github-output");
+  rmSync(targetManifest);
   const manifest = spawnSync(
     process.execPath,
     [fileURLToPath(script), "manifest", input.directory],
     {
       encoding: "utf8",
-      env: { ...process.env, GITHUB_SHA: sha, GITHUB_OUTPUT: "" },
+      env: { ...process.env, GITHUB_SHA: sha, GITHUB_OUTPUT: output },
     },
   );
   expect(manifest.status, manifest.stderr).toBe(0);
+  expect(readFileSync(output, "utf8")).toBe(`target=${target}\n`);
+  expect(JSON.parse(readFileSync(targetManifest, "utf8"))).toEqual({
+    sha,
+    version: JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version,
+    platform: process.platform,
+    arch: process.arch,
+    files: Object.fromEntries(
+      [binary, `${binary}.sha256`]
+        .map((name) => [name, hash(readFileSync(join(input.directory, name)))]),
+    ),
+  });
   const publish = spawnSync(process.execPath, [fileURLToPath(script), "publish", input.directory], {
     encoding: "utf8",
     env: { ...process.env, GITHUB_EVENT_NAME: "pull_request", GITHUB_REF: "refs/heads/main" },
   });
   expect(publish.status).toBe(1);
   expect(publish.stderr).toMatch(/only for a main push/);
+});
+
+it("does not run the release CLI when imported by a module or eval", () => {
+  const input = fixture();
+  const code = `const module = await import(${JSON.stringify(new URL("./release.ts", import.meta.url).href)}); if (typeof module.publishRelease !== "function") throw Error("Import failed"); console.log("imported");`;
+  const runner = join(input.directory, "runner.mjs");
+  writeFileSync(runner, code);
+  for (const args of [[runner, "--unsupported"], ["--input-type=module", "--eval", code, "missing-entry"]]) {
+    const result = spawnSync(process.execPath, args, { cwd: input.directory, encoding: "utf8", env: { ...process.env, GITHUB_EVENT_NAME: "pull_request", GITHUB_REF: "refs/heads/main" } });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toBe("imported\n");
+  }
 });
 
 it("resolves annotated tags to a commit and treats only HTTP 404 as absent", async () => {
