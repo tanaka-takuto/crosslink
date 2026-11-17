@@ -154,6 +154,7 @@ snapshotは定義のraw、管理ファイルのパス、展開後の全パスと
 ## 開発用pre-commitと動的参照
 
 pre-commitはindexのツリーを取り出し、その外のruntimeに同じstagedソースのCLIとpackage.jsonをビルドする。
+indexのmodeとblobを読み、mode120000は一回限りの`git -c core.symlinks=true checkout-index`で実symlinkとして取り出す。型とtargetを検証し、空/NULなど表現不能なtargetやcheckout失敗を`STAGED_REFERENCE_UNSUPPORTED`とmode/path/blobの文脈で拒否する。POSIXではtarget bytes、Windowsでは区切り/absolute表現を含む解決先の同一性を照合する。利用者のcore.symlinks設定を変更しない。内部file linkとstatic-only外部file linkを許容し、directory linkへは降りない。
 型解決に注入したnode_modulesリンクだけをCLI検査前に取り除く。ユーザーがstageしたdistやnode_modulesの実ファイルを検査用生成物と混同して削除しない。
 非空globsを持つグループでは、混在する固定filesも含め全参照をindexツリー内で再現できることを要求する。
 絶対glob、リポジトリ外へ出る相対glob、絶対/外部の個別指定、外部を指すメンバーsymlinkは`STAGED_REFERENCE_UNSUPPORTED`でコミットを拒否し、修正・再検査・再確認を案内する。

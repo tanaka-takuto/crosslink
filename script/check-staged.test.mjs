@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
   realpathSync,
   renameSync,
   readdirSync,
@@ -438,4 +440,114 @@ test("既存の静的グループは外部固定参照の契約を維持する",
   f.git("add", ".");
   const result = f.commit();
   assert.equal(result.status, 0, f.output(result));
+});
+
+test("core.symlinks=falseでもindexの外部file linkを専用診断で拒否し全入力を保持する", () => {
+  const f = fixture({ groups: false }), outside = join(dirname(f.root), "outside.txt");
+  writeFileSync(outside, "external bytes");
+  symlinkSync(outside, join(f.root, "external.txt"));
+  assert.equal(f.cli("create", "dynamic", "a", "--glob", "external.txt", "--reason", "review").status, 0);
+  f.confirm();
+  f.git("add", ".");
+  f.git("config", "core.symlinks", "false");
+  const mode = f.git("ls-files", "--stage", "--", "external.txt");
+  assert.match(mode, /^120000 /);
+  // 外部の本文をindexのlink文字列と同じにしても、専用境界で拒否しなければならない。
+  const targetBytes = f.git("cat-file", "blob", mode.split(" ")[1]);
+  writeFileSync(outside, targetBytes);
+  f.confirm();
+  f.git("add", ".crosslink/dynamic.json");
+  // commit自身が作るcache-treeを先に用意し、hookによるindex変更だけを照合する。
+  f.git("write-tree");
+  const linkTarget = readlinkSync(join(f.root, "external.txt"));
+  const index = readFileSync(join(f.root, ".git/index")), record = readFileSync(join(f.root, ".crosslink/dynamic.json")), config = readFileSync(join(f.root, ".git/config"));
+  const result = f.commit();
+  assert.notEqual(result.status, 0, f.output(result));
+  assert.match(f.output(result), /STAGED_REFERENCE_UNSUPPORTED/, mode + f.output(result));
+  assert.match(f.output(result), /120000/);
+  assert.deepEqual(readFileSync(join(f.root, ".git/index")), index);
+  assert.deepEqual(readFileSync(join(f.root, ".git/config")), config);
+  assert.deepEqual(readFileSync(join(f.root, ".crosslink/dynamic.json")), record);
+  assert.equal(lstatSync(join(f.root, "external.txt")).isSymbolicLink(), true);
+  assert.equal(readlinkSync(join(f.root, "external.txt")), linkTarget);
+  assert.equal(readFileSync(outside, "utf8"), targetBytes);
+});
+
+test("core.symlinks=falseでもindexの内部file linkを通常ファイル本文と混同せず検査する", () => {
+  const f = fixture({ groups: false });
+  writeFileSync(join(f.root, "b"), "target content differs from link text");
+  symlinkSync("b", join(f.root, "inside.txt"));
+  assert.equal(f.cli("create", "dynamic", "a", "--glob", "inside.txt", "--reason", "review").status, 0);
+  f.confirm();
+  f.git("add", ".");
+  f.git("config", "core.symlinks", "false");
+  rmSync(join(f.root, "inside.txt"));
+  writeFileSync(join(f.root, "inside.txt"), "b");
+  const index = f.git("ls-files", "--stage"), record = readFileSync(join(f.root, ".crosslink/dynamic.json"));
+  assert.match(f.git("ls-files", "--stage", "--", "inside.txt"), /^120000 /);
+  const result = f.commit();
+  assert.equal(result.status, 0, f.output(result));
+  assert.equal(f.git("ls-files", "--stage"), index);
+  assert.deepEqual(readFileSync(join(f.root, ".crosslink/dynamic.json")), record);
+  assert.equal(lstatSync(join(f.root, "inside.txt")).isSymbolicLink(), false);
+  assert.equal(readFileSync(join(f.root, "inside.txt"), "utf8"), "b");
+  assert.equal(f.git("config", "--get", "core.symlinks").trim(), "false");
+});
+
+test("core.symlinks=falseでもindexのdirectory linkへ降りず0一致を正しく診断する", () => {
+  const f = fixture({ groups: false });
+  mkdirSync(join(f.root, "docs"));
+  writeFileSync(join(f.root, "docs/one.md"), "one\n");
+  writeFileSync(join(f.root, "linked"), "docs");
+  assert.equal(f.cli("create", "dynamic", "a", "b", "--glob", "linked/*.md", "--reason", "review").status, 0);
+  f.git("add", ".");
+  const oid = f.git("hash-object", "--", "linked").trim();
+  f.git("update-index", "--cacheinfo", "120000", oid, "linked");
+  f.git("config", "core.symlinks", "false");
+  const index = f.git("ls-files", "--stage");
+  const result = f.commit();
+  assert.notEqual(result.status, 0, f.output(result));
+  assert.match(f.output(result), /GLOB_NO_MATCH/, f.output(result));
+  assert.doesNotMatch(f.output(result), /ENOTDIR/);
+  assert.equal(f.git("ls-files", "--stage"), index);
+  assert.equal(readFileSync(join(f.root, "linked"), "utf8"), "docs");
+  assert.equal(readFileSync(join(f.root, "docs/one.md"), "utf8"), "one\n");
+  assert.equal(f.git("config", "--get", "core.symlinks").trim(), "false");
+});
+
+test("core.symlinks=falseでもstatic-onlyの外部file link互換を維持する", () => {
+  const f = fixture({ groups: false }), outside = join(dirname(f.root), "outside.txt");
+  writeFileSync(outside, "external static bytes");
+  symlinkSync(outside, join(f.root, "external.txt"));
+  assert.equal(f.cli("create", "static", "a", "external.txt", "--reason", "legacy").status, 0);
+  f.confirm();
+  f.git("add", ".");
+  f.git("config", "core.symlinks", "false");
+  const index = f.git("ls-files", "--stage");
+  const result = f.commit();
+  assert.equal(result.status, 0, f.output(result));
+  assert.equal(f.git("ls-files", "--stage"), index);
+  assert.equal(readFileSync(outside, "utf8"), "external static bytes");
+  assert.equal(f.git("config", "--get", "core.symlinks").trim(), "false");
+});
+
+test("core.symlinks=falseで再現不能なindex mode120000を同hashの通常ファイルとして通さない", () => {
+  const f = fixture({ groups: false });
+  // NULで始まるlink targetは実symlinkとして作れないが、通常ファイル本文ならhashが一致する。
+  writeFileSync(join(f.root, "broken.bin"), Buffer.from([0, 97]));
+  assert.equal(f.cli("create", "dynamic", "a", "--glob", "broken.bin", "--reason", "review").status, 0);
+  f.confirm();
+  f.git("add", ".");
+  const oid = f.git("hash-object", "--", "broken.bin").trim();
+  f.git("update-index", "--cacheinfo", "120000", oid, "broken.bin");
+  f.git("config", "core.symlinks", "false");
+  const index = f.git("ls-files", "--stage"), record = readFileSync(join(f.root, ".crosslink/dynamic.json"));
+  const result = f.commit();
+  assert.notEqual(result.status, 0, f.output(result));
+  assert.match(f.output(result), /STAGED_REFERENCE_UNSUPPORTED/);
+  assert.match(f.output(result), /120000/);
+  assert.equal(f.git("ls-files", "--stage"), index);
+  assert.deepEqual(readFileSync(join(f.root, ".crosslink/dynamic.json")), record);
+  assert.deepEqual(readFileSync(join(f.root, "broken.bin")), Buffer.from([0, 97]));
+  assert.equal(f.git("config", "--get", "core.symlinks").trim(), "false");
 });

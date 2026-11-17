@@ -31,7 +31,7 @@
       "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
       "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
       "../.node-version": "5c293036fc0a61ad76e15d85f454c3c7cec157e181e035b69f95058a2c239144",
-      "../CONTRIBUTING.md": "0d383e64a4d495bddd88a26be472f1ad0e34b330d8336976e6d9a4d0b5d3b977",
+      "../CONTRIBUTING.md": "1ad0722bf5227400b53f62c0f92e5e24689c7eca87d2a9f159200bcae63ecbf7",
       "../docs/development/distribution.md": "c85d349987beae90585e3cdfb966c7fa5aa19bd362159b40e032c99edb9df2c7",
       "../docs/development/release.md": "b415f871131ae9dcbfc159294b17d317dee90b51c11ff96b57c298352077ca6e",
       "../package.json": "1373120e2df0275272f0f119d69edfa1f51827f0dc34edab046a9318c3d202bf",

@@ -1,14 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep, win32 } from "node:path";
 
-function git(args, cwd, env = process.env) {
+function git(args, cwd, env = process.env, encoding = "utf8") {
   const result = spawnSync("git", args, {
     cwd,
     env,
-    encoding: "utf8",
+    encoding,
     maxBuffer: 16 * 1024 * 1024,
   });
   if (result.error || result.status !== 0)
@@ -67,7 +67,7 @@ function diagnostics(report, snapshot) {
 
 // 動的グループは、全参照をindexツリー内で再現できる場合だけ検査する。
 // 既存の静的グループに対する外部参照契約はここでは変更しない。
-function validateStagedReferences(report, snapshot) {
+function validateStagedReferences(report, snapshot, staged) {
   const inside = (target) => {
     const path = relative(snapshot, target);
     return path !== ".." && !path.startsWith(".." + sep) && !isAbsolute(path);
@@ -75,7 +75,8 @@ function validateStagedReferences(report, snapshot) {
   for (const group of report.groups) {
     if (!group.globs?.length) continue;
     const reject = (reference) => {
-      throw new Error(`STAGED_REFERENCE_UNSUPPORTED: Cannot reproduce reference in the index tree: ${reference} (${relative(snapshot, group.file)}). Use repository-relative selectors and files whose targets remain inside the repository, then inspect and confirm again.`);
+      const path = relative(snapshot, resolve(dirname(group.file), reference)).split(sep).join("/");
+      throw new Error(`STAGED_REFERENCE_UNSUPPORTED: Cannot reproduce reference in the index tree: ${reference} (${relative(snapshot, group.file)}; index mode ${staged.get(path)?.mode ?? "not staged"}). Use repository-relative selectors and files whose targets remain inside the repository, then inspect and confirm again.`);
     };
     for (const pattern of group.globs) {
       const portable = pattern.replaceAll("\\", "/");
@@ -99,7 +100,12 @@ function checkStaged() {
   if (Number(process.versions.node.split(".")[0]) < 24)
     throw new Error("pre-commit checks require Node.js 24 or later.");
   const root = git(["rev-parse", "--show-toplevel"]).replace(/\r?\n$/, "");
-  const entries = git(["ls-files", "-z"], root).split("\0").filter(Boolean);
+  const staged = new Map(git(["ls-files", "--stage", "-z"], root).split("\0").filter(Boolean).map((entry) => {
+    const tab = entry.indexOf("\t"), [mode, oid, stage] = entry.slice(0, tab).split(" ");
+    if (tab === -1 || stage !== "0") throw new Error("Cannot inspect an unmerged index. Resolve and stage conflicts first.");
+    return [entry.slice(tab + 1), { mode, oid }];
+  }));
+  const entries = [...staged.keys()];
   const hasGroups = entries.some(
     (file) => file === "crosslink.config.json" || file.split("/").includes(".crosslink"),
   );
@@ -123,17 +129,52 @@ function checkStaged() {
     );
     const gitDir = git(["rev-parse", "--absolute-git-dir"], root).replace(/\r?\n$/, "");
     const prefix = snapshot.replaceAll("\\", "/") + "/";
-    git(
-      [
-        `--git-dir=${gitDir}`,
-        `--work-tree=${snapshot}`,
-        "checkout-index",
-        "--all",
-        `--prefix=${prefix}`,
-      ],
-      root,
-      { ...process.env, GIT_INDEX_FILE: index },
-    );
+    const links = [...staged].filter(([, entry]) => entry.mode === "120000");
+    try {
+      git(
+        [
+          "-c", "core.symlinks=true",
+          `--git-dir=${gitDir}`,
+          `--work-tree=${snapshot}`,
+          "checkout-index",
+          "--all",
+          `--prefix=${prefix}`,
+        ],
+        root,
+        { ...process.env, GIT_INDEX_FILE: index },
+      );
+    } catch (error) {
+      if (!links.length) throw error;
+      throw new Error(`STAGED_REFERENCE_UNSUPPORTED: Cannot materialize index mode 120000 symlinks with core.symlinks=true: ${links.map(([path, entry]) => `${path} (blob ${entry.oid})`).join(", ")}. ${error.message}`);
+    }
+    // core.symlinks=falseの通常ファイルを、リンク先の本文として検査してはならない。
+    for (const [path, entry] of links) {
+      try {
+        const file = join(snapshot, path);
+        if (!lstatSync(file).isSymbolicLink()) throw new Error("Checkout is not a symbolic link.");
+        const expected = git(["cat-file", "blob", entry.oid], root, process.env, null);
+        if (!expected.length || expected.includes(0)) throw new Error("Index link target is empty or contains NUL.");
+        const actual = readlinkSync(file, { encoding: "buffer" });
+        let same = actual.equals(expected);
+        if (process.platform === "win32") {
+          // Git/Win32の区切りやabsolute表現の差は許すが、異なるtargetには置き換えない。
+          const target = (bytes) => {
+            const text = bytes.toString("utf8");
+            if (!Buffer.from(text).equals(bytes)) throw new Error("Index link target is not valid UTF-8.");
+            const absolute = resolve(dirname(file), text);
+            try { return realpathSync.native(absolute); }
+            catch (error) {
+              if (!["ENOENT", "ENOTDIR"].includes(error.code)) throw error;
+              return win32.toNamespacedPath(absolute);
+            }
+          };
+          same = target(actual) === target(expected);
+        }
+        if (!same) throw new Error("Checkout link target differs from its index blob.");
+      } catch (error) {
+        throw new Error(`STAGED_REFERENCE_UNSUPPORTED: Cannot reproduce ${path} (index mode ${entry.mode}, blob ${entry.oid}). ${error.message}`);
+      }
+    }
     if (!existsSync(join(root, "node_modules")))
       throw new Error("Development dependencies are required. Run pnpm install --frozen-lockfile.");
     const dependencies = join(snapshot, "node_modules");
@@ -177,7 +218,7 @@ function checkStaged() {
       process.stderr.write(checked.stdout + checked.stderr);
       throw new Error("Cannot obtain an inspection report from the staged CLI.");
     }
-    validateStagedReferences(report, snapshot);
+    validateStagedReferences(report, snapshot, staged);
     if (checked.status !== 0) {
       diagnostics(report, snapshot);
       console.error(

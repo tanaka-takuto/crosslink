@@ -19,7 +19,7 @@
     "definition": "cd21e62a6951b156f3ecf73cfb24ea4c9895ec5622b7e6e85d9a57b4c99f3420",
     "hashes": {
       "../docs/requirements/agent-usage.md": "c4c7ee9e97dd885dee19479d3724c351df52de11477c9c8494ed8c227d45bedc",
-      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
+      "../docs/specifications/cli.md": "ebf7c503b2a854c4b20a7c71f1b8627ec220151b7c0a8ac752bd9a3e8470a9d4",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
