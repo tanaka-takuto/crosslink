@@ -1,0 +1,36 @@
+{
+  "kind": "crosslink-group",
+  "version": 2,
+  "name": "requirements-index",
+  "reason": "要件一覧と増減する個別要件の対応を、ファイル追加時にも定義編集なしで確認するため",
+  "files": [
+    "../docs/requirements.md"
+  ],
+  "globs": [
+    "../docs/requirements/*.md"
+  ],
+  "confirmation": {
+    "definition": "43eb2c1857dfc971fd27f50430f96d8bfb939799a161f8afb5d94c78cf8d1a61",
+    "hashes": {
+      "../docs/requirements.md": "d1323c5a0eb492abc3f9c4d2bae5bac59bf29994156cd8e8ce9cad65edb388c0",
+      "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
+      "../docs/requirements/agent-usage.md": "c4c7ee9e97dd885dee19479d3724c351df52de11477c9c8494ed8c227d45bedc",
+      "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
+      "../docs/requirements/change-impact.md": "a24a0f6769eb1ccd4ba465a83c72f31b029858d6e8fc638f59bedce92c8ec390",
+      "../docs/requirements/check.md": "866ae1e48204490de5ae87a8855d5f0cbb3bda0efd72620589ff50938170ae91",
+      "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
+      "../docs/requirements/confirmation-state.md": "fab3a04b9e8678ad62095acd57c4de778cd7b24190940eba099a3ad5aefc46ac",
+      "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
+      "../docs/requirements/dynamic-membership.md": "4a729d7663ab4d86a84134f3e4515a8155725c87aaba0996071142bd12b3b787",
+      "../docs/requirements/explicit-confirmation.md": "af40497ee9c4682e616db71b7c6bcc6cba7944933109843165f2b0c1b808c386",
+      "../docs/requirements/file-formats.md": "b2e23925eee4d57ae8ad0fa761203dc9c4fa33bde5d6b240b239ccc2d2f8750f",
+      "../docs/requirements/groups.md": "90a26580a5e3a5a125edec0bf0c9aca8940325feab41fb493106479bbbfb00f5",
+      "../docs/requirements/html-report.md": "79538afc84d311249e7e835a3a064af7a6601bd9a16d81ea01ec6374bd740c39",
+      "../docs/requirements/impact-output.md": "aa9db39fd62375ac777507b9674f8d5d9dc178a5077428cb3cff0c9c7147a2ce",
+      "../docs/requirements/invalid-references.md": "e023390528e4e8a0b18cc921a8aad0f6d6e87969051c55a6a5eb75f2b5283000",
+      "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
+      "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
+      "../docs/requirements/use-cases.md": "cfae82826cf7e1efa25126f414bea798b3145d97cfb8a5c49c226a6c4b3af2ef"
+    }
+  }
+}

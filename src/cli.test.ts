@@ -5,6 +5,7 @@ import {
   mkdtempSync,
   readFileSync,
   realpathSync,
+  renameSync,
   rmSync,
   unlinkSync,
   writeFileSync,
@@ -452,4 +453,88 @@ it("generates HTML with Node alone, resolves links from another output directory
   expect(
     JSON.parse(regenerated.stdout).groups.map((group: { status: string }) => group.status),
   ).toEqual(["confirmed", "unconfirmed"]);
+});
+
+it("runs dynamic membership with only Node, from another CWD and without Git or shell expansion", () => {
+  const { root } = fixture();
+  const project = join(root, "project [draft] (1)");
+  mkdirSync(join(project, "adr"), { recursive: true });
+  mkdirSync(join(project, "records"));
+  writeFileSync(join(project, "design.bin"), Buffer.from([0, 255]));
+  writeFileSync(join(project, "adr/one.md"), "same");
+  writeFileSync(join(project, "adr/two.md"), "same");
+  const call = (...args: string[]) =>
+    spawnSync(process.execPath, [join(root, "dist/cli.js"), ...args], {
+      cwd: project,
+      env: { ...process.env, PATH: "", NODE_PATH: "", NODE_OPTIONS: "" },
+      encoding: "utf8",
+    });
+  const file = join(realpathSync(project), "records/adr.record");
+  const created = call(
+    "create",
+    "ADR",
+    "design.bin",
+    "--glob",
+    "adr/**/*.md",
+    "--file",
+    file,
+    "--reason",
+    "増減を確認",
+  );
+  expect(created.status, created.stderr).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).globs).toEqual(["../adr/**/*.md"]);
+  const review = join(project, "review.json");
+  const check = () => call("check", "--file", file, "--json");
+  const confirm = () => {
+    writeFileSync(review, check().stdout);
+    expect(call("confirm", file, "--snapshot", review).status).toBe(0);
+  };
+  confirm();
+  writeFileSync(join(project, "adr/added.md"), "same");
+  expect(check().status).toBe(1);
+  const before = readFileSync(file, "utf8");
+  expect(call("confirm", file, "--snapshot", review).status).toBe(2);
+  expect(readFileSync(file, "utf8")).toBe(before);
+  confirm();
+  renameSync(join(project, "adr/added.md"), join(project, "adr/renamed.md"));
+  const renamed = JSON.parse(check().stdout).groups[0];
+  expect(renamed.added).toEqual(["../adr/renamed.md"]);
+  expect(renamed.removed.map((f: { path: string }) => f.path)).toEqual(["../adr/added.md"]);
+  const report = call("report", "--file", file, "--format", "html", "--output", "report.html");
+  expect(report.status).toBe(1);
+  const html = readFileSync(join(project, "report.html"), "utf8");
+  expect(html).toContain("Removed since last confirmation (1)");
+  expect(html).toContain("Glob selectors");
+  confirm();
+  rmSync(join(project, "adr/renamed.md"));
+  expect(check().status).toBe(1);
+  confirm();
+  expect(check().status).toBe(0);
+});
+
+it("preserves a confirmed version 1 record produced by the 0.4.0 CLI byte for byte", () => {
+  const { root, call } = fixture();
+  mkdirSync(join(root, ".crosslink"));
+  // db377628のCLIで実際に作成・確認した固定fixture。新しいcanonicalで作り直さない。
+  const record = {
+    kind: "crosslink-group",
+    version: 1,
+    name: "legacy",
+    reason: "legacy",
+    files: ["../a", "../b"],
+    confirmation: {
+      definition: "b357edf387f0b6507a04c2794bc8d9a29fd2b89de91d5f1ae438463a11f935cf",
+      hashes: {
+        "../a": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+        "../b": "06eb7d6a69ee19e5fbdf749018d3d2abfa04bcbd1365db312eb86dc7169389b8",
+      },
+    },
+  };
+  const file = join(root, ".crosslink/legacy.json");
+  const before = JSON.stringify(record, null, 2) + "\n";
+  writeFileSync(file, before);
+  const result = call("check", "--json");
+  expect(result.status).toBe(0);
+  expect(JSON.parse(result.stdout).groups[0].status).toBe("confirmed");
+  expect(readFileSync(file, "utf8")).toBe(before);
 });

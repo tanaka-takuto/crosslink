@@ -329,3 +329,71 @@ it("recognizes declared management files after renaming and copying them", () =>
     expect(run(["create", "other", "c", file, "--reason", "対象"], root).code).toBe(2);
   }
 });
+
+it("persists quoted glob selectors and tracks same-content additions, renames and removals", () => {
+  const root = fixture();
+  mkdirSync(join(root, "adr"));
+  writeFileSync(join(root, "adr/one.md"), "same");
+  writeFileSync(join(root, "adr/two.md"), "same");
+  expect(
+    run(["create", "adr", "a", "--glob", "adr/**/*.md", "--reason", "レビュー"], root).code,
+  ).toBe(0);
+  const file = join(root, ".crosslink/adr.json");
+  const stored = JSON.parse(readFileSync(file, "utf8"));
+  expect(stored.version).toBe(2);
+  expect(stored.files).toEqual(["../a"]);
+  expect(stored.globs).toEqual(["../adr/**/*.md"]);
+  const review = join(root, "review.json");
+  function confirm() {
+    writeFileSync(review, JSON.stringify(run(["check"], root).report));
+    expect(run(["confirm", file, "--snapshot", review], root).code).toBe(0);
+  }
+  confirm();
+  const baseline = readFileSync(file, "utf8");
+  writeFileSync(join(root, "adr/three.md"), "same");
+  let result = run(["check"], root);
+  expect(result.code).toBe(1);
+  expect(result.report.groups[0]?.added).toEqual(["../adr/three.md"]);
+  expect(run(["confirm", file, "--snapshot", review], root).code).toBe(2);
+  expect(readFileSync(file, "utf8")).toBe(baseline);
+  rmSync(join(root, "adr/three.md"));
+  expect(run(["check"], root).code).toBe(0);
+  renameSync(join(root, "adr/one.md"), join(root, "adr/renamed.md"));
+  result = run(["related", "adr/one.md"], root);
+  expect(result.report.groups[0]?.removed?.map((f) => f.path)).toEqual(["../adr/one.md"]);
+  expect(result.report.groups[0]?.added).toEqual(["../adr/renamed.md"]);
+  confirm();
+  renameSync(join(root, "adr/renamed.md"), join(root, "outside.md"));
+  result = run(["check"], root);
+  expect(result.code).toBe(1);
+  expect(result.report.groups[0]?.removed?.map((f) => f.path)).toEqual(["../adr/renamed.md"]);
+  expect(result.report.groups[0]?.files).toHaveLength(2);
+  confirm();
+  writeFileSync(join(root, "adr/two.md"), "changed again");
+  expect(run(["check"], root).code).toBe(1);
+});
+
+it("edits selectors explicitly without changing glob membership through literal remove", () => {
+  const root = fixture();
+  const file = join(root, ".crosslink/adr.json");
+  expect(run(["create", "adr", "--reason", "draft", "--glob", "missing/*.md"], root).code).toBe(0);
+  expect(run(["check"], root).code).toBe(2);
+  expect(run(["add", file, "--glob", "a", "--glob", "b"], root).code).toBe(0);
+  expect(run(["remove", file, "--glob", "missing/*.md"], root).code).toBe(0);
+  expect(run(["check"], root).code).toBe(1);
+  const before = readFileSync(file, "utf8");
+  expect(run(["remove", file, "a"], root).code).toBe(2);
+  expect(readFileSync(file, "utf8")).toBe(before);
+  expect(run(["remove", file, "--glob", "not-registered*"], root).code).toBe(2);
+  expect(run(["remove", file, "--glob", "a"], root).code).toBe(0);
+  expect(run(["check"], root).report.errors.map((e) => e.code)).toContain("TOO_FEW_FILES");
+});
+
+it("rejects empty, unsupported and ambiguous glob syntax before converting from CWD", () => {
+  const root = fixture();
+  for (const pattern of ["", "   ", "!exclude*", "{a,b}", "*/../a"]) {
+    const result = run(["create", "bad", "a", "b", "--glob", pattern, "--reason", "review"], root);
+    expect(result.code).toBe(2);
+    expect(result.report.errors[0]?.code).toBe("INVALID_DEFINITION");
+  }
+});

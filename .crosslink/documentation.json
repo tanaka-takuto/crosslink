@@ -17,11 +17,11 @@
     "hashes": {
       "../.gitignore": "e4f32e3839615212b67b8f22700a773d20c377149d40e7d146169e1949c827b9",
       "../AGENTS.md": "c56f4a79be1d335e5084a951226d5503c3a8429c2cb054d13e4a15a5dee04c1c",
-      "../CONTRIBUTING.md": "e80e44a5afabdcbfc875d4af1b5cdf65a9c300da284cc79115cce84796b7ddf0",
-      "../README.md": "8dda427c7c47574b8eb548ddd141fe78f6f9611eba692e407051e0de1b119d29",
-      "../docs/development/architecture.md": "b0d41f10a8c8dec0a5bbab6a209bd372cef9b180dfc1926cfb23039ec14b8e38",
+      "../CONTRIBUTING.md": "0d383e64a4d495bddd88a26be472f1ad0e34b330d8336976e6d9a4d0b5d3b977",
+      "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
+      "../docs/development/architecture.md": "6a1c5f5e64c4b0efbd0630383114ceaa3ac2deed8722c400f5c15f66365f00e6",
       "../docs/development/documentation.md": "88869892290c55753bde500e836cf825002217d47a0eb2864511d822a675cd58",
-      "../docs/requirements.md": "45b228ee029126e0b77de3ab791d09c2095d452c97f1a1a7e81d7cfbe4035a8a"
+      "../docs/requirements.md": "d1323c5a0eb492abc3f9c4d2bae5bac59bf29994156cd8e8ce9cad65edb388c0"
     }
   }
 }

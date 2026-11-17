@@ -1,3 +1,4 @@
+import { storedGlob } from "./member-path.js";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
 import { CrosslinkError, problem } from "../../domain/errors.js";
@@ -77,8 +78,8 @@ function snapshot(file: string, ports: CrosslinkPorts): Map<string, string> {
 }
 
 const help = [
-  "crosslink create <name> [files...] --reason <reason> [--file <destination>]",
-  "crosslink add|remove <group-file> <files...>",
+  "crosslink create <name> [files...] [--glob <pattern>] --reason <reason> [--file <destination>]",
+  "crosslink add|remove <group-file> [files...] [--glob <pattern>]",
   "crosslink set <group-file> [--name <name>] [--reason <reason>]",
   "crosslink delete <group-file>",
   "crosslink migrate <legacy-group-file>",
@@ -88,6 +89,7 @@ const help = [
   "crosslink confirm <group-file> --snapshot <report.json>",
   "crosslink confirm --all --snapshot <report.json>",
   "crosslink --version",
+  "Glob selectors: repeat --glob and quote patterns to prevent shell expansion.",
   "Options: --config <config.json>, --json, -h, --help",
   "Check details: -v, --verbose (all groups, files and reasons)",
 ];
@@ -107,6 +109,7 @@ export function run(
       allowPositionals: true,
       options: {
         file: { type: "string", multiple: true },
+        glob: { type: "string", multiple: true },
         reason: { type: "string" },
         name: { type: "string" },
         format: { type: "string" },
@@ -134,9 +137,9 @@ export function run(
         },
       };
     const allowed: Record<string, string[]> = {
-      create: ["reason", "file"],
-      add: [],
-      remove: [],
+      create: ["reason", "file", "glob"],
+      add: ["glob"],
+      remove: ["glob"],
       set: ["name", "reason"],
       delete: [],
       migrate: [],
@@ -212,7 +215,7 @@ export function run(
         groups = groups.filter(
           (group) =>
             group.errors.length ||
-            group.files.some(
+            [...group.files, ...(group.removed ?? [])].some(
               (member) =>
                 ports.files.canonical(resolve(dirname(group.file), member.path)) === target,
             ),
@@ -250,6 +253,9 @@ export function run(
         name: positional[0],
         reason: values.reason,
         files: positional.slice(1).map((member) => stored(member, file, cwd)),
+        ...(values.glob
+          ? { globs: values.glob.map((pattern) => storedGlob(pattern, file, cwd)) }
+          : {}),
       };
       createGroup(file, group, ports, settings);
     } else {
@@ -277,7 +283,11 @@ export function run(
         (positional.length !== 1 || (values.name === undefined && values.reason === undefined))
       )
         throw new CrosslinkError("INVALID_ARGUMENT", "Provide --name or --reason.");
-      if ((operation === "add" || operation === "remove") && positional.length < 2)
+      if (
+        (operation === "add" || operation === "remove") &&
+        positional.length < 2 &&
+        !values.glob?.length
+      )
         throw new CrosslinkError("INVALID_ARGUMENT", "Specify the member files to change.");
       updateGroup(
         file,
@@ -290,10 +300,13 @@ export function run(
               reason: values.reason ?? group.reason,
             };
           const members = positional.slice(1);
+          const patterns = values.glob?.map((pattern) => storedGlob(pattern, file, cwd)) ?? [];
+          const globs = group.globs ?? [];
           if (operation === "add")
             return {
               ...group,
               files: [...group.files, ...members.map((member) => stored(member, file, cwd))],
+              globs: [...new Set([...globs, ...patterns])],
             };
           const targets = new Set(
             members.map((member) => ports.files.canonical(resolve(cwd, member))),
@@ -305,8 +318,12 @@ export function run(
               )
             )
               throw new CrosslinkError("NOT_A_MEMBER", `Not a registered member: ${target}`);
+          for (const pattern of patterns)
+            if (!globs.includes(pattern))
+              throw new CrosslinkError("NOT_A_MEMBER", `Not a registered glob: ${pattern}`);
           return {
             ...group,
+            globs: globs.filter((pattern) => !patterns.includes(pattern)),
             files: group.files.filter(
               (member) => !targets.has(ports.files.canonical(resolve(dirname(file), member))),
             ),

@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
@@ -150,4 +150,57 @@ it("still renders inspection evidence when an input cannot be canonicalized", ()
   );
   expect(result.code).toBe(1);
   expect(capture.written).toEqual([join(root, "report.html"), "html"]);
+});
+
+it("does not create a report at a removed baseline path or a new matching glob path", () => {
+  const root = fixture();
+  const file = join(root, ".crosslink/valid.json");
+  writeFileSync(
+    file,
+    JSON.stringify({
+      kind: "crosslink-group",
+      version: 2,
+      name: "glob",
+      reason: "review",
+      files: ["../a", "../b"],
+      globs: ["../*.html"],
+      confirmation: { definition: "a".repeat(64), hashes: { "../removed.html": "b".repeat(64) } },
+    }),
+  );
+  for (const output of ["removed.html", "new.html"]) {
+    const capture = services();
+    const result = generateReport({ cwd: root, output }, filesystemPorts, metadata, capture.ports);
+    expect(result.report.errors.at(-1)?.code).toBe("REPORT_INPUT_COLLISION");
+    expect(capture.written).toEqual([]);
+  }
+});
+
+it("rejects prospective glob outputs through a directory symlink alias", () => {
+  const root = fixture();
+  mkdirSync(join(root, "docs"));
+  symlinkSync(
+    join(root, "docs"),
+    join(root, "alias"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+  const file = join(root, ".crosslink/valid.json");
+  writeFileSync(
+    file,
+    JSON.stringify({
+      version: 2,
+      name: "docs",
+      reason: "review",
+      files: ["../a", "../b"],
+      globs: ["../docs/*.html"],
+    }),
+  );
+  const capture = services();
+  const result = generateReport(
+    { cwd: root, output: "alias/new.html" },
+    filesystemPorts,
+    metadata,
+    capture.ports,
+  );
+  expect(result.report.errors.at(-1)?.code).toBe("REPORT_INPUT_COLLISION");
+  expect(capture.written).toEqual([]);
 });

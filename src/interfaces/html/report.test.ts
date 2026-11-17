@@ -221,3 +221,43 @@ it("filters offline, clears filters when following a hidden group and falls back
   listeners.get("reset:click")!();
   expect(cards.every((card) => !card.hidden)).toBe(true);
 });
+
+it("separates glob selections and removed baseline paths from current members and file index", () => {
+  const html = renderHtmlReport(
+    model([
+      group({
+        globs: ["../adr/**/*.md", "../adr/*.md"],
+        added: ["../shared b"],
+        removed: [{ path: "../gone.md", hash: "old" }],
+        membershipComplete: true,
+      }),
+    ]),
+  );
+  expect(html).toContain("Glob selectors");
+  expect(html).toContain("../adr/**/*.md");
+  expect(html).toContain("Current member files (2)");
+  expect(html).toContain('class="badge added">Added');
+  expect(html).toContain("Removed since last confirmation (1)");
+  expect(html).toContain("../gone.md");
+  const index = html.slice(html.indexOf('<section id="files"'));
+  expect(index).not.toContain("gone.md");
+  expect(html).toContain("Path changes appear as Added and Removed");
+});
+
+it("labels incomplete glob membership without asserting additions or removals", () => {
+  const html = renderHtmlReport(
+    model([
+      group({
+        globs: ["../adr/**/*.md"],
+        membershipComplete: false,
+        added: null,
+        removed: null,
+        errors: [{ code: "GLOB_UNREADABLE", message: "Access denied" }],
+      }),
+    ]),
+  );
+  expect(html).toContain("Membership comparison unavailable");
+  expect(html).toContain("Current member list may be incomplete");
+  expect(html).toContain("This index may be incomplete because member enumeration failed");
+  expect(html).not.toContain("Removed since last confirmation (");
+});

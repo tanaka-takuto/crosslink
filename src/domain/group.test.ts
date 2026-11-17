@@ -38,3 +38,22 @@ it("canonicalizes the definition independently of member order and confirmation 
   for (const change of [{ name: "other" }, { reason: "other" }, { files: ["a", "c"] }])
     expect(canonicalDefinition({ ...group, ...change })).not.toBe(canonicalDefinition(group));
 });
+
+it("validates glob selectors and preserves escaped literal metacharacters in directory names", () => {
+  expect(() => validateGroup({ ...group, globs: ["notes [(]draft[)]/*.md"] })).not.toThrow();
+  for (const globs of [
+    [""],
+    ["!exclude*"],
+    ["{a,b}/*.md"],
+    ["@(a|b)"],
+    ["a\0"],
+    ["../[unterminated"],
+  ]) {
+    expect(() => validateGroup({ ...group, globs })).toThrow(
+      expect.objectContaining({ code: "INVALID_DEFINITION" }),
+    );
+  }
+  expect(canonicalDefinition({ ...group, globs: ["b*", "a*", "a*"] })).toBe(
+    canonicalDefinition({ ...group, globs: ["a*", "b*"] }),
+  );
+});

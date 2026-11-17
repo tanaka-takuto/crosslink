@@ -47,3 +47,13 @@ CSPは外部取得を禁止し、生成時にハッシュを計算した内包CS
 入力に対する確認・編集・削除は行わず、ブラウザーも自動起動しない。
 
 関連：[HTML要件](../requirements/html-report.md)、[CLI仕様](cli.md)、[実装の責務](../development/architecture.md)。
+
+## 動的集合の表示
+
+glob利用グループには`Glob selectors`、`Current member files`、追加/削除件数を示す。
+新規一致は`Added`、最後の確認から外れたパスは`Removed since last confirmation`へ分ける。renameはAddedとRemovedの組合せとして表示する。
+removedは現メンバーでもFile indexの所属でもなく、旧パスと最後の確認との比較情報である。旧パスを現在の読取不能として表示しない。
+初回は`No baseline`。探索不完全なら`Membership comparison unavailable`と現リストが不完全になりうる旨を示し、増減は断定しない。
+選択パターンとremovedもグループ検索の対象にする。0一致等の検査エラーは通常のエラー表示と終了コード2を維持する。
+出力先が現在のメンバー、removedパス、またはglobに一致するパスなら拒否し、HTML生成によって選択集合へファイルを追加しない。
+関連：[動的集合の要件](../requirements/dynamic-membership.md)、[選択構文](glob-selection.md)。

@@ -31,3 +31,7 @@
 詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。
 
 診断案内の決定：[Issue #20](https://github.com/tanaka-takuto/crosslink/issues/20)。
+
+## globによる動的集合
+
+個別指定に加え、[動的集合の要件](dynamic-membership.md)を適用する。globの追加・削除は現在の全パス集合として比較し、通常のglob削除は個別指定の消失とは区別する。選択・検査・確認・表示の受入条件と対応テストは同文書を正本とする。

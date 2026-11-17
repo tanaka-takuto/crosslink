@@ -15,7 +15,7 @@ it("reads both legacy and declared group definitions, including a UTF-8 BOM", ()
 });
 
 it.each([
-  { change: { version: 2 }, code: "UNSUPPORTED_VERSION" },
+  { change: { version: 99 }, code: "UNSUPPORTED_VERSION" },
   { change: { kind: "other" }, code: "INVALID_DEFINITION" },
   { change: { confirmation: { definition: "bad", hashes: {} } }, code: "INVALID_CONFIRMATION" },
   { change: { extra: true }, code: "INVALID_DEFINITION" },
@@ -52,7 +52,7 @@ it.each([
 });
 
 it("guides unsupported management versions without interpreting or changing their contents", () => {
-  expect(() => parseGroup(JSON.stringify({ ...group, version: 2 }))).toThrow(
+  expect(() => parseGroup(JSON.stringify({ ...group, version: 99 }))).toThrow(
     expect.objectContaining({
       code: "UNSUPPORTED_VERSION",
       message: expect.stringContaining(
@@ -60,4 +60,17 @@ it("guides unsupported management versions without interpreting or changing thei
       ),
     }),
   );
+});
+
+it("reads version 2 glob definitions without reinterpreting literal files", () => {
+  const record = {
+    kind: "crosslink-group",
+    version: 2,
+    name: "adr",
+    reason: "review",
+    files: ["literal*.md"],
+    globs: ["adr/**/*.md"],
+  };
+  expect(parseGroup(JSON.stringify(record))).toEqual(record);
+  expect(() => parseGroup(JSON.stringify({ ...record, version: 1 }))).toThrow();
 });

@@ -117,3 +117,42 @@ CLIの更新は管理ファイル単位の短時間のロックで保護する�
 
 英語表示・verbose・versionの決定：[Issue #15](https://github.com/tanaka-takuto/crosslink/issues/15)。
 診断案内の決定：[Issue #20](https://github.com/tanaka-takuto/crosslink/issues/20)。
+
+## 動的なglob選択
+
+```sh
+crosslink create adr docs/design.md --glob 'docs/adr/**/*.md' --reason 'Review the design and ADRs together'
+crosslink add .crosslink/adr.json --glob 'docs/decisions/*.md'
+crosslink remove .crosslink/adr.json --glob 'docs/decisions/*.md'
+```
+
+create/add/removeは`--glob`を繰り返せる。個別指定と同時に使え、globだけの作成・編集もできる。
+入力はCWD、保存は管理ファイル基準。シェル展開を避けるためパターンを引用する。`--`以降は個別パスであり、globと推測しない。
+removeの個別パスはfiles内の登録だけを外す。glob由来だけのパスに個別removeを使うと`NOT_A_MEMBER`で拒否し、パターンの変形や除外規則を作らない。
+`--glob`によるremoveは変換後に同じ選択文字列で登録されているパターンを外す。一致結果が同じ別パターンを推測して外さない。
+各globが0一致、または全実メンバー2件未満でも編集自体は保存できる。check/confirmは拒否する。
+
+通常checkの件数表示は維持する。詳細表示は`Glob`、初回は`No baseline`、新規一致は`Added`、旧一致の消失は`Removed`を提示する。
+現在のfilesは現メンバーだけを保持し、removedは別配列とする。relatedは現在のメンバーを逆引きし、最後の確認から外れたパスも履歴上の直接関連として提示する。removedは現在の所属とは呼ばない。これらを直接逆引きする（グループ間の伝搬はしない）。
+
+JSON topのversionは1のまま。glob利用グループだけに互換な追加項目を付ける。
+
+| 項目               | 内容                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| globs              | 選択パターン配列（管理ファイル基準）                         |
+| added              | 最後の確認にない現在のパス配列。初回・探索不完全はnull       |
+| removed            | 現集合にない前回の`{path, hash}`配列。初回・探索不完全はnull |
+| membershipComplete | 選択範囲の展開が完了したか。ファイル内容の可読性とは別       |
+
+既存filesのpath/hash/changedは維持する。addedのchangedはtrue、比較元なしはnull。removedのhashは最後の確認値で、現在のハッシュではない。
+0一致は展開完了でも検査エラー。探索途中失敗や集合変化では増減を断定せずnullとする。個別消失は従来のFILE_UNREADABLE。
+snapshotは定義のraw、管理ファイルのパス、展開後の全パスとハッシュを結び付ける。確認操作で再検査し、追加・削除・renameも旧snapshotとして拒否する。
+構文・安全境界は[glob選択仕様](glob-selection.md)、要件は[動的集合](../requirements/dynamic-membership.md)を参照する。
+
+## 開発用pre-commitと動的参照
+
+pre-commitはindexのツリーを取り出し、その外のruntimeに同じstagedソースのCLIとpackage.jsonをビルドする。
+型解決に注入したnode_modulesリンクだけをCLI検査前に取り除く。ユーザーがstageしたdistやnode_modulesの実ファイルを検査用生成物と混同して削除しない。
+非空globsを持つグループでは、混在する固定filesも含め全参照をindexツリー内で再現できることを要求する。
+絶対glob、リポジトリ外へ出る相対glob、絶対/外部の個別指定、外部を指すメンバーsymlinkは`STAGED_REFERENCE_UNSUPPORTED`でコミットを拒否し、修正・再検査・再確認を案内する。
+通常CLIの絶対/外部参照は引き続き使える。既存の静的グループはhookでも従来の外部固定参照を維持し、その参照先はライブFSに依存する。この場合に全参照をindexのみで検査できたとは保証しない。

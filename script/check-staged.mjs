@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep, win32 } from "node:path";
 
 function git(args, cwd, env = process.env) {
   const result = spawnSync("git", args, {
@@ -65,6 +65,36 @@ function diagnostics(report, snapshot) {
   for (const error of report.errors) console.error(`${error.code}: ${error.message}`);
 }
 
+// 動的グループは、全参照をindexツリー内で再現できる場合だけ検査する。
+// 既存の静的グループに対する外部参照契約はここでは変更しない。
+function validateStagedReferences(report, snapshot) {
+  const inside = (target) => {
+    const path = relative(snapshot, target);
+    return path !== ".." && !path.startsWith(".." + sep) && !isAbsolute(path);
+  };
+  for (const group of report.groups) {
+    if (!group.globs?.length) continue;
+    const reject = (reference) => {
+      throw new Error(`STAGED_REFERENCE_UNSUPPORTED: Cannot reproduce reference in the index tree: ${reference} (${relative(snapshot, group.file)}). Use repository-relative selectors and files whose targets remain inside the repository, then inspect and confirm again.`);
+    };
+    for (const pattern of group.globs) {
+      const portable = pattern.replaceAll("\\", "/");
+      if (isAbsolute(portable) || win32.isAbsolute(portable)) reject(pattern);
+      let depth = relative(snapshot, dirname(group.file)).split(sep).filter(Boolean).length;
+      for (const part of portable.split("/")) {
+        if (!part || part === "." || part === "**") continue;
+        depth += part === ".." ? -1 : 1;
+        if (depth < 0) reject(pattern);
+      }
+    }
+    for (const member of group.files) {
+      const target = resolve(dirname(group.file), member.path);
+      if (isAbsolute(member.path) || win32.isAbsolute(member.path) || !inside(target)) reject(member.path);
+      if (existsSync(target) && !inside(realpathSync(target))) reject(member.path);
+    }
+  }
+}
+
 function checkStaged() {
   if (Number(process.versions.node.split(".")[0]) < 24)
     throw new Error("pre-commit checks require Node.js 24 or later.");
@@ -80,7 +110,10 @@ function checkStaged() {
     return 0;
   }
 
-  const snapshot = mkdtempSync(join(tmpdir(), "crosslink-index-"));
+  const temporary = mkdtempSync(join(tmpdir(), "crosslink-index-"));
+  const tree = join(temporary, "tree");
+  mkdirSync(tree);
+  const snapshot = realpathSync(tree);
   try {
     // 作業ツリーとindexを書き換えず、ステージされた属性を使って取り出す。
     // Gitが渡す相対indexパスは、検査用work-treeへ切り替える前に絶対化する。
@@ -104,11 +137,9 @@ function checkStaged() {
     if (!existsSync(join(root, "node_modules")))
       throw new Error("Development dependencies are required. Run pnpm install --frozen-lockfile.");
     const dependencies = join(snapshot, "node_modules");
-    if (existsSync(dependencies))
-      throw new Error("Remove node_modules from Git tracking.");
-    symlinkSync(
-      join(root, "node_modules"),
-      dependencies,
+    const injected = !existsSync(dependencies);
+    if (injected) symlinkSync(
+      join(root, "node_modules"), dependencies,
       process.platform === "win32" ? "junction" : "dir",
     );
     // CIと同じ設定・対象に対して、書き換えずに整形とlintを検査する。
@@ -123,17 +154,20 @@ function checkStaged() {
       return 0;
     }
     // 古い生成物は使わず、コミットされるCLIそのものを検査用にビルドする。
-    const dist = join(snapshot, "dist");
-    rmSync(dist, { recursive: true, force: true });
+    const runtime = join(temporary, "runtime");
+    mkdirSync(runtime);
+    copyFileSync(join(snapshot, "package.json"), join(runtime, "package.json"));
+    const dist = join(runtime, "dist");
     const built = node(
       toolEntry(root, "typescript", "tsc"),
-      ["--project", join(snapshot, "tsconfig.build.json"), "--outDir", dist],
+      ["--project", join(snapshot, "tsconfig.build.json"), "--outDir", dist, "--typeRoots", join(root, "node_modules/@types")],
       snapshot,
     );
     if (built.status !== 0) {
       process.stderr.write(built.stdout + built.stderr);
       throw new Error("Cannot build the staged CLI. Check the source and configuration.");
     }
+    if (injected) rmSync(dependencies);
     const checked = node(join(dist, "cli.js"), ["check", "--json"], snapshot);
     let report;
     try {
@@ -143,6 +177,7 @@ function checkStaged() {
       process.stderr.write(checked.stdout + checked.stderr);
       throw new Error("Cannot obtain an inspection report from the staged CLI.");
     }
+    validateStagedReferences(report, snapshot);
     if (checked.status !== 0) {
       diagnostics(report, snapshot);
       console.error(
@@ -163,7 +198,7 @@ function checkStaged() {
     );
     return 0;
   } finally {
-    rmSync(snapshot, { recursive: true, force: true, maxRetries: 3 });
+    rmSync(temporary, { recursive: true, force: true, maxRetries: 3 });
   }
 }
 

@@ -16,8 +16,11 @@ export function inspectConfirmation(
     changed: group.confirmation ? group.confirmation.hashes[member.path] !== member.hash : null,
   }));
   const confirmed =
-    group.files.length >= 2 &&
-    members.length === group.files.length &&
+    members.length >= 2 &&
+    (group.globs?.length
+      ? true
+      : group.files.length >= 2 && members.length === group.files.length) &&
+    Object.keys(group.confirmation?.hashes ?? {}).length === members.length &&
     group.confirmation?.definition === definitionHash &&
     files.every((file) => file.hash !== null && file.changed === false);
   return { status: confirmed ? "confirmed" : "unconfirmed", files };

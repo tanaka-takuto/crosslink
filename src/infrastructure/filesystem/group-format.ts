@@ -4,7 +4,7 @@ import { validateGroup, type Group } from "../../domain/group.js";
 export const groupKind = "crosslink-group";
 export interface GroupRecord extends Group {
   kind?: typeof groupKind;
-  version: 1;
+  version: 1 | 2;
 }
 
 function object(value: unknown): value is Record<string, unknown> {
@@ -31,14 +31,16 @@ export function parseGroup(text: string): GroupRecord {
     invalid("INVALID_JSON", "Invalid management JSON.");
   }
   if (!object(value)) invalid("INVALID_DEFINITION", "Management file must be a JSON object.");
-  fields(value, ["kind", "version", "name", "reason", "files", "confirmation"]);
+  fields(value, ["kind", "version", "name", "reason", "files", "globs", "confirmation"]);
   if (value.kind !== undefined && value.kind !== groupKind)
     invalid("INVALID_DEFINITION", "Invalid management file kind.");
-  if (value.version !== 1)
+  if (value.version !== 1 && value.version !== 2)
     throw new CrosslinkError(
       "UNSUPPORTED_VERSION",
-      "Only management file version 1 is supported. Use a compatible crosslink version or restore a supported copy, then run check again.",
+      "Only management file versions 1 and 2 are supported. Use a compatible crosslink version or restore a supported copy, then run check again.",
     );
+  if (value.version === 1 && value.globs !== undefined)
+    invalid("INVALID_DEFINITION", "Glob definitions require management file version 2.");
   try {
     validateGroup(value as unknown as Group);
   } catch (error) {

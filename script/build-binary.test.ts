@@ -5,8 +5,11 @@ import {
   copyFileSync,
   existsSync,
   mkdtempSync,
+  mkdirSync,
   readFileSync,
+  realpathSync,
   readdirSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -169,4 +172,36 @@ describe("standalone SEA", () => {
     expect(rejected.stderr).toBe("");
     expect(JSON.parse(rejected.stdout).result).toBe("error");
   });
+});
+
+it("tracks glob additions, deletion and same-content rename with SEA alone and an empty PATH", () => {
+  const { root, call } = fixture();
+  mkdirSync(join(root, "adr"));
+  writeFileSync(join(root, "design"), "design");
+  for (const file of ["one.md", "two.md"]) writeFileSync(join(root, "adr", file), "same");
+  const created = call("create", "ADR", "design", "--glob", "adr/**/*.md", "--reason", "review");
+  expect(created.status, created.stderr).toBe(0);
+  const record = realpathSync(join(root, ".crosslink/ADR.json"));
+  const review = join(root, "review.json");
+  const check = () => call("check", "--json");
+  const confirm = () => { writeFileSync(review, check().stdout); expect(call("confirm", record, "--snapshot", review).status).toBe(0); };
+  confirm();
+  writeFileSync(join(root, "adr/added.md"), "same");
+  expect(check().status).toBe(1);
+  const before = readFileSync(record, "utf8");
+  expect(call("confirm", record, "--snapshot", review).status).toBe(2);
+  expect(readFileSync(record, "utf8")).toBe(before);
+  confirm();
+  renameSync(join(root, "adr/added.md"), join(root, "adr/renamed.md"));
+  const result = JSON.parse(check().stdout);
+  expect(result.groups[0].added).toEqual(["../adr/renamed.md"]);
+  expect(result.groups[0].removed.map((f: { path: string }) => f.path)).toEqual(["../adr/added.md"]);
+  expect(call("report", "--format", "html", "--output", "glob.html").status).toBe(1);
+  expect(readFileSync(join(root, "glob.html"), "utf8")).toContain("Glob selectors");
+  expect(call("confirm", record, "--snapshot", review).status).toBe(2);
+  confirm();
+  rmSync(join(root, "adr/renamed.md"));
+  expect(check().status).toBe(1);
+  confirm();
+  expect(check().status).toBe(0);
 });
