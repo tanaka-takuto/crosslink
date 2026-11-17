@@ -59,7 +59,7 @@
       "../script/build-binary.test.ts": "19e80ba01251dad8a4050042039daf6f776fa2bbd63013491fb11edade5f5b24",
       "../script/check-staged.mjs": "0da48d9844c44bd0dfa2e909880115e849710a88ded5a8dc42bf66d1aa74a22e",
       "../script/check-staged.test.mjs": "15cf98cf5410558eb57bd7f899c2bec744e746afaa2a8a06dfee5438e7f63847",
-      "../src/application/group-operations.test.ts": "2e284d4e7d9b444227f3b9cb3dfcc60c8d87c44b7b7bc5236b0e2cc84279856c",
+      "../src/application/group-operations.test.ts": "c0f8444847e919b1f756bd0236ec9cea8e5f7161043c29ce8ea9839bce720e0a",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/application/inspect-group.test.ts": "4f4776e1a31a0ebc8bae6259e77ba168f0031adfeccc2e9b2a37f3b3f7995721",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",

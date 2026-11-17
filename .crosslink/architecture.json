@@ -57,7 +57,7 @@
     "hashes": {
       "../docs/development/architecture.md": "6a1c5f5e64c4b0efbd0630383114ceaa3ac2deed8722c400f5c15f66365f00e6",
       "../docs/development/toolchain.md": "36eec38ada684c2bf344a18e9a48a12174a017186014c373034dcf974a2a0172",
-      "../src/application/group-operations.test.ts": "2e284d4e7d9b444227f3b9cb3dfcc60c8d87c44b7b7bc5236b0e2cc84279856c",
+      "../src/application/group-operations.test.ts": "c0f8444847e919b1f756bd0236ec9cea8e5f7161043c29ce8ea9839bce720e0a",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/application/inspect-group.test.ts": "4f4776e1a31a0ebc8bae6259e77ba168f0031adfeccc2e9b2a37f3b3f7995721",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
