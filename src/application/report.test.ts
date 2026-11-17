@@ -1,10 +1,25 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { CrosslinkError } from "../domain/errors.js";
 import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
 import { generateReport, type HtmlReport, type ReportServices } from "./report.js";
+import { confirmGroups } from "./group-operations.js";
+import { inspectGroup } from "./inspect-group.js";
+import { defaults } from "../infrastructure/filesystem/settings.js";
+import { run } from "../interfaces/cli/commands.js";
+import { human } from "../interfaces/cli/output.js";
+import { renderHtmlReport } from "../interfaces/html/report.js";
 
 const roots: string[] = [];
 function fixture() {
@@ -204,3 +219,137 @@ it("rejects prospective glob outputs through a directory symlink alias", () => {
   expect(result.report.errors.at(-1)?.code).toBe("REPORT_INPUT_COLLISION");
   expect(capture.written).toEqual([]);
 });
+
+const definitionFailures = ["ENOENT", "EACCES"].flatMap((failure) =>
+  [false, true].flatMap((dynamic) =>
+    [false, true].map((baseline) => ({ failure, dynamic, baseline })),
+  ),
+);
+it.for(definitionFailures)(
+  "keeps collected membership unverified after final definition $failure (dynamic=$dynamic, baseline=$baseline)",
+  ({ failure, dynamic, baseline }, context) => {
+    if (failure === "EACCES" && process.platform === "win32") context.skip();
+    const root = fixture(),
+      file = join(root, ".crosslink/valid.json");
+    if (dynamic)
+      writeFileSync(
+        file,
+        JSON.stringify({
+          version: 2,
+          name: "valid",
+          reason: "理由",
+          files: ["../a"],
+          globs: ["../[bc]"],
+        }),
+      );
+    if (baseline) {
+      const before = inspectGroup(file, filesystemPorts, defaults);
+      confirmGroups([file], new Map([[file, before.snapshot!]]), filesystemPorts, defaults);
+    }
+    if (dynamic) {
+      rmSync(join(root, "b"));
+      writeFileSync(join(root, "c"), "same content at another path");
+    }
+    const raw = readFileSync(file),
+      mode = statSync(file).mode & 0o777;
+    for (const operation of ["report", "check", "related"]) {
+      let injected = false,
+        observed: string | undefined,
+        html = "";
+      const ports = {
+        ...filesystemPorts,
+        groups: {
+          ...filesystemPorts.groups,
+          readRaw: (target: string) => {
+            try {
+              return filesystemPorts.groups.readRaw(target);
+            } catch (error) {
+              observed = (error as NodeJS.ErrnoException).code;
+              throw error;
+            }
+          },
+        },
+        files: {
+          ...filesystemPorts.files,
+          hash: (target: string) => {
+            const value = filesystemPorts.files.hash(target);
+            if (!injected) {
+              injected = true;
+              if (failure === "ENOENT") rmSync(file);
+              else chmodSync(file, 0);
+              expect(() => readFileSync(file)).toThrow(expect.objectContaining({ code: failure }));
+            }
+            return value;
+          },
+        },
+      };
+      let result;
+      try {
+        result = run(
+          [
+            operation,
+            ...(operation === "report"
+              ? ["--format", "html", "--output", "report.html"]
+              : operation === "related"
+                ? ["a"]
+                : []),
+            "--file",
+            file,
+          ],
+          root,
+          ports,
+          metadata,
+          {
+            now: () => "2026-11-17T00:00:00Z",
+            render: (model) => {
+              html = renderHtmlReport(model);
+              return html;
+            },
+            writeNew: (target, contents) => writeFileSync(target, contents, { flag: "wx" }),
+          },
+        );
+      } finally {
+        if (failure === "ENOENT") writeFileSync(file, raw, { mode });
+        else chmodSync(file, mode);
+      }
+      expect(readFileSync(file)).toEqual(raw);
+      expect(statSync(file).mode & 0o777).toBe(mode);
+      expect(injected).toBe(true);
+      expect(observed).toBe(failure);
+      expect(result!.code).toBe(2);
+      const group = result!.report.groups[0]!;
+      expect(group.reason).toBe("理由");
+      expect(group.files.map((member) => member.path)).toEqual(
+        dynamic ? ["../a", "../c"] : ["../a", "../b"],
+      );
+      expect(group.snapshot).toBeNull();
+      expect(group.errors.map((error) => error.code)).toEqual(["IO_ERROR"]);
+      expect(JSON.parse(JSON.stringify(group))).toMatchObject({ definitionVerified: false });
+      if (dynamic) {
+        expect(group.membershipComplete).toBe(true);
+        expect(group.added).toBeNull();
+        expect(group.removed).toBeNull();
+      }
+      const text = human(result!.report, root, true);
+      expect(text).toContain(
+        "Management definition could not be verified; current member list may be incomplete.",
+      );
+      expect(text).not.toMatch(/  (Added|Removed):/);
+      if (operation === "report") {
+        const index = html.slice(html.indexOf('<section id="files"'));
+        expect(index).toContain("2 member paths collected");
+        expect(index).toContain("total member file count is unknown");
+        expect(index).toContain("run check again, and regenerate");
+        expect(index).not.toContain("All 2");
+        expect(html).toContain('href="#files">File index (2 found, incomplete)');
+        expect(html).toContain("Collected member files (2, incomplete)");
+        if (dynamic) {
+          expect(html).toContain("Membership comparison unavailable");
+          expect(html).not.toContain("No baseline for membership comparison");
+          expect(html).not.toContain('class="badge added"');
+          expect(html).not.toContain("Removed since last confirmation (");
+        }
+      }
+    }
+  },
+);

@@ -14,6 +14,8 @@ export interface Inspection {
   added?: string[] | null;
   removed?: { path: string; hash: string }[] | null;
   membershipComplete?: boolean;
+  /** False if reading or revalidating the definition failed; omitted on ordinary inspections. */
+  definitionVerified?: boolean;
   snapshot: string | null;
   errors: Problem[];
 }
@@ -57,11 +59,13 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
     reason: "",
     status: "unconfirmed",
     files: [],
+    definitionVerified: false,
     snapshot: null,
     errors: [],
   };
   try {
     const { group, raw } = ports.groups.read(file);
+    delete result.definitionVerified;
     result.name = group.name;
     result.reason = group.reason;
     const selection = selectMembers(file, group, ports);
@@ -166,8 +170,10 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
       }
     }
     if (result.errors.length === 0) {
+      result.definitionVerified = false;
       if (ports.groups.readRaw(file) !== raw)
         throw new CrosslinkError("GROUP_CHANGED", "Management file changed during inspection.");
+      delete result.definitionVerified;
       result.snapshot = ports.digest(
         JSON.stringify({ file, raw, files: result.files.map((entry) => [entry.path, entry.hash]) }),
       );
@@ -175,6 +181,10 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
     }
   } catch (error) {
     result.errors.push(problem(error));
+    if (result.definitionVerified === false && result.globs) {
+      result.added = null;
+      result.removed = null;
+    }
   }
   return result;
 }

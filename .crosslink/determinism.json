@@ -24,10 +24,10 @@
     "definition": "2723a673e580f557da0b1cb5d7759256eef75cffcb41e5f846d1692a474d32d0",
     "hashes": {
       "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
-      "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
+      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../src/application/inspect-group.test.ts": "4926e45d6be73cf914b6b16bccd413770ce3e5c5c912cd42f7f25f510e8c55de",
-      "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
+      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
+      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
       "../src/domain/group.test.ts": "4f7bef6e6a4f01e7415f2b4c1595d4f52978dc0bf2aea8bf3a72ae63c0017438",
       "../src/domain/group.ts": "fd0b1e0514ca9d384fe517644668b98296bef0c0b0d829904c7b4f7072d4207d",
       "../src/infrastructure/filesystem/content-hash.test.ts": "bdfbb0c99a10c010d4e21afe0bd204d102e4f7b899587f2f0b7964689e2ae431",
@@ -37,7 +37,7 @@
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
       "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c",
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
-      "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd"
+      "../src/interfaces/cli/output.ts": "2972ee86f0a7896a525a34b86b1f868ada4238a1c028133892a8d623b24ae2a7"
     }
   }
 }

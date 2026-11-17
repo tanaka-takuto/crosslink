@@ -22,13 +22,13 @@
   "confirmation": {
     "definition": "aaa7003361bb4f782ac745bf58cd1919934b90f6eaa9dc3e3b76ab0a3f1c38e9",
     "hashes": {
-      "../docs/requirements/html-report.md": "affbb6428af139d36ae0c3ee585d7520ed3060c88cd91b96bde01b7b7dc948db",
+      "../docs/requirements/html-report.md": "39262783b0789393cee0ebb1fbfd793e592b752a6bee4789147288313408b8dc",
       "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
-      "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
+      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../src/application/inspect-group.test.ts": "4926e45d6be73cf914b6b16bccd413770ce3e5c5c912cd42f7f25f510e8c55de",
-      "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
-      "../src/application/report.test.ts": "df0ae5a0116d4d2e145d373fbb568f8af413d01e928d52093790da9cf8e113b1",
+      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
+      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
+      "../src/application/report.test.ts": "ccbb9769a0037aaf7af216a626a2cbc1d3a9b08394d528a92404fa07f51ba041",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
       "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",

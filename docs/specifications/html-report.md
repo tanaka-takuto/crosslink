@@ -61,6 +61,7 @@ removedは現メンバーでもFile indexの所属でもなく、旧パスと最
 ## File indexの完全性
 
 範囲探索が未完了、globメンバー列挙が不完全、管理定義の読取/解釈が不能、検査中に定義が変化した場合は、File index局所とnavにincompleteを表示する。
+初回取得した定義の最終再読取がENOENT/EACCES等で失敗した場合も、`definitionVerified: false`から不完全と判断する。初回の理由・収集済みパスは保持し、グループ見出しはCollectedとして現在集合の完全性を断定しない。globの追加/削除比較は未検証とし、No baselineとは表示しない。
 取得済みのパス・直接所属カードは残し、件数は`N found, incomplete`として収集数に限定する。0件しか収集できない場合はnavを`File index (incomplete)`とし、All 0やNo member filesで不存在を断定しない。
 グループカードでも、定義不明は`Member files unavailable`、部分列挙は`Collected member files (N, incomplete)`とし、不明な空状態をNo registered member filesと表示しない。
 File index内に総件数が不明であることと、`Resolve the inspection errors, run check again, and regenerate this report.`の案内を表示する。

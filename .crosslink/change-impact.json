@@ -18,10 +18,10 @@
     "definition": "d25cbf0760fce5ee6346527564ddf2c160a22ea86628da0178be90e62db89159",
     "hashes": {
       "../docs/requirements/change-impact.md": "a24a0f6769eb1ccd4ba465a83c72f31b029858d6e8fc638f59bedce92c8ec390",
-      "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
+      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../src/application/inspect-group.test.ts": "4926e45d6be73cf914b6b16bccd413770ce3e5c5c912cd42f7f25f510e8c55de",
-      "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
+      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
+      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "8aa547ad7d41e3a0c1c85da179758d1b834db30638de615445f4fad26ff472c4",
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",

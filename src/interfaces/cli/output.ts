@@ -23,7 +23,11 @@ export function human(report: Report, cwd: string, verbose = false): string {
     if (compact) continue;
     lines.push(`  Reason: ${group.reason}`);
     for (const pattern of group.globs ?? []) lines.push(`  Glob: ${pattern}`);
-    if (group.membershipComplete === false)
+    if (group.definitionVerified === false)
+      lines.push(
+        "  Management definition could not be verified; current member list may be incomplete.",
+      );
+    else if (group.membershipComplete === false)
       lines.push("  Membership comparison unavailable; current member list may be incomplete.");
     for (const file of group.files)
       lines.push(

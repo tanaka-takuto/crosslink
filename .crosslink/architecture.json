@@ -59,12 +59,12 @@
       "../docs/development/toolchain.md": "10c0b2e6f0cd61bab17ba7096ee89b24d9ea8581109dea99786836cc6c9d786c",
       "../src/application/group-operations.test.ts": "cd2b01e9435964fecdb25911014fdc77371c7918b0681637ecf15ff2954e7c8a",
       "../src/application/group-operations.ts": "62b7c4134a6adaaabf8bd6e0623bcfd1fa4b3dd5acefd5d33cc6b41e9ffcde33",
-      "../src/application/inspect-group.test.ts": "4926e45d6be73cf914b6b16bccd413770ce3e5c5c912cd42f7f25f510e8c55de",
-      "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
+      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
+      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
       "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",
-      "../src/application/report.test.ts": "df0ae5a0116d4d2e145d373fbb568f8af413d01e928d52093790da9cf8e113b1",
+      "../src/application/report.test.ts": "ccbb9769a0037aaf7af216a626a2cbc1d3a9b08394d528a92404fa07f51ba041",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
@@ -98,10 +98,10 @@
       "../src/interfaces/cli/member-path.test.ts": "c939775534b33c157bab7098ba66c817fc9504b11cac434da713d4f317dc0483",
       "../src/interfaces/cli/member-path.ts": "c028d67de6ad1c5aef52a0af8115de49ebe0bd36b2190183e8f24efc79cb908e",
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
-      "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd",
+      "../src/interfaces/cli/output.ts": "2972ee86f0a7896a525a34b86b1f868ada4238a1c028133892a8d623b24ae2a7",
       "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
       "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
-      "../src/interfaces/html/report.ts": "5f5afbd39e9174ce85d5013edc58bd073399011061a357dd2368e4287f0e3f55"
+      "../src/interfaces/html/report.ts": "57e346e4762d7c495a2489d7c1b6434364cdb6675b77c853788b4193d58a47af"
     }
   }
 }

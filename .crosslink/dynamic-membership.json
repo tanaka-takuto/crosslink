@@ -51,20 +51,20 @@
     "hashes": {
       "../CONTRIBUTING.md": "0d383e64a4d495bddd88a26be472f1ad0e34b330d8336976e6d9a4d0b5d3b977",
       "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
-      "../docs/requirements/dynamic-membership.md": "7b37b794f26e64e28202508c21f67031ff6cca5419d4cf341c2e6a28f11ff665",
-      "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
+      "../docs/requirements/dynamic-membership.md": "3e2bb1cf126885d98d147d0d1bf507f83217e6f08f01976f418a410d6dbaa67b",
+      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
       "../docs/specifications/glob-selection.md": "25bd51b512292299464e4194d7e412db3f925624282ae45865158b43054987f3",
-      "../docs/specifications/html-report.md": "4c60450d91835c424eae939fde0f71b17ffa3a9e0869743fd112071acdc4df0e",
+      "../docs/specifications/html-report.md": "91e3999d7ffbdf664769a2d01302cf2c837db93a7e4b8faa34f223e0d15201d8",
       "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
       "../script/build-binary.test.ts": "2f3fbcbbde2d1cad23322bf95dbe2175dea8e23008ba7eb1a5e4445bce7cfbb5",
       "../script/check-staged.mjs": "198ab9a3cda1be64b68733b6bd347bec92945cfa93f099bdced3425185f26594",
       "../script/check-staged.test.mjs": "1abb315876c78eb3e5cba72c610dc7c597881b659374042a8ecc69863894bf43",
       "../src/application/group-operations.test.ts": "cd2b01e9435964fecdb25911014fdc77371c7918b0681637ecf15ff2954e7c8a",
       "../src/application/group-operations.ts": "62b7c4134a6adaaabf8bd6e0623bcfd1fa4b3dd5acefd5d33cc6b41e9ffcde33",
-      "../src/application/inspect-group.test.ts": "4926e45d6be73cf914b6b16bccd413770ce3e5c5c912cd42f7f25f510e8c55de",
-      "../src/application/inspect-group.ts": "fa4176141f9aea2fac528b73a61991ed1d42d8516ec54329bc6a6a4260ba96af",
+      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
+      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
       "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",
-      "../src/application/report.test.ts": "df0ae5a0116d4d2e145d373fbb568f8af413d01e928d52093790da9cf8e113b1",
+      "../src/application/report.test.ts": "ccbb9769a0037aaf7af216a626a2cbc1d3a9b08394d528a92404fa07f51ba041",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
@@ -86,10 +86,10 @@
       "../src/interfaces/cli/member-path.test.ts": "c939775534b33c157bab7098ba66c817fc9504b11cac434da713d4f317dc0483",
       "../src/interfaces/cli/member-path.ts": "c028d67de6ad1c5aef52a0af8115de49ebe0bd36b2190183e8f24efc79cb908e",
       "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
-      "../src/interfaces/cli/output.ts": "93bf33d5b0712cfe8fa9fe08cb446d0e0991430f38d14d40e7652a335371a3dd",
+      "../src/interfaces/cli/output.ts": "2972ee86f0a7896a525a34b86b1f868ada4238a1c028133892a8d623b24ae2a7",
       "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
       "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
-      "../src/interfaces/html/report.ts": "5f5afbd39e9174ce85d5013edc58bd073399011061a357dd2368e4287f0e3f55"
+      "../src/interfaces/html/report.ts": "57e346e4762d7c495a2489d7c1b6434364cdb6675b77c853788b4193d58a47af"
     }
   }
 }

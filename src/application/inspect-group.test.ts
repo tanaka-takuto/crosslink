@@ -63,6 +63,7 @@ describe("inspection", () => {
     );
     expect(result.status).toBe("unconfirmed");
     expect(result.snapshot).toBeNull();
+    expect(result).not.toHaveProperty("definitionVerified");
     expect(readFileSync(file, "utf8")).toBe(before);
   });
 
@@ -103,6 +104,7 @@ describe("inspection", () => {
     writeFileSync(file, "{");
     expect(inspectGroup(file).errors.length).toBeGreaterThan(0);
     expect(inspectGroup(file).status).toBe("unconfirmed");
+    expect(inspectGroup(file).definitionVerified).toBe(false);
   });
 });
 
@@ -305,4 +307,48 @@ it("does not expose an earlier hash as current when the final content recheck be
   expect(result.errors.map((error) => error.code)).toContain("FILE_UNREADABLE");
   expect(result.files.find((member) => member.path === "../a")?.hash).toBeNull();
   expect(result.snapshot).toBeNull();
+  expect(result).not.toHaveProperty("definitionVerified");
+});
+
+it("invalidates membership comparison when the final readable definition differs", () => {
+  const { root, file } = fixture();
+  writeFileSync(
+    file,
+    JSON.stringify({
+      version: 2,
+      name: "test",
+      reason: "review",
+      files: [],
+      globs: ["../[ab]"],
+      confirmation: { definition: "a".repeat(64), hashes: { "../old": "b".repeat(64) } },
+    }),
+  );
+  let changed = false;
+  const result = inspect(
+    file,
+    {
+      ...filesystemPorts,
+      files: {
+        ...filesystemPorts.files,
+        hash: (target) => {
+          const value = filesystemPorts.files.hash(target);
+          if (!changed) {
+            changed = true;
+            const definition = JSON.parse(readFileSync(file, "utf8"));
+            definition.reason = "changed reason";
+            writeFileSync(file, JSON.stringify(definition));
+          }
+          return value;
+        },
+      },
+    },
+    defaults,
+  );
+  expect(result.errors.map((error) => error.code)).toEqual(["GROUP_CHANGED"]);
+  expect(result.definitionVerified).toBe(false);
+  expect(result.membershipComplete).toBe(true);
+  expect(result.added).toBeNull();
+  expect(result.removed).toBeNull();
+  expect(result.snapshot).toBeNull();
+  expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
 });

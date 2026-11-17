@@ -25,7 +25,7 @@
       "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
       "../docs/development/distribution.md": "c85d349987beae90585e3cdfb966c7fa5aa19bd362159b40e032c99edb9df2c7",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
-      "../docs/specifications/cli.md": "739f5e12ebc3437fb6de78610dee273155744315a912640493b81ca0efe11456",
+      "../docs/specifications/cli.md": "8225930256670801014c4290eac7854b0ce4f2d0b9879af017c569986e995e94",
       "../package.json": "1373120e2df0275272f0f119d69edfa1f51827f0dc34edab046a9318c3d202bf",
       "../script/build-binary.test.ts": "2f3fbcbbde2d1cad23322bf95dbe2175dea8e23008ba7eb1a5e4445bce7cfbb5",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",

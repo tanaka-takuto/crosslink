@@ -135,7 +135,7 @@ removeの個別パスはfiles内の登録だけを外す。glob由来だけの�
 通常checkの件数表示は維持する。詳細表示は`Glob`、初回は`No baseline`、新規一致は`Added`、旧一致の消失は`Removed`を提示する。
 現在のfilesは現メンバーだけを保持し、removedは別配列とする。relatedは現在のメンバーを逆引きし、最後の確認から外れたパスも履歴上の直接関連として提示する。removedは現在の所属とは呼ばない。これらを直接逆引きする（グループ間の伝搬はしない）。
 
-JSON topのversionは1のまま。glob利用グループだけに互換な追加項目を付ける。
+JSON topのversionは1のまま。globの選択・増減項目はglob利用グループだけに互換な追加項目として付ける。
 
 | 項目               | 内容                                                         |
 | ------------------ | ------------------------------------------------------------ |
@@ -147,6 +147,8 @@ JSON topのversionは1のまま。glob利用グループだけに互換な追加
 既存filesのpath/hash/changedは維持する。addedのchangedはtrue、比較元なしはnull。removedのhashは最後の確認値で、現在のハッシュではない。
 0一致は展開完了でも検査エラー。探索途中失敗や集合変化では増減を断定せずnullとする。個別消失は従来のFILE_UNREADABLE。
 snapshotは定義のraw、管理ファイルのパス、展開後の全パスとハッシュを結び付ける。確認操作で再検査し、追加・削除・renameも旧snapshotとして拒否する。
+
+管理定義の初回読取/解釈、または最終raw再確認が失敗したグループには、static/dynamicとも任意項目`definitionVerified: false`を追加する。通常はこの項目を省略し、省略を原子的なFS保証とは扱わない。`membershipComplete`は選択範囲の列挙可否であり、定義再検証の可否とは別である。最終定義再確認失敗時はsnapshotを発行せず、収集した理由/パス/内容比較と診断は残すが、globの`added`/`removed`はnullとする。verbose/relatedは定義を検証できず現在メンバー一覧が不完全になりうる旨を表示する。通常のメンバー内容だけFILE_UNREADABLEの場合はこの項目を付けず、既知のパス集合を維持する。
 構文・安全境界は[glob選択仕様](glob-selection.md)、要件は[動的集合](../requirements/dynamic-membership.md)を参照する。
 
 ## 開発用pre-commitと動的参照

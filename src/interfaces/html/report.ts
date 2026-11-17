@@ -56,6 +56,7 @@ function incompleteMembers(group: Inspection): boolean {
   // 有効な定義は空でないreasonを持つ。未取得の定義は既存の空reasonで区別する。
   return (
     group.membershipComplete === false ||
+    group.definitionVerified === false ||
     !group.reason ||
     group.errors.some((error) => error.code === "GROUP_CHANGED")
   );
@@ -97,7 +98,7 @@ export function renderHtmlReport(report: HtmlReport): string {
 <p class="label">Management file</p><code class="path">${escape(group.file)}</code>${local(group.file)}
 <p class="muted"><small>Local links may be blocked by your browser or unavailable on another computer. Use the adjacent Copy path button or select the displayed path.</small></p>
 ${diagnostics(group.errors, "Inspection errors")}
-${group.globs?.length ? `<p class="label">Glob selectors</p><ul>${group.globs.map((pattern) => `<li><code class="path">${escape(pattern)}</code></li>`).join("")}</ul><p class="muted">Patterns resolve from the management file. Path changes appear as Added and Removed.</p>${group.membershipComplete === false ? `<p class="notice">Membership comparison unavailable. Current member list may be incomplete; resolve the inspection errors and regenerate.</p>` : group.added === null ? `<p class="muted">No baseline for membership comparison.</p>` : `<p class="muted">${group.added?.length ?? 0} added · ${group.removed?.length ?? 0} removed since last confirmation.</p>`}` : ""}
+${group.globs?.length ? `<p class="label">Glob selectors</p><ul>${group.globs.map((pattern) => `<li><code class="path">${escape(pattern)}</code></li>`).join("")}</ul><p class="muted">Patterns resolve from the management file. Path changes appear as Added and Removed.</p>${incompleteMembers(group) ? `<p class="notice">Membership comparison unavailable. Current member list may be incomplete; resolve the inspection errors and regenerate.</p>` : group.added === null ? `<p class="muted">No baseline for membership comparison.</p>` : `<p class="muted">${group.added?.length ?? 0} added · ${group.removed?.length ?? 0} removed since last confirmation.</p>`}` : ""}
 <p class="label">${!group.reason ? "Member files unavailable" : incompleteMembers(group) ? `Collected member files (${group.files.length}, incomplete)` : `${group.globs?.length ? "Current" : "All"} member files (${group.files.length})`}</p>
 ${
   group.files.length
