@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
@@ -45,4 +53,13 @@ it("fails for missing paths and directories instead of treating them as file con
     }),
   );
   expect(() => hashFile(join(root, "missing"))).toThrow();
+});
+
+it("uses one physical identity for existing native path aliases", () => {
+  const root = fixture(),
+    file = join(root, "café"),
+    alias = join(root, "cafe\u0301");
+  writeFileSync(file, "same file");
+  if (existsSync(alias)) expect(hashFile(alias).identity).toBe(hashFile(file).identity);
+  else expect(() => hashFile(alias)).toThrow();
 });

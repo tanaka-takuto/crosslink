@@ -31,7 +31,7 @@
       "../src/infrastructure/filesystem/group-storage.test.ts": "8f4a572ed8d4aaaadf12d7b98520e96ab358c88d29b140ad3fbbd55b27e9b578",
       "../src/infrastructure/filesystem/group-storage.ts": "84eae7c8722de6f0a68db010628f0504c3e24a648cd7d4ac0f5ab6a3dc4976ff",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
-      "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",
+      "../src/infrastructure/filesystem/management-file.ts": "19598e332e7bf9c7d811e8637761c830713b1705d23ac973c48269dc73b61c27",
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
       "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c"
     }

@@ -21,7 +21,7 @@
       "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
       "../docs/requirements/confirmation-state.md": "fab3a04b9e8678ad62095acd57c4de778cd7b24190940eba099a3ad5aefc46ac",
       "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
-      "../docs/requirements/dynamic-membership.md": "3e2bb1cf126885d98d147d0d1bf507f83217e6f08f01976f418a410d6dbaa67b",
+      "../docs/requirements/dynamic-membership.md": "6cd6dd2d960d669170c160cea016fdbf8c86e5ea9c2d7e0485c1a369695f7e8f",
       "../docs/requirements/explicit-confirmation.md": "af40497ee9c4682e616db71b7c6bcc6cba7944933109843165f2b0c1b808c386",
       "../docs/requirements/file-formats.md": "b2e23925eee4d57ae8ad0fa761203dc9c4fa33bde5d6b240b239ccc2d2f8750f",
       "../docs/requirements/groups.md": "90a26580a5e3a5a125edec0bf0c9aca8940325feab41fb493106479bbbfb00f5",

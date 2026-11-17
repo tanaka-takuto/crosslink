@@ -29,6 +29,7 @@ CLIの`--glob`は実行CWDを基準にし、管理ファイル基準のパター
 
 個別パスを優先し、同じ解決済みパスに一致するglobを重ねても一件にする。glob由来のパスは管理ファイルからの相対パスを`/`で保存せず検査結果として提示する。
 結果はパスの文字列順で安定化する。同じrealpathを指す別パスは`DUPLICATE_MEMBER`で拒否する。hardlinkは既存どおり別realpathとして扱い、このIssueでdev/ino同一を新しい禁止へ広げない。
+Windowsの8.3名など、OSが受け付けるliteral別表記は、列挙名と同じentryであることを確認して選択する。返すパスは入力側の表記を保持する。大文字小文字だけの違いは別表記として受け入れず、wildcardの照合もcase-sensitiveのままとする。通常ファイルsymlink/ディレクトリsymlinkと探索エラーの扱いは変えない。物理ファイル識別と管理ファイル判定にはNode標準native realpathを使い、別表記による重複を見逃さない。HTMLの未作成出力先も同じliteral選択とnative解決したprefixで照合する。
 各globの実ファイル一致0件は`GLOB_NO_MATCH`、合計2件未満は`TOO_FEW_FILES`。管理ファイル一致は`MANAGEMENT_FILE`。いずれもsnapshotを発行せず確認できない。
 
 動的検査では、全対象の読取り後に内容を再照合し、選択集合も再展開する。途中で集合が変われば`MEMBERS_CHANGED`で拒否する。

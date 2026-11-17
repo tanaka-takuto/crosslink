@@ -2,6 +2,7 @@ import { hashFile } from "./content-hash.js";
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   realpathSync,
@@ -41,11 +42,39 @@ it("supports absolute patterns and parent paths without interpreting metacharact
   const escaped = canonical
     .replaceAll("\\", "/")
     .replace(/[[\]]/g, (c) => (c === "[" ? "[[]" : "[]]"));
-  expect(expandGlob(escaped + "/adr/**/*.md", root)).toEqual([
+  expect(
+    expandGlob(escaped + "/adr/**/*.md", root),
+    JSON.stringify({
+      node: process.version,
+      platform: process.platform,
+      canonical,
+      native: realpathSync.native(root),
+    }),
+  ).toEqual([
     join(canonical, "adr/a.md").replaceAll("\\", "/"),
     join(canonical, "adr/nested/c.md").replaceAll("\\", "/"),
   ]);
   expect(expandGlob("../adr/*.md", join(root, "adr"))).toEqual(["a.md"]);
+});
+
+it("matches existing native literal aliases without folding case or changing returned paths", () => {
+  const root = fixture();
+  mkdirSync(join(root, "café"));
+  writeFileSync(join(root, "café/a.md"), "a");
+  const alias = join(realpathSync(root), "cafe\u0301");
+  const escaped = alias.replaceAll("\\", "/").replace(/[[\]]/g, (c) => (c === "[" ? "[[]" : "[]]"));
+  // 正規化aliasの有無はFS依存。既存aliasならその表記を保持し、無ければ0一致。
+  expect(expandGlob(escaped + "/*.md", root)).toEqual(
+    existsSync(alias) ? [join(alias, "a.md").replaceAll("\\", "/")] : [],
+  );
+  expect(expandGlob("CAFE\u0301/*.md", root)).toEqual([]);
+  expect(expandGlob("cafe\u0301/*.MD", root)).toEqual([]);
+  symlinkSync(
+    join(root, "adr"),
+    join(root, "línk"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+  expect(expandGlob("li\u0301nk/*.md", root)).toEqual([]);
 });
 
 it("keeps regular file symlinks and skips directory symlinks including cycles and literal directory segments", () => {

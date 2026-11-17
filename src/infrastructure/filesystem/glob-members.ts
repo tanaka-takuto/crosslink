@@ -1,7 +1,70 @@
-import { lstatSync, readdirSync, statSync } from "node:fs";
-import { isAbsolute, join, parse, relative, resolve, sep } from "node:path";
+import { lstatSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { basename, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
 import { hasWildcard, matchesSegment } from "../../domain/glob.js";
 import { CrosslinkError } from "../../domain/errors.js";
+
+function selectedNames(directory: string, part: string, names: string[]): string[] {
+  const matches = names.filter((name) => matchesSegment(name, part));
+  if (matches.length || hasWildcard(part)) return matches;
+  const literal = part.replace(/\[(.)\]/gu, "$1");
+  if (literal.startsWith(".") && !part.startsWith(".")) return [];
+  const normalized = literal.normalize("NFC");
+  if (
+    names.some(
+      (name) =>
+        name.normalize("NFC") !== normalized &&
+        name.normalize("NFC").toLowerCase() === normalized.toLowerCase(),
+    )
+  )
+    return [];
+  let target;
+  try {
+    target = lstatSync(join(directory, literal));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
+  }
+  // 8.3名等のOS aliasは列挙名と別表記でも同じentry。caseだけの違いは上で拒否する。
+  const canonicalName = target.isSymbolicLink()
+    ? undefined
+    : basename(realpathSync.native(join(directory, literal)));
+  const candidates =
+    canonicalName === undefined ? names : names.filter((name) => name === canonicalName);
+  return candidates.some((name) => {
+    const entry = lstatSync(join(directory, name));
+    return entry.dev === target.dev && entry.ino === target.ino;
+  })
+    ? [literal]
+    : [];
+}
+
+// 未作成出力の保護でも同じliteral選択を使う。可変区間の文法/照合は変えない。
+export function canonicalGlobPattern(pattern: string, cwd: string): string | undefined {
+  const portable = pattern.replaceAll("\\", "/"),
+    absolute = isAbsolute(portable);
+  let directory = absolute ? parse(portable).root : resolve(cwd);
+  const parts = (absolute ? portable.slice(parse(portable).root.length) : portable)
+    .split("/")
+    .filter(Boolean);
+  let index = 0;
+  for (; index < parts.length && !hasWildcard(parts[index]!); index++) {
+    const part = parts[index]!;
+    if (part === "." || part === "..") {
+      directory = resolve(directory, part);
+      continue;
+    }
+    const selected = selectedNames(directory, part, readdirSync(directory));
+    if (!selected.length) return undefined;
+    directory = join(directory, selected[0]!);
+    if (!lstatSync(directory).isDirectory()) return undefined;
+  }
+  const literal = realpathSync
+    .native(directory)
+    .split(sep)
+    .join("/")
+    .replace(/[*?[\]{}()]/gu, (c) => `[${c}]`);
+  return [literal, ...parts.slice(index)].join("/");
+}
 
 // 各ディレクトリを直接読むことで、Node globが省略する探索エラーを検出する。
 // OS依存のnocaseやエラー省略に頼らず、制限globで照合しsymlinkへ降りない。
@@ -47,7 +110,7 @@ export function expandGlob(
       }
       return;
     }
-    for (const name of names.filter((name) => matchesSegment(name, part))) {
+    for (const name of selectedNames(directory, part, names)) {
       const file = join(directory, name);
       active = file;
       const entry = lstatSync(file);

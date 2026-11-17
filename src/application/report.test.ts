@@ -1,5 +1,6 @@
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -212,6 +213,31 @@ it("rejects prospective glob outputs through a directory symlink alias", () => {
   const capture = services();
   const result = generateReport(
     { cwd: root, output: "alias/new.html" },
+    filesystemPorts,
+    metadata,
+    capture.ports,
+  );
+  expect(result.report.errors.at(-1)?.code).toBe("REPORT_INPUT_COLLISION");
+  expect(capture.written).toEqual([]);
+});
+
+it("protects prospective glob outputs through existing native directory aliases", () => {
+  const root = fixture();
+  mkdirSync(join(root, "café"));
+  const literal = existsSync(join(root, "cafe\u0301")) ? "cafe\u0301" : "café";
+  writeFileSync(
+    join(root, ".crosslink/valid.json"),
+    JSON.stringify({
+      version: 2,
+      name: "valid",
+      reason: "review",
+      files: ["../a", "../b"],
+      globs: [`../${literal}/*.html`],
+    }),
+  );
+  const capture = services();
+  const result = generateReport(
+    { cwd: root, output: "café/new.html" },
     filesystemPorts,
     metadata,
     capture.ports,

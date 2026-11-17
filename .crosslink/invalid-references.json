@@ -36,12 +36,12 @@
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/domain/group.test.ts": "4f7bef6e6a4f01e7415f2b4c1595d4f52978dc0bf2aea8bf3a72ae63c0017438",
       "../src/domain/group.ts": "fd0b1e0514ca9d384fe517644668b98296bef0c0b0d829904c7b4f7072d4207d",
-      "../src/infrastructure/filesystem/content-hash.test.ts": "bdfbb0c99a10c010d4e21afe0bd204d102e4f7b899587f2f0b7964689e2ae431",
-      "../src/infrastructure/filesystem/content-hash.ts": "5f23c6ef8c33b75bff35cf891faffae1a483c8356e776a7b706c12da95a311c6",
+      "../src/infrastructure/filesystem/content-hash.test.ts": "a68378b8aaa118ef5176f50a13bc67157f65c5715cad4197c312b8798bcd3ec0",
+      "../src/infrastructure/filesystem/content-hash.ts": "17f9e0cde21df777ca8e04d5c843e5c2e58926ea3542154842e163616a19cb36",
       "../src/infrastructure/filesystem/group-format.test.ts": "bade4c68f1130bd43f07d54cf3d362a8274e338f4ec1a0de0ae483510007b8c9",
       "../src/infrastructure/filesystem/group-format.ts": "1f3f5b253169f7e7e625c93fcfebe368f117d56a090fb3374c27852f1360cd88",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
-      "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",
+      "../src/infrastructure/filesystem/management-file.ts": "19598e332e7bf9c7d811e8637761c830713b1705d23ac973c48269dc73b61c27",
       "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
       "../src/infrastructure/filesystem/settings.ts": "ea1e15d4e66f20da09981ef9e5f051fca64878910a028ddb87efb55df50e983a"
     }

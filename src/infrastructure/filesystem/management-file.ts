@@ -25,8 +25,8 @@ export function readGroup(file: string): { group: Group; raw: string } {
 }
 
 export function isManagementFile(member: string, file: string, settings: Settings): boolean {
-  const canonical = existsSync(member) ? realpathSync(member) : resolve(member);
-  const storage = existsSync(file) ? realpathSync(file) : resolve(file);
+  const canonical = existsSync(member) ? realpathSync.native(member) : resolve(member);
+  const storage = existsSync(file) ? realpathSync.native(file) : resolve(file);
   if (
     canonical === storage ||
     (canonical.endsWith(".json") && canonical.split(sep).includes(settings.directoryName))

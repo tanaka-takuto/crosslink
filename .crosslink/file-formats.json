@@ -28,10 +28,10 @@
       "../src/application/group-operations.ts": "62b7c4134a6adaaabf8bd6e0623bcfd1fa4b3dd5acefd5d33cc6b41e9ffcde33",
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
-      "../src/infrastructure/filesystem/content-hash.test.ts": "bdfbb0c99a10c010d4e21afe0bd204d102e4f7b899587f2f0b7964689e2ae431",
-      "../src/infrastructure/filesystem/content-hash.ts": "5f23c6ef8c33b75bff35cf891faffae1a483c8356e776a7b706c12da95a311c6",
+      "../src/infrastructure/filesystem/content-hash.test.ts": "a68378b8aaa118ef5176f50a13bc67157f65c5715cad4197c312b8798bcd3ec0",
+      "../src/infrastructure/filesystem/content-hash.ts": "17f9e0cde21df777ca8e04d5c843e5c2e58926ea3542154842e163616a19cb36",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
-      "../src/infrastructure/filesystem/management-file.ts": "72ddeeb1cc85004f011eff2388ccf7827f4e11d3541702f2f841e8bd86550a21",
+      "../src/infrastructure/filesystem/management-file.ts": "19598e332e7bf9c7d811e8637761c830713b1705d23ac973c48269dc73b61c27",
       "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
       "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c"
     }

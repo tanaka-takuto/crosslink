@@ -31,7 +31,7 @@
       "../docs/specifications/html-report.md": "91e3999d7ffbdf664769a2d01302cf2c837db93a7e4b8faa34f223e0d15201d8",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
-      "../src/application/report.test.ts": "ccbb9769a0037aaf7af216a626a2cbc1d3a9b08394d528a92404fa07f51ba041",
+      "../src/application/report.test.ts": "6f92971048e679f12e18c8004a1109fe0969cf5d36125b8d0f319774a36d907d",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
       "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",

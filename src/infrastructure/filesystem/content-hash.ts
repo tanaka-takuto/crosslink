@@ -43,7 +43,7 @@ export function hashFile(file: string): { hash: string; identity: string } {
       throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
     return {
       hash: hash.digest("hex"),
-      identity: realpathSync(file),
+      identity: realpathSync.native(file),
     };
   } finally {
     closeSync(fd);
