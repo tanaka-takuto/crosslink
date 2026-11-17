@@ -1,9 +1,21 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  linkSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
+import * as fs from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { isManagementFile, readGroup } from "./management-file.js";
 import { defaults } from "./settings.js";
+
+// 組込みESM namespaceは書換不可なので、元のFSをそのままforwardするmoduleを使う。
+vi.mock("node:fs", async (original) => ({ ...(await original<typeof import("node:fs")>()) }));
 
 const roots: string[] = [];
 function fixture() {
@@ -36,6 +48,45 @@ it("accepts ordinary JSON resembling a legacy group definition", () => {
   const member = join(root, "example.json");
   writeFileSync(member, JSON.stringify(group));
   expect(isManagementFile(member, file, defaults)).toBe(false);
+});
+
+it.each(["dev", "ino"] as const)(
+  "does not confuse distinct %s integers rounded to the same Number",
+  (field) => {
+    const { root, file } = fixture();
+    const member = join(root, "binary");
+    writeFileSync(member, Buffer.from([0, 255, 128]));
+    const first = 2n ** 53n,
+      second = first + 1n;
+    expect(first).not.toBe(second);
+    expect(Number(first)).toBe(Number(second));
+    const realStat = fs.statSync;
+    const spy = vi.spyOn(fs, "statSync").mockImplementation((target, options) => {
+      const result = realStat(target, options);
+      const value = String(target) === member ? first : second;
+      const integer = (value: bigint) => (options?.bigint ? value : Number(value));
+      return Object.assign(result!, {
+        dev: integer(42n),
+        ino: integer(17n),
+        [field]: integer(value),
+      });
+    });
+    try {
+      expect(isManagementFile(member, file, defaults)).toBe(false);
+    } finally {
+      spy.mockRestore();
+    }
+  },
+);
+
+it("still rejects the management record itself and its real hardlink and symlink", () => {
+  const { root, file } = fixture();
+  const hardlink = join(root, "hardlink"),
+    symlink = join(root, "symlink");
+  linkSync(file, hardlink);
+  symlinkSync(file, symlink);
+  for (const member of [file, hardlink, symlink])
+    expect(isManagementFile(member, file, defaults)).toBe(true);
 });
 
 it.each([

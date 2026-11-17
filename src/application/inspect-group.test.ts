@@ -7,14 +7,18 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import * as fs from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { join, resolve } from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { inspectGroup as inspect } from "./inspect-group.js";
 import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
 import { defaults } from "../infrastructure/filesystem/settings.js";
 import { canonicalDefinition } from "../domain/group.js";
 const inspectGroup = (file: string) => inspect(file, filesystemPorts, defaults);
+
+// 元の組込みFSへforwardし、実際の判定に使った同じ返値だけを記録する。
+vi.mock("node:fs", async (original) => ({ ...(await original<typeof import("node:fs")>()) }));
 
 const roots: string[] = [];
 
@@ -37,11 +41,110 @@ afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true
 describe("inspection", () => {
   it("new groups are unconfirmed and expose every file, including binary files", () => {
     const { file } = fixture();
-    const result = inspectGroup(file);
-    expect(result.status).toBe("unconfirmed");
-    expect(result.errors).toEqual([]);
-    expect(result.files).toHaveLength(2);
-    expect(result.snapshot).toMatch(/^[a-f0-9]{64}$/);
+    const events: object[] = [],
+      decisions: object[] = [],
+      limit = 64;
+    let active: number | null = null,
+      total = 0;
+    const trace = <T>(
+      operation: string,
+      target: string,
+      call: () => T,
+      details: (result: T) => unknown,
+    ) => {
+      const record = (event: object) => {
+        if (active === null) return;
+        total++;
+        if (events.length < limit)
+          events.push({
+            ordinal: total,
+            decision: active,
+            operation,
+            target,
+            normalized: resolve(target),
+            ...event,
+          });
+      };
+      try {
+        const result = call();
+        record({ outcome: "ok", result: details(result) });
+        return result;
+      } catch (error) {
+        record({
+          outcome: "throw",
+          code: (error as NodeJS.ErrnoException).code ?? null,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
+    };
+    const realStat = fs.statSync,
+      realNative = fs.realpathSync.native;
+    const stat = vi.spyOn(fs, "statSync").mockImplementation((target, options) =>
+      trace(
+        "stat",
+        String(target),
+        () => realStat(target, options),
+        (value) =>
+          value
+            ? {
+                bigint: typeof value.dev === "bigint",
+                dev: value.dev.toString(),
+                ino: value.ino.toString(),
+              }
+            : null,
+      ),
+    );
+    const native = vi.spyOn(fs.realpathSync, "native").mockImplementation((target, options) =>
+      trace(
+        "realpath.native",
+        String(target),
+        () => realNative(target, options),
+        (value) => value.toString(),
+      ),
+    );
+    const ports = {
+      ...filesystemPorts,
+      files: {
+        ...filesystemPorts.files,
+        isManagementFile: (...args: Parameters<typeof filesystemPorts.files.isManagementFile>) => {
+          const decision = {
+            ordinal: decisions.length + 1,
+            member: args[0],
+            management: args[1],
+            result: null as boolean | null,
+          };
+          decisions.push(decision);
+          active = decision.ordinal;
+          try {
+            const result = filesystemPorts.files.isManagementFile(...args);
+            decision.result = result;
+            return result;
+          } finally {
+            active = null;
+          }
+        },
+      },
+    };
+    let result: ReturnType<typeof inspect>;
+    try {
+      result = inspect(file, ports, defaults);
+    } finally {
+      stat.mockRestore();
+      native.mockRestore();
+    }
+    const diagnostic = JSON.stringify({
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      decisions,
+      events: { entries: events, total, limit, truncated: total > limit },
+      inspection: result,
+    });
+    expect(result.status, diagnostic).toBe("unconfirmed");
+    expect(result.errors, diagnostic).toEqual([]);
+    expect(result.files, diagnostic).toHaveLength(2);
+    expect(result.snapshot, diagnostic).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it.each([{ files: [] }, { files: ["../a"] }])(

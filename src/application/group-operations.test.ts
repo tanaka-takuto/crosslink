@@ -11,8 +11,9 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import type { Group } from "../domain/group.js";
+import * as inspection from "./inspect-group.js";
 import { inspectGroup as inspect } from "./inspect-group.js";
 import { readGroup } from "../infrastructure/filesystem/management-file.js";
 import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
@@ -297,38 +298,144 @@ it("revalidates every prepared group before batch writes when a later inspection
   updateGroup(file, (group) => ({ ...group, files: ["../b"], globs: ["../a*"] }));
   const second = join(root, ".crosslink/z-second.json");
   createGroup(second, { name: "second", reason: "review", files: ["../c"], globs: ["../b*"] });
-  const expected = new Map(
-    [file, second].map((target) => [target, inspectGroup(target).snapshot!]),
-  );
-  const before = [file, second].map((target) => readFileSync(target, "utf8"));
+  const runtime = { node: process.version, platform: process.platform, arch: process.arch };
+  const baseline = [file, second].map((target) => inspectGroup(target));
+  const summarize = (result: inspection.Inspection, ordinal: number) => ({
+    ordinal: ordinal + 1,
+    ...result,
+    membershipComplete: result.membershipComplete ?? null,
+    definitionVerified: result.definitionVerified ?? null,
+  });
+  const initial = JSON.stringify({ runtime, baseline: baseline.map(summarize) });
+  for (const result of baseline) {
+    expect(result.errors, initial).toEqual([]);
+    expect(result.snapshot, initial).toMatch(/^[a-f0-9]{64}$/);
+  }
+  const expected = new Map(baseline.map((result) => [result.file, result.snapshot!]));
+  const before = [file, second].map((target) => readFileSync(target));
   let inSecond = false,
-    writes = 0;
+    writes = 0,
+    injections = 0,
+    eventCount = 0;
+  const events: object[] = [],
+    limit = 160;
+  const record = (event: object) => {
+    eventCount++;
+    if (events.length < limit) events.push({ ordinal: eventCount, ...event });
+  };
+  const errorDetails = (error: unknown) => ({
+    message: error instanceof Error ? error.message : String(error),
+    code: (error as NodeJS.ErrnoException | undefined)?.code ?? null,
+    path: (error as NodeJS.ErrnoException | undefined)?.path ?? null,
+  });
+  // 同じ呼出をforwardし、診断のためのFS再読は追加しない。
+  const trace = <T>(
+    operation: string,
+    target: string,
+    call: () => T,
+    details: (value: T) => unknown,
+    context: object = {},
+  ) => {
+    record({ operation, target, ...context, outcome: "start" });
+    try {
+      const result = call();
+      record({ operation, target, ...context, outcome: "ok", result: details(result) });
+      return result;
+    } catch (error) {
+      record({ operation, target, ...context, outcome: "throw", error: errorDetails(error) });
+      throw error;
+    }
+  };
   const ports = {
     ...filesystemPorts,
     groups: {
       ...filesystemPorts.groups,
       read: (target: string) => {
         if (target === second) inSecond = true;
-        return filesystemPorts.groups.read(target);
+        return trace(
+          "groups.read",
+          target,
+          () => filesystemPorts.groups.read(target),
+          ({ raw }) => ({ length: raw.length, digest: filesystemPorts.digest(raw) }),
+        );
       },
-      write: () => {
+      readRaw: (target: string) =>
+        trace(
+          "groups.readRaw",
+          target,
+          () => filesystemPorts.groups.readRaw(target),
+          (raw) => ({ length: raw.length, digest: filesystemPorts.digest(raw) }),
+        ),
+      write: (target: string) => {
         writes++;
+        record({ operation: "groups.write", target, outcome: "attempt", writes });
       },
     },
     files: {
       ...filesystemPorts.files,
+      expandGlob: (pattern: string, cwd: string) =>
+        trace(
+          "files.expandGlob",
+          cwd,
+          () => filesystemPorts.files.expandGlob(pattern, cwd),
+          (matches) => matches,
+          { pattern },
+        ),
       hash: (target: string) => {
-        const result = filesystemPorts.files.hash(target);
-        if (inSecond) writeFileSync(join(root, "added"), "same");
+        const result = trace(
+          "files.hash",
+          target,
+          () => filesystemPorts.files.hash(target),
+          (value) => value,
+        );
+        // 元の順序と繰返し条件を維持する。second以降の全hashの直後に書く。
+        if (inSecond) {
+          injections++;
+          trace(
+            "inject",
+            join(root, "added"),
+            () => writeFileSync(join(root, "added"), "same"),
+            () => ({ injections, afterHash: target }),
+          );
+        }
         return result;
       },
     },
   };
-  expect(() => operations.confirmGroups([file, second], expected, ports, defaults)).toThrow(
-    expect.objectContaining({ code: "STALE_SNAPSHOT" }),
-  );
-  expect(writes).toBe(0);
-  expect([file, second].map((target) => readFileSync(target, "utf8"))).toEqual(before);
+  const inspections: inspection.Inspection[] = [];
+  const realInspect = inspection.inspectGroup;
+  const spy = vi.spyOn(inspection, "inspectGroup").mockImplementation((...args) => {
+    const result = realInspect(...args);
+    inspections.push(result);
+    return result;
+  });
+  let caught: unknown;
+  try {
+    operations.confirmGroups([file, second], expected, ports, defaults);
+  } catch (error) {
+    caught = error;
+  } finally {
+    spy.mockRestore();
+  }
+  const diagnostic = JSON.stringify({
+    runtime,
+    baseline: baseline.map(summarize),
+    inspections: inspections.map(summarize),
+    events: { entries: events, limit, total: eventCount, truncated: eventCount > limit },
+    injections,
+    writes,
+    error: errorDetails(caught),
+  });
+  expect(caught, diagnostic).toEqual(expect.objectContaining({ code: "STALE_SNAPSHOT" }));
+  expect(
+    inspections.map((result) => result.file),
+    diagnostic,
+  ).toEqual([file, second, file]);
+  expect(writes, diagnostic).toBe(0);
+  expect(
+    [file, second].map((target) => readFileSync(target)),
+    diagnostic,
+  ).toEqual(before);
 });
 
 it("refuses confirmation when the last match disappears even with two fixed files", () => {

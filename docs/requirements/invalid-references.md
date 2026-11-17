@@ -22,6 +22,7 @@
 - 登録したファイルを削除・移動すると、修復対象を特定でき、検査は失敗する。
 - 確認済みグループのメンバーや登録パスを変更した場合、ファイル内容が同じでも未確認になる。
 - 手動編集などで確認記録の保存先が関連対象に含まれた場合も、不正な関連付けを診断して検査を失敗させる。
+- Numberで同値に丸まる異なる整数ファイルIDを同一実体と誤認しない。管理記録自体・真のhardlink/symlink参照は引き続き拒否し、読取中の実体変更とサブmsの時刻変更を見落とさない。
 - A・BからBを外して一時的にAだけにし、その後Cを追加する操作を保存できる。Aだけの時点では検査が不正として失敗し、A・Cになった後は構成変更後の確認を必要とする。
 - 対象消失・読取権限エラーでは対象パスと上記の対処選択肢を提示し、確認記録・残る対象内容を変更しない。ディレクトリ等の通常ファイルでない対象には登録パスの修正を案内する。
 - 0・1ファイルの診断は現在の件数と2件以上という必要構成を示し、メンバー追加後の再検査・関連内容の読み直しを確認操作より先に案内する。
@@ -33,6 +34,14 @@
 詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。
 
 診断案内の決定：[Issue #20](https://github.com/tanaka-takuto/crosslink/issues/20)。
+
+整数精度の受入条件は[Issue #32](https://github.com/tanaka-takuto/crosslink/issues/32)に基づき、次の隣接テストで確認する。制御したStatsは過去のWindows実行の未採取ID値を復元したものではない。
+
+| 条件                                                        | 対応テスト                                                                                                                                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 異なるdev/inoの丸めによる管理誤認を防ぐ、真の管理参照を拒否 | `does not confuse distinct %s integers rounded to the same Number`, `still rejects the management record itself and its real hardlink and symlink` (management-file.test.ts) |
+| 読取中の整数ID変更と1nsのmtime/ctime変更を拒否              | `rejects a changed %s even when Number rounds both IDs alike`, `rejects a one-nanosecond $field change during the $phase recheck` (content-hash.test.ts)                     |
+| 通常hardlinkの公開identityを維持                            | `keeps native realpaths as public identities for distinct hardlink paths` (content-hash.test.ts)                                                                             |
 
 ## globによる動的集合
 

@@ -23,8 +23,8 @@
     "hashes": {
       "../docs/requirements/check.md": "866ae1e48204490de5ae87a8855d5f0cbb3bda0efd72620589ff50938170ae91",
       "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
-      "../docs/specifications/storage.md": "2da2a3b477eed2633b25a7cee51cd2886ae57f3e2c83008f17423f68b1ae856f",
-      "../src/application/inspect-group.test.ts": "4f4776e1a31a0ebc8bae6259e77ba168f0031adfeccc2e9b2a37f3b3f7995721",
+      "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
+      "../src/application/inspect-group.test.ts": "72e09e42d434bc9e7af17c4d6380e99656a773aa469e9caf43cfa2c866581170",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
