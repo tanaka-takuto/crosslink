@@ -7,6 +7,7 @@ TypeScriptで型検査し、JavaScriptのES Modulesへビルドする。テス�
 ビルド後のCLIに実行時の外部パッケージはない。Node.js 24以上の標準機能だけを使用する。
 開発用の推奨Node.jsは `.node-version`、pnpmは `package.json` の `packageManager` で固定する。
 version/Release補助CLIの直接起動判定もNode24.0で動作する。直接実行時に検査と終了コードを処理し、テスト等からimportした場合はCLI処理を実行しない。
+eval/printの利用者引数`argv[1]`がhelper自身でも直接起動と見なさず、GITHUB_OUTPUTやmanifestを作成・変更しない。`does not write version output when %s imports argv[1] itself` / `does not create or change manifests when %s imports argv[1] itself`で、有効なeval/print起動形を確認する。`runs the version CLI directly through an existing native directory alias` / `runs the manifest CLI directly through an existing native directory alias`では、実FSが提供する別表記経由の直接起動も維持する。
 隣接テスト`CLI compares the specified base package and fails closed for a missing base`と`runs the manifest CLI with Node native TypeScript and blocks publication outside main push`で実処理・生成結果・失敗終了を確認し、各`does not run the ... CLI when imported by a module or eval`でimport時の非実行を確認する。
 各開発ツールのバージョンは `package.json` と `pnpm-lock.yaml` で固定する。
 

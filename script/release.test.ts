@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
@@ -278,6 +278,41 @@ it("does not run the release CLI when imported by a module or eval", () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toBe("imported\n");
   }
+});
+
+it.each(["-e", "--eval", "--eval=", "-p", "--print", "-pe", "--print=true"])("does not create or change manifests when %s imports argv[1] itself", (flag) => {
+  const input = fixture(), output = join(input.directory, "github-output");
+  const target = `crosslink-${process.platform}-${process.arch}.json`;
+  const existing = readFileSync(join(input.directory, target));
+  writeFileSync(output, "unchanged\n");
+  const print = ["-p", "--print", "-pe", "--print=true"].includes(flag);
+  const code = print ? 'import(require("node:url").pathToFileURL(process.argv[1]).href).then(() => console.log("import-only"));' : 'import {pathToFileURL} from "node:url"; await import(pathToFileURL(process.argv[1]).href); console.log("import-only");';
+  for (const present of [true, false]) {
+    if (!present) rmSync(join(input.directory, target));
+    const args = [...(print ? [] : ["--input-type=module"]), ...(flag.endsWith("=") ? [flag + code] : [flag, code]), fileURLToPath(new URL("./release.ts", import.meta.url)), "manifest", input.directory];
+    const result = spawnSync(process.execPath, args, { cwd: input.directory, encoding: "utf8", env: { ...process.env, GITHUB_SHA: sha, GITHUB_OUTPUT: output, GITHUB_EVENT_NAME: "pull_request", GH_TOKEN: "" } });
+    expect(result.status, result.stderr).toBe(0);
+    if (print) expect(result.stdout.split("\n").filter(line => line === "import-only")).toHaveLength(1);
+    else expect(result.stdout).toBe("import-only\n");
+    expect(readFileSync(output, "utf8")).toBe("unchanged\n");
+    expect(existsSync(join(input.directory, target))).toBe(present);
+    if (present) expect(readFileSync(join(input.directory, target))).toEqual(existing);
+  }
+});
+
+it("runs the manifest CLI directly through an existing native directory alias", () => {
+  const input = fixture(), folder = join(input.directory, "café"); mkdirSync(folder);
+  for (const helper of ["release", "check-version"]) copyFileSync(fileURLToPath(new URL(`./${helper}.ts`, import.meta.url)), join(folder, `${helper}.ts`));
+  const alias = join(input.directory, "cafe\u0301/release.ts"), entry = existsSync(alias) ? alias : join(folder, "release.ts");
+  expect(realpathSync.native(entry)).toBe(realpathSync.native(join(folder, "release.ts")));
+  writeFileSync(join(input.directory, "package.json"), JSON.stringify({ version: "1.2.3", private: true }));
+  const output = join(input.directory, "github-output"), target = `crosslink-${process.platform}-${process.arch}`;
+  rmSync(join(input.directory, `${target}.json`));
+  const result = spawnSync(process.execPath, [entry, "manifest", input.directory], { cwd: input.directory, encoding: "utf8", env: { ...process.env, GITHUB_SHA: sha, GITHUB_OUTPUT: output } });
+  expect(result.status, result.stderr).toBe(0);
+  expect(result.stdout).toBe("");
+  expect(readFileSync(output, "utf8")).toBe(`target=${target}\n`);
+  expect(JSON.parse(readFileSync(join(input.directory, `${target}.json`), "utf8"))).toMatchObject({ sha, version: "1.2.3", platform: process.platform, arch: process.arch });
 });
 
 it("resolves annotated tags to a commit and treats only HTTP 404 as absent", async () => {

@@ -5,6 +5,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  realpathSync,
   statSync,
   symlinkSync,
   writeFileSync,
@@ -245,6 +246,177 @@ it("protects prospective glob outputs through existing native directory aliases"
   expect(result.report.errors.at(-1)?.code).toBe("REPORT_INPUT_COLLISION");
   expect(capture.written).toEqual([]);
 });
+
+it.each([
+  {
+    name: "relative literal alias",
+    absolute: false,
+    alias: true,
+    tail: "new.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "absolute literal alias",
+    absolute: true,
+    alias: true,
+    tail: "new.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "wildcard alias",
+    absolute: false,
+    alias: true,
+    tail: "*.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "literal without alias",
+    absolute: false,
+    alias: false,
+    tail: "new.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "relative missing parents",
+    absolute: false,
+    alias: true,
+    tail: "missing/child/new.html",
+    output: "missing/child/new.html",
+    collision: true,
+  },
+  {
+    name: "absolute missing parents",
+    absolute: true,
+    alias: true,
+    tail: "missing/child/new.html",
+    output: "missing/child/new.html",
+    collision: true,
+  },
+  {
+    name: "missing parents before wildcard",
+    absolute: false,
+    alias: true,
+    tail: "missing/child/*.html",
+    output: "missing/child/new.html",
+    collision: true,
+  },
+  {
+    name: "relative cancelled missing parent",
+    absolute: false,
+    alias: true,
+    tail: "missing/../new.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "absolute cancelled missing parents",
+    absolute: true,
+    alias: true,
+    tail: "missing/child/../../new.html",
+    output: "new.html",
+    collision: true,
+  },
+  {
+    name: "literal metacharacters",
+    absolute: false,
+    alias: true,
+    tail: "[[]x[]][?].html",
+    output: "[x]?.html",
+    collision: true,
+  },
+  {
+    name: "literal case mismatch",
+    absolute: false,
+    alias: true,
+    tail: "New.html",
+    output: "new.html",
+    collision: false,
+  },
+  {
+    name: "wildcard case mismatch",
+    absolute: false,
+    alias: true,
+    tail: "*.HTML",
+    output: "new.html",
+    collision: false,
+  },
+  {
+    name: "parent case mismatch",
+    absolute: false,
+    alias: true,
+    tail: "new.html",
+    output: "new.html",
+    collision: false,
+    uppercase: true,
+  },
+  {
+    name: "unrelated literal",
+    absolute: false,
+    alias: true,
+    tail: "different.html",
+    output: "new.html",
+    collision: false,
+  },
+])(
+  "protects prospective report writes across native prefixes: $name",
+  ({ absolute, alias, tail, output, collision, uppercase }) => {
+    const root = realpathSync.native(fixture());
+    const parent = join(root, "café");
+    mkdirSync(parent);
+    const nativeAlias = join(root, "cafe\u0301");
+    const name = uppercase ? "CAFÉ" : alias && existsSync(nativeAlias) ? "cafe\u0301" : "café";
+    if (existsSync(nativeAlias)) {
+      expect(statSync(nativeAlias).ino).toBe(statSync(parent).ino);
+      expect(realpathSync.native(nativeAlias)).toBe(realpathSync.native(parent));
+    }
+    const escape = (path: string) =>
+      path.replaceAll("\\", "/").replace(/[*?[\]{}()]/gu, (c) => `[${c}]`);
+    const pattern = `${absolute ? escape(join(root, name)) : `../${name}`}/${tail}`;
+    const file = join(root, ".crosslink/valid.json");
+    writeFileSync(
+      file,
+      JSON.stringify({
+        version: 2,
+        name: "prospective",
+        reason: "review",
+        files: ["../a", "../b"],
+        globs: [pattern],
+      }),
+    );
+    const before = [file, join(root, "a"), join(root, "b")].map((path) => readFileSync(path));
+    const target = join(parent, output);
+    let writes = 0;
+    const result = generateReport(
+      { cwd: root, files: [file], output: target },
+      filesystemPorts,
+      metadata,
+      {
+        now: () => "2026-11-17T00:00:00Z",
+        render: renderHtmlReport,
+        writeNew: (path, html) => {
+          writes++;
+          writeFileSync(path, html, { flag: "wx" });
+        },
+      },
+    );
+    expect(result.code).toBe(2);
+    expect(result.report.errors.some((error) => error.code === "REPORT_INPUT_COLLISION")).toBe(
+      collision,
+    );
+    expect(writes).toBe(collision ? 0 : 1);
+    expect(existsSync(target)).toBe(!collision);
+    expect([file, join(root, "a"), join(root, "b")].map((path) => readFileSync(path))).toEqual(
+      before,
+    );
+    expect(result.report.messages.some((message) => message.startsWith("HTML report saved:"))).toBe(
+      !collision,
+    );
+  },
+);
 
 const definitionFailures = ["ENOENT", "EACCES"].flatMap((failure) =>
   [false, true].flatMap((dynamic) =>

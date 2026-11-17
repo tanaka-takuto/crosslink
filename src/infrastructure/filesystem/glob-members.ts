@@ -1,5 +1,5 @@
 import { lstatSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { basename, isAbsolute, join, parse, relative, resolve, sep } from "node:path";
+import { basename, isAbsolute, join, parse, posix, relative, resolve, sep } from "node:path";
 import { hasWildcard, matchesSegment } from "../../domain/glob.js";
 import { CrosslinkError } from "../../domain/errors.js";
 
@@ -47,14 +47,15 @@ export function canonicalGlobPattern(pattern: string, cwd: string): string | und
     .split("/")
     .filter(Boolean);
   let index = 0;
-  for (; index < parts.length && !hasWildcard(parts[index]!); index++) {
+  // 最後の区間と未作成の親は選択式のまま残し、既存の親だけをnative解決する。
+  for (; index < parts.length - 1 && !hasWildcard(parts[index]!); index++) {
     const part = parts[index]!;
     if (part === "." || part === "..") {
       directory = resolve(directory, part);
       continue;
     }
     const selected = selectedNames(directory, part, readdirSync(directory));
-    if (!selected.length) return undefined;
+    if (!selected.length) break;
     directory = join(directory, selected[0]!);
     if (!lstatSync(directory).isDirectory()) return undefined;
   }
@@ -63,7 +64,7 @@ export function canonicalGlobPattern(pattern: string, cwd: string): string | und
     .split(sep)
     .join("/")
     .replace(/[*?[\]{}()]/gu, (c) => `[${c}]`);
-  return [literal, ...parts.slice(index)].join("/");
+  return posix.normalize([literal, ...parts.slice(index)].join("/"));
 }
 
 // 各ディレクトリを直接読むことで、Node globが省略する探索エラーを検出する。

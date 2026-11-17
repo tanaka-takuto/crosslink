@@ -32,6 +32,8 @@ CLIの`--glob`は実行CWDを基準にし、管理ファイル基準のパター
 Windowsの8.3名など、OSが受け付けるliteral別表記は、列挙名と同じentryであることを確認して選択する。返すパスは入力側の表記を保持する。大文字小文字だけの違いは別表記として受け入れず、wildcardの照合もcase-sensitiveのままとする。通常ファイルsymlink/ディレクトリsymlinkと探索エラーの扱いは変えない。物理ファイル識別と管理ファイル判定にはNode標準native realpathを使い、別表記による重複を見逃さない。HTMLの未作成出力先も同じliteral選択とnative解決したprefixで照合する。
 各globの実ファイル一致0件は`GLOB_NO_MATCH`、合計2件未満は`TOO_FEW_FILES`。管理ファイル一致は`MANAGEMENT_FILE`。いずれもsnapshotを発行せず確認できない。
 
+HTML出力の事前照合では、既存のliteral親だけをnative解決し、未作成の末尾literalや複数の親階層は選択式として残す。親aliasがあっても、literalだけのglobに一致する出力を作成しない。残した区間の`.`/`..`は字句照合と同じく正規化し、caseや文字クラスの意味は変えない。
+
 動的検査では、全対象の読取り後に内容を再照合し、選択集合も再展開する。途中で集合が変われば`MEMBERS_CHANGED`で拒否する。
 確認操作も同じ検査を行い、保存済みsnapshotと照合する。外部プロセスによる全FS操作の同時変更を原子的に封じるものではない。
 Node24.16追加の`followSymlinks`オプションには依存しない。

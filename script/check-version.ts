@@ -19,9 +19,11 @@ export function validateVersion(value: unknown, base?: string): string {
 }
 
 const entryPoint = process.argv[1];
+// eval/printではargv[1]も利用者引数。import先と一致してもfile直接起動ではない。
+const evaluation = process.execArgv.some(arg => ["-e", "--eval", "-p", "--print", "-pe"].includes(arg) || arg.startsWith("--eval=") || arg.startsWith("--print="));
 if (
   import.meta.main ??
-  (entryPoint !== undefined && existsSync(entryPoint) &&
+  (!evaluation && entryPoint !== undefined && existsSync(entryPoint) &&
     realpathSync.native(entryPoint) === realpathSync.native(fileURLToPath(import.meta.url)))
 ) {
   try {
