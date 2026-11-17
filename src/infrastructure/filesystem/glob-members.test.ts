@@ -1,4 +1,5 @@
 import { hashFile } from "./content-hash.js";
+import * as fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -13,8 +14,10 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { expandGlob } from "./glob-members.js";
+
+vi.mock("node:fs", async (original) => ({ ...(await original<typeof import("node:fs")>()) }));
 
 const roots: string[] = [];
 function fixture() {
@@ -118,6 +121,30 @@ it("matches filename case identically on every OS instead of native macOS nocase
   expect(expandGlob("adr/*.md", root)).toEqual(["adr/a.md"]);
   expect(expandGlob("adr/[A-Z]*.MD", root)).toEqual(["adr/UPPER.MD"]);
   expect(expandGlob("ADR/*.md", root)).toEqual([]);
+});
+
+it.each([false, true])("compares unlisted native alias entry IDs exactly (same=%s)", (same) => {
+  const root = fixture(),
+    member = join(root, "member.md"),
+    alias = join(root, "alias.md");
+  writeFileSync(member, "same");
+  symlinkSync(member, alias);
+  const first = 2n ** 53n,
+    second = first + 1n;
+  expect(Number(first)).toBe(Number(second));
+  const realLstat = fs.lstatSync;
+  const spy = vi.spyOn(fs, "lstatSync").mockImplementation((target, options) => {
+    const value = String(target) === alias && !same ? second : first;
+    return Object.assign(realLstat(target, options)!, {
+      ino: options?.bigint ? value : Number(value),
+    });
+  });
+  try {
+    // OS aliasのように入力表記が列挙名にない場合を、別entryの対照と同条件で比較する。
+    expect(expandGlob("alias.md", root, () => ["member.md"])).toEqual(same ? ["alias.md"] : []);
+  } finally {
+    spy.mockRestore();
+  }
 });
 
 it("distinguishes a non-directory literal prefix from zero matches", () => {

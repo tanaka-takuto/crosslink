@@ -33,8 +33,9 @@ export function isManagementFile(member: string, file: string, settings: Setting
   )
     return true;
   if (existsSync(member) && existsSync(file)) {
-    const a = statSync(member),
-      b = statSync(file);
+    // 大きい整数IDをNumberへ丸めて、別ファイルを管理記録と誤認しない。
+    const a = statSync(member, { bigint: true }),
+      b = statSync(file, { bigint: true });
     if (a.dev === b.dev && a.ino === b.ino) return true;
   }
   return existsSync(canonical) && statSync(canonical).isFile() && declaresManagementKind(canonical);

@@ -14,7 +14,8 @@ export function hashFile(file: string): { hash: string; identity: string } {
     );
   const fd = openSync(file, "r");
   try {
-    const before = fstatSync(fd);
+    // ID/sizeの整数精度を保ち、時刻はBigIntのms値でなくns値で比較する。
+    const before = fstatSync(fd, { bigint: true });
     if (!before.isFile())
       throw new CrosslinkError(
         "NOT_A_FILE",
@@ -25,20 +26,20 @@ export function hashFile(file: string): { hash: string; identity: string } {
     let bytes: number;
     while ((bytes = readSync(fd, buffer, 0, buffer.length, null)) > 0)
       hash.update(buffer.subarray(0, bytes));
-    const after = fstatSync(fd);
+    const after = fstatSync(fd, { bigint: true });
     if (
       before.size !== after.size ||
-      before.mtimeMs !== after.mtimeMs ||
-      before.ctimeMs !== after.ctimeMs
+      before.mtimeNs !== after.mtimeNs ||
+      before.ctimeNs !== after.ctimeNs
     )
       throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
-    const current = statSync(file);
+    const current = statSync(file, { bigint: true });
     if (
       current.dev !== after.dev ||
       current.ino !== after.ino ||
       current.size !== after.size ||
-      current.mtimeMs !== after.mtimeMs ||
-      current.ctimeMs !== after.ctimeMs
+      current.mtimeNs !== after.mtimeNs ||
+      current.ctimeNs !== after.ctimeNs
     )
       throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
     return {

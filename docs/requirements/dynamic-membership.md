@@ -55,6 +55,8 @@
 
 同内容symlinkの検査中変更は `rejects a file symlink retargeted to another member during inspection even with identical bytes` (inspect-group.test.ts) で拒否を確認する。
 
+native literal aliasのdev/ino比較も整数精度を保ち、Numberで同値になる別entryを同一視しない。`compares unlisted native alias entry IDs exactly (same=%s)` (glob-members.test.ts)で別entry拒否と同一entry許可を同条件で比較する。case-sensitive照合とprospective output保護は既存の受入条件を維持する。整数精度と読取中再検証は[対象参照の受入条件](invalid-references.md)を併せて適用する。
+
 全一致消失後の確認拒否は `refuses confirmation when the last match disappears even with two fixed files` (group-operations.test.ts)、特殊ファイルは `selects special files for explicit rejection without opening a FIFO` (glob-members.test.ts、POSIX)、literal CWD後の親移動は `allows parent paths after literal CWD metacharacters while retaining their literal meaning` (member-path.test.ts) で確認する。
 
 基点0.4.0のCLIで生成した確認済み記録の互換性は `preserves a confirmed version 1 record produced by the 0.4.0 CLI byte for byte` (cli.test.ts) で確認する。

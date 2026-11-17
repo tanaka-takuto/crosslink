@@ -28,6 +28,8 @@
 相対パスは管理ファイルのディレクトリから解決する。拡張子や内容形式による対象のホワイトリストは設けない。
 読み取れる通常のファイルを対象とし、ファイルのシンボリックリンクは参照先の内容を読む。
 ディレクトリや特殊ファイルを構成ファイルとして登録しない。個別指定同士の同じパス・同じrealpathを指す別パス重複は不正とする。globと個別指定の同じ解決済みパスは一つにする。
+管理ファイル参照とnative aliasの実体比較では、Node標準FSの`bigint: true`でdev/inoの整数精度を保持する。ハッシュ読取中の再検証も同じ精度のID/sizeとmtimeNs/ctimeNsを比較し、BigIntのms値へ切り捨ててサブmsの変化を見落とさない。メンバーの公開identityは従来のnative realpathとし、通常のhardlinkの別パスを新たな重複禁止にはしない。
+根拠：[Node24.22.2 Statsとns時刻](https://nodejs.org/download/release/v24.22.2/docs/api/fs.html#class-fsstats)、[Issue #32](https://github.com/tanaka-takuto/crosslink/issues/32)。
 管理JSON自身や、設定した管理ディレクトリ内の管理JSONは関連対象にできない。
 ディレクトリ外でも、トップレベルに `kind: "crosslink-group"` を宣言したファイルは、拡張子にかかわらず関連対象にできない。
 名前・理由・パス配列が似ているだけの通常JSONは、この宣言がなければ管理ファイルと推測しない。

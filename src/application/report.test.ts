@@ -370,7 +370,9 @@ it.each([
     const nativeAlias = join(root, "cafe\u0301");
     const name = uppercase ? "CAFÉ" : alias && existsSync(nativeAlias) ? "cafe\u0301" : "café";
     if (existsSync(nativeAlias)) {
-      expect(statSync(nativeAlias).ino).toBe(statSync(parent).ino);
+      expect(statSync(nativeAlias, { bigint: true }).ino).toBe(
+        statSync(parent, { bigint: true }).ino,
+      );
       expect(realpathSync.native(nativeAlias)).toBe(realpathSync.native(parent));
     }
     const escape = (path: string) =>

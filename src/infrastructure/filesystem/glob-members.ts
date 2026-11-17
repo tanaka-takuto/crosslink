@@ -19,19 +19,19 @@ function selectedNames(directory: string, part: string, names: string[]): string
     return [];
   let target;
   try {
-    target = lstatSync(join(directory, literal));
+    target = lstatSync(join(directory, literal), { bigint: true });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
   }
-  // 8.3名等のOS aliasは列挙名と別表記でも同じentry。caseだけの違いは上で拒否する。
+  // 8.3名等のOS aliasは正確な整数IDで同じentryか照合する。caseだけの違いは上で拒否する。
   const canonicalName = target.isSymbolicLink()
     ? undefined
     : basename(realpathSync.native(join(directory, literal)));
   const candidates =
     canonicalName === undefined ? names : names.filter((name) => name === canonicalName);
   return candidates.some((name) => {
-    const entry = lstatSync(join(directory, name));
+    const entry = lstatSync(join(directory, name), { bigint: true });
     return entry.dev === target.dev && entry.ino === target.ino;
   })
     ? [literal]
