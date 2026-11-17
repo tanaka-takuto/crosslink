@@ -34,7 +34,7 @@
       "../src/infrastructure/filesystem/content-hash.ts": "17f9e0cde21df777ca8e04d5c843e5c2e58926ea3542154842e163616a19cb36",
       "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
       "../src/infrastructure/filesystem/settings.ts": "ea1e15d4e66f20da09981ef9e5f051fca64878910a028ddb87efb55df50e983a",
-      "../src/interfaces/cli/commands.test.ts": "ce17f68d674b31f145345ded397100aff8562813f49fa8b6b94313744b9894dd",
+      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
       "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb",
       "../src/interfaces/cli/output.test.ts": "2043345e0ce09f418667c81c79f71cde8903dbb622a8302795760273513fd41f",
       "../src/interfaces/cli/output.ts": "97c72bbfd25b22a5c3dc7387ab668e8e5bcaf258ba5d707b98c63fc2a95bd99b"

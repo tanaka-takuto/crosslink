@@ -24,7 +24,7 @@
       "../docs/specifications/storage.md": "2da2a3b477eed2633b25a7cee51cd2886ae57f3e2c83008f17423f68b1ae856f",
       "../src/cli.test.ts": "38828fd1d9ebd453944cfa21bf3cf7b9ae136671276fb4437c8f9ec771c9f338",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
-      "../src/interfaces/cli/commands.test.ts": "ce17f68d674b31f145345ded397100aff8562813f49fa8b6b94313744b9894dd",
+      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
       "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb"
     }
   }

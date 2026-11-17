@@ -32,7 +32,7 @@
       "../src/infrastructure/filesystem/content-hash.ts": "17f9e0cde21df777ca8e04d5c843e5c2e58926ea3542154842e163616a19cb36",
       "../src/infrastructure/filesystem/management-file.test.ts": "e66937e89c8ccd7a264489cf889c1b82ae327056259cf6838367cd9b4e6eac98",
       "../src/infrastructure/filesystem/management-file.ts": "19598e332e7bf9c7d811e8637761c830713b1705d23ac973c48269dc73b61c27",
-      "../src/interfaces/cli/commands.test.ts": "ce17f68d674b31f145345ded397100aff8562813f49fa8b6b94313744b9894dd",
+      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
       "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb"
     }
   }

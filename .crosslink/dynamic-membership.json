@@ -81,7 +81,7 @@
       "../src/infrastructure/filesystem/group-format.test.ts": "bade4c68f1130bd43f07d54cf3d362a8274e338f4ec1a0de0ae483510007b8c9",
       "../src/infrastructure/filesystem/group-format.ts": "13c05807b5c06c314019febd0bca09dee1fe9e2965473f16a69e4a77203989bb",
       "../src/infrastructure/filesystem/group-storage.ts": "023ec4ebe7058b2947522eaf17606b8e5c23bff45243a9e29e7cede3965e965a",
-      "../src/interfaces/cli/commands.test.ts": "ce17f68d674b31f145345ded397100aff8562813f49fa8b6b94313744b9894dd",
+      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
       "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb",
       "../src/interfaces/cli/member-path.test.ts": "c939775534b33c157bab7098ba66c817fc9504b11cac434da713d4f317dc0483",
       "../src/interfaces/cli/member-path.ts": "c028d67de6ad1c5aef52a0af8115de49ebe0bd36b2190183e8f24efc79cb908e",

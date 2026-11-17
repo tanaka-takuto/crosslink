@@ -458,14 +458,24 @@ it("rejects role editing of unregistered selectors and duplicate role flags", ()
 
 it("explains confirmed target differences and directional reverse membership in generated HTML", () => {
   const root = fixture();
-  run(["create", "ADR", "a", "--role", "source-only", "--reason", "ADR → code"], root);
-  run(["add", ".crosslink/adr.json", "b", "--role", "target-only"], root);
-  const file = run(["check"], root).report.groups[0]!.file;
+  const created = run(
+    ["create", "ADR", "a", "--role", "source-only", "--reason", "ADR → code"],
+    root,
+  );
+  expect(created.code, JSON.stringify(created.report)).toBe(0);
+  // 作成結果の正確なパスを使い、大小文字を区別するFSでも同じ管理ファイルを編集する。
+  const file = created.report.groups[0]!.file;
+  const added = run(["add", file, "b", "--role", "target-only"], root);
+  expect(added.code, JSON.stringify(added.report)).toBe(0);
   const checked = run(["check"], root);
+  expect(checked.code, JSON.stringify(checked.report)).toBe(1);
   writeFileSync(join(root, "snapshot.json"), JSON.stringify(checked.report));
-  expect(run(["confirm", file, "--snapshot", "snapshot.json"], root).code).toBe(0);
+  // 同じ一回の失敗に含まれる診断を保持し、再実行で置き換えない。
+  const confirmed = run(["confirm", file, "--snapshot", "snapshot.json"], root);
+  expect(confirmed.code, JSON.stringify(confirmed.report)).toBe(0);
   writeFileSync(join(root, "b"), "changed target");
-  expect(run(["report", "--format", "html", "--output", "direction.html"], root).code).toBe(0);
+  const generated = run(["report", "--format", "html", "--output", "direction.html"], root);
+  expect(generated.code, JSON.stringify(generated.report)).toBe(0);
   const html = readFileSync(join(root, "direction.html"), "utf8");
   for (const text of [
     "Source only",
