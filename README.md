@@ -1,7 +1,7 @@
 # crosslink
 
 関連するファイルをグループにし、変更後の整合性確認を管理するCLIです。
-現在のファイル内容が最後の確認記録と一致するかを検査します。内容の意味的な正しさを自動保証するものではありません。
+現在の検出元の内容とパス集合が最後の確認記録と一致するかを検査します。既定は全メンバーが検出元と検出先を兼ねる双方向です。内容の意味的な正しさを自動保証するものではありません。
 
 ## 配布・インストール
 
@@ -168,6 +168,26 @@ node dist/cli.js report --format html --output tmp/selected.html --file .crossli
 終了コードは `check` と同じく、全件確認済み/0件は0、未確認は1、不正/検査不能は2です。検査エラーがあっても描画できる結果は保存します。
 既存出力や入力ファイルには上書きしません。衝突・書出し不能も2で終了し、別の出力先を指定できます。
 `--file` は繰り返せ、`--config` と `--json` も使えます。詳しい契約は [HTML仕様](docs/specifications/html-report.md) を参照してください。
+
+## 変更を検出する側と確認する側を分ける
+
+既定は全ファイルが両方の役割を持つ双方向です。ADR変更時だけ実装を確認したい場合は、選択ごとに役割を明示できます。
+
+```sh
+node dist/cli.js create adr-impact --glob 'docs/adr/**/*.md' --role source-only --reason 'Review implementation impact of ADR changes'
+node dist/cli.js add .crosslink/adr-impact.json src/api.ts --role target-only
+node dist/cli.js check --verbose
+```
+
+source-only（検出元のみ）の内容・追加・削除・同内容renameでは、target-only（検出先のみ）を確認対象として提示します。実装だけの変更ではこのグループの確認状態は失効しません。`both`は両方の役割です。全検出元から全検出先への関係をグループ内で表し、他グループへは伝搬しません。
+
+```sh
+node dist/cli.js role .crosslink/adr-impact.json src/api.ts --role both
+```
+
+`role`は登録済みの個別ファイル/`--glob`の役割変更・解除に使います。方向反転も明示編集で行い、定義が変われば確認を外します。方向付きのConfirmedは検出元について未確認の影響がない意味で、検出先の現在内容の再確認を保証しません。検査後に検出先だけ変わった場合も古いsnapshotのconfirmは拒否します。読取不能・0一致・全union二件未満・片側欠落は検査エラーです。
+
+旧定義は双方向のまま有効で、検査だけで移行しません。source-only/target-onlyの明示時はv3を保存し、0.5.0以前のCLIは未対応として拒否します。詳しくは[方向の要件](docs/requirements/directional-impact.md)と[CLI仕様](docs/specifications/cli.md)を参照してください。
 
 ## このリポジトリへの適用
 

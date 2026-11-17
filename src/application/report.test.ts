@@ -551,3 +551,42 @@ it.for(definitionFailures)(
     }
   },
 );
+
+it("protects prospective outputs selected only by target globs including parent aliases", () => {
+  const root = fixture(),
+    file = join(root, ".crosslink/valid.json");
+  mkdirSync(join(root, "targets"));
+  writeFileSync(join(root, "targets/keep.html"), "target");
+  writeFileSync(
+    file,
+    JSON.stringify({
+      version: 3,
+      name: "directional",
+      reason: "impact",
+      files: ["../a"],
+      globs: ["../targets/**/*.html"],
+      roles: { files: { "../a": "source-only" }, globs: { "../targets/**/*.html": "target-only" } },
+    }),
+  );
+  if (process.platform !== "win32")
+    symlinkSync(join(root, "targets"), join(root, "target-alias"), "dir");
+  for (const output of [
+    "targets/new.html",
+    "targets/not-created/new.html",
+    ...(process.platform === "win32"
+      ? []
+      : ["target-alias/new.html", "target-alias/not-created/new.html"]),
+  ]) {
+    const capture = services();
+    const before = readFileSync(file, "utf8");
+    const result = generateReport({ cwd: root, output }, filesystemPorts, metadata, capture.ports);
+    expect(result.code, output).toBe(2);
+    expect(
+      result.report.errors.some((e) => e.code === "REPORT_INPUT_COLLISION"),
+      output,
+    ).toBe(true);
+    expect(capture.written).toEqual([]);
+    expect(existsSync(join(root, output))).toBe(false);
+    expect(readFileSync(file, "utf8")).toBe(before);
+  }
+});

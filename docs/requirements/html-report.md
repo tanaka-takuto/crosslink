@@ -42,3 +42,5 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 - `preserves complete empty indexes and known paths whose contents are unreadable`で正常な空と既知パス数を保護する。`keeps built HTML file indexes incomplete for failed scope and unreadable definitions`、`keeps a known file index complete when a real member file becomes unreadable` (cli.test.ts)で実CLIと実読取権限の境界を確認する。
 - 独立UI/UXレビューへ渡す固定HTMLには、探索権限を保った実在ファイル自体の読取不能から生成したUnreadable行を含める。探索失敗や凡例の表示で代用しない。
 - 初回に読めた管理定義の最終再読取がENOENT/EACCESで失敗した場合も、収集済みパスを完全な現在集合と表示しない。static/dynamic、baseline有無を問わず索引局所/nav/グループ見出しを不完全とし、snapshotを発行しない。`keeps collected membership unverified after final definition $failure (dynamic=$dynamic, baseline=$baseline)` (application/report.test.ts)で実filesystem失敗からtext/JSON/related/HTMLまで確認する。
+
+明示した片方向の役割・失効条件は[検出元と確認先](directional-impact.md)、全union snapshotとConfirmed表示は[方向付き確認](directional-confirmation.md)に従う。既定の全bothの挙動は維持する。

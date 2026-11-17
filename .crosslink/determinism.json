@@ -24,20 +24,20 @@
     "definition": "2723a673e580f557da0b1cb5d7759256eef75cffcb41e5f846d1692a474d32d0",
     "hashes": {
       "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
-      "../docs/specifications/cli.md": "ebf7c503b2a854c4b20a7c71f1b8627ec220151b7c0a8ac752bd9a3e8470a9d4",
-      "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../src/application/inspect-group.test.ts": "b68bf65e6ae8454ae6417597a71e98c09a8bde60142d3d479ae8767a1b6a9e31",
-      "../src/application/inspect-group.ts": "6ddc34059a52308e52f0e41a4ae18be74e3769591b5507d9181a48d68001197c",
+      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/storage.md": "2da2a3b477eed2633b25a7cee51cd2886ae57f3e2c83008f17423f68b1ae856f",
+      "../src/application/inspect-group.test.ts": "4f4776e1a31a0ebc8bae6259e77ba168f0031adfeccc2e9b2a37f3b3f7995721",
+      "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
       "../src/domain/group.test.ts": "4f7bef6e6a4f01e7415f2b4c1595d4f52978dc0bf2aea8bf3a72ae63c0017438",
-      "../src/domain/group.ts": "fd0b1e0514ca9d384fe517644668b98296bef0c0b0d829904c7b4f7072d4207d",
+      "../src/domain/group.ts": "65edee45697eee70330000e544bc84de690b3605acab9bb1fdd7c4c6cde5c8a8",
       "../src/infrastructure/filesystem/content-hash.test.ts": "a68378b8aaa118ef5176f50a13bc67157f65c5715cad4197c312b8798bcd3ec0",
       "../src/infrastructure/filesystem/content-hash.ts": "17f9e0cde21df777ca8e04d5c843e5c2e58926ea3542154842e163616a19cb36",
       "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
       "../src/infrastructure/filesystem/settings.ts": "ea1e15d4e66f20da09981ef9e5f051fca64878910a028ddb87efb55df50e983a",
-      "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
-      "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c",
-      "../src/interfaces/cli/output.test.ts": "d63c6f2a2ee30d9d9e57dd63418538ec98b2dfbac0628492a31afb25ea44b95f",
-      "../src/interfaces/cli/output.ts": "2972ee86f0a7896a525a34b86b1f868ada4238a1c028133892a8d623b24ae2a7"
+      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
+      "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb",
+      "../src/interfaces/cli/output.test.ts": "2043345e0ce09f418667c81c79f71cde8903dbb622a8302795760273513fd41f",
+      "../src/interfaces/cli/output.ts": "97c72bbfd25b22a5c3dc7387ab668e8e5bcaf258ba5d707b98c63fc2a95bd99b"
     }
   }
 }

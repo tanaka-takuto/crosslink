@@ -159,3 +159,35 @@ indexのmodeとblobを読み、mode120000は一回限りの`git -c core.symlinks
 非空globsを持つグループでは、混在する固定filesも含め全参照をindexツリー内で再現できることを要求する。
 絶対glob、リポジトリ外へ出る相対glob、絶対/外部の個別指定、外部を指すメンバーsymlinkは`STAGED_REFERENCE_UNSUPPORTED`でコミットを拒否し、修正・再検査・再確認を案内する。
 通常CLIの絶対/外部参照は引き続き使える。既存の静的グループはhookでも従来の外部固定参照を維持し、その参照先はライブFSに依存する。この場合に全参照をindexのみで検査できたとは保証しない。
+
+## 検出元のみ・検出先のみ
+
+```sh
+crosslink create adr-impact --glob 'docs/adr/**/*.md' --role source-only --reason 'Review implementation impact of ADR changes'
+crosslink add .crosslink/adr-impact.json src/api.ts --role target-only
+crosslink role .crosslink/adr-impact.json src/api.ts --role both
+crosslink role .crosslink/adr-impact.json --glob 'docs/adr/**/*.md' --role target-only
+crosslink role .crosslink/adr-impact.json src/api.ts --role source-only
+```
+
+create/addの`--role both|source-only|target-only`は、その呼出しで指定した全個別パスと全globに適用する。省略はboth。混在した役割はaddを分けて登録できる。role操作は登録済みの個別/glob選択に必須の--roleを適用し、bothでoverrideを解除する。役割フラグの複数指定・不正値・未登録selectorのrole操作は保存せず拒否する。removeは選択と対応overrideを除く。
+
+個別選択の重複は拒否する。重なるglobや個別/globの一致結果は同じ解決パスならunion一件とする。登録済みの同じglobのaddは従来どおりno-op成功とし、役割未指定では既存役割を維持する。同じ役割の明示もno-op、異なる役割はrole操作を案内して全体を保存せず拒否する。新規/既存glob混在時も指定roleは新規だけに適用する。別名で同じ物理実体を選ぶ禁止は役割をまたいでも維持する。
+
+通常checkは従来どおり件数と未確認/不正一覧に絞る。方向付きのverbose/relatedではSources → targets、Source changes、Review targets、各実メンバーのSource only/Target only/Bothと全内容比較を表示する。source-onlyは変更の文脈で、確認先に含めない。target-only変更によるChangedとConfirmedの並存は正当である。ConfirmedはNo unreviewed source impactを表し、target-only現在内容の再確認を保証しない。
+
+JSON top versionは1を保つ。v3だけに以下を追加し、旧v1/v2の通常出力には付けない。
+
+| 追加項目       | 意味                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------- |
+| roles          | 定義のselector役割map                                                                   |
+| files[].role   | union上の実効both/source-only/target-only                                               |
+| removed[].role | 前回確認時の実効役割。現在所属ではない                                                  |
+| sourceChanges  | 変化したsourceパス（削除/役割喪失も含む）。初回/検査エラーはnull                        |
+| reviewTargets  | 現在のtargetを含むパス。列挙不完全/定義再検証不能はnull。内容読取不能は既知のパスを残す |
+
+files[].changed、added/removedは全unionのbaseline比較を維持し、sourceChangesと区別する。relatedはcurrent所属とremoved履歴を逆引きし、役割からsource→targetの向きを読む。target-onlyの編集はsourceの確認を要求しない。グループ間伝搬はしない。
+
+状態はsource集合/hashを比較するが、snapshotは全union集合/hash/実効roleと定義に結び付く。古い検出先snapshotも確認を拒否してwrite0となる。各glob0一致、固定参照消失、読取不能、管理記録選択、strict探索不能は全役割でエラーとする。0/1件・片側欠落のdraftは保存できるがcheck/confirmは拒否する。
+
+既存bothへのboth再指定、役割未指定の既存globだけのaddはkind/管理bytes/確認記録を更新しない。新規allbothは旧形式、最後のoverrideを実編集で解除したら確認記録を外して静的v1/glob v2へ戻す。外部の空roles v3は検査/no-opで書き換えず、明示confirmではv3と実効both baselineを維持する。

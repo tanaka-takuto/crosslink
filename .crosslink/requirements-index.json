@@ -1,6 +1,6 @@
 {
   "kind": "crosslink-group",
-  "version": 2,
+  "version": 3,
   "name": "requirements-index",
   "reason": "要件一覧と増減する個別要件の対応を、ファイル追加時にも定義編集なしで確認するため",
   "files": [
@@ -9,28 +9,61 @@
   "globs": [
     "../docs/requirements/*.md"
   ],
+  "roles": {
+    "files": {
+      "../docs/requirements.md": "target-only"
+    },
+    "globs": {
+      "../docs/requirements/*.md": "source-only"
+    }
+  },
   "confirmation": {
-    "definition": "43eb2c1857dfc971fd27f50430f96d8bfb939799a161f8afb5d94c78cf8d1a61",
+    "definition": "4ef68c10fe1211b574f0f57776ab576ada35b7c1bfb510c00f07d72e9e93e99d",
     "hashes": {
-      "../docs/requirements.md": "d1323c5a0eb492abc3f9c4d2bae5bac59bf29994156cd8e8ce9cad65edb388c0",
+      "../docs/requirements.md": "8f8b73dfcf74a1db18d2ca89f8855d72873f0914462fc3428f55632c4cf42c63",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
       "../docs/requirements/agent-usage.md": "c4c7ee9e97dd885dee19479d3724c351df52de11477c9c8494ed8c227d45bedc",
-      "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
-      "../docs/requirements/change-impact.md": "a24a0f6769eb1ccd4ba465a83c72f31b029858d6e8fc638f59bedce92c8ec390",
+      "../docs/requirements/change-and-confirmation.md": "de52cd3929175d78228c769588351152a9aab1624905b11646a7a9af439a4345",
+      "../docs/requirements/change-impact.md": "565086bdecd6aeadfa560b8e9e57f809a8cb8b139688623001e5f70488902ae0",
       "../docs/requirements/check.md": "866ae1e48204490de5ae87a8855d5f0cbb3bda0efd72620589ff50938170ae91",
       "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
-      "../docs/requirements/confirmation-state.md": "fab3a04b9e8678ad62095acd57c4de778cd7b24190940eba099a3ad5aefc46ac",
+      "../docs/requirements/confirmation-state.md": "6b4c51251004fdd867295a767903348e8332cdb8daf7be24944a30a3a973ef6b",
       "../docs/requirements/determinism.md": "6d8af7481139f77a0bef7288f1f7bb7692fd526217cef938931c6812c700f7a6",
-      "../docs/requirements/dynamic-membership.md": "3afbedf1828eaf3c8abf9c2c3bdb6afa2e6d86dae88be7544866c10482209a13",
-      "../docs/requirements/explicit-confirmation.md": "af40497ee9c4682e616db71b7c6bcc6cba7944933109843165f2b0c1b808c386",
+      "../docs/requirements/directional-confirmation.md": "98d28108aeb3b1b9734675fe63715dfeed251a327a21be12a874f2a1499ea32b",
+      "../docs/requirements/directional-impact.md": "3ecac2a5ec867cc57da1aef77963cd58fddcfaa688a743233fcc987a57a71ba0",
+      "../docs/requirements/dynamic-membership.md": "b51023112b3b8b9302c26b7a7e2ed026db24edffe22fd7e4a2267552b564f59c",
+      "../docs/requirements/explicit-confirmation.md": "4740ce3c91cb28f4faecf99ec210c84e12dbc44f362c8ec0c1bed6e7e95d2ab0",
       "../docs/requirements/file-formats.md": "b2e23925eee4d57ae8ad0fa761203dc9c4fa33bde5d6b240b239ccc2d2f8750f",
-      "../docs/requirements/groups.md": "90a26580a5e3a5a125edec0bf0c9aca8940325feab41fb493106479bbbfb00f5",
-      "../docs/requirements/html-report.md": "39262783b0789393cee0ebb1fbfd793e592b752a6bee4789147288313408b8dc",
-      "../docs/requirements/impact-output.md": "aa9db39fd62375ac777507b9674f8d5d9dc178a5077428cb3cff0c9c7147a2ce",
+      "../docs/requirements/groups.md": "1d517302779c1807b3881e0955a3f2486b324c612c07ef816d79b22aa039e2c4",
+      "../docs/requirements/html-report.md": "8d8d23cf2995f4118668690eb2efd3556925672e47e40a42ca4cb1ba43cf9809",
+      "../docs/requirements/impact-output.md": "16bbed1c750b6fe8477ffc89a89edb3475565146eb7a2de21f2b8b135e7a09c1",
       "../docs/requirements/invalid-references.md": "e023390528e4e8a0b18cc921a8aad0f6d6e87969051c55a6a5eb75f2b5283000",
       "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
       "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
       "../docs/requirements/use-cases.md": "cfae82826cf7e1efa25126f414bea798b3145d97cfb8a5c49c226a6c4b3af2ef"
+    },
+    "roles": {
+      "../docs/requirements.md": "target-only",
+      "../docs/requirements/adoption.md": "source-only",
+      "../docs/requirements/agent-usage.md": "source-only",
+      "../docs/requirements/change-and-confirmation.md": "source-only",
+      "../docs/requirements/change-impact.md": "source-only",
+      "../docs/requirements/check.md": "source-only",
+      "../docs/requirements/ci.md": "source-only",
+      "../docs/requirements/confirmation-state.md": "source-only",
+      "../docs/requirements/determinism.md": "source-only",
+      "../docs/requirements/directional-confirmation.md": "source-only",
+      "../docs/requirements/directional-impact.md": "source-only",
+      "../docs/requirements/dynamic-membership.md": "source-only",
+      "../docs/requirements/explicit-confirmation.md": "source-only",
+      "../docs/requirements/file-formats.md": "source-only",
+      "../docs/requirements/groups.md": "source-only",
+      "../docs/requirements/html-report.md": "source-only",
+      "../docs/requirements/impact-output.md": "source-only",
+      "../docs/requirements/invalid-references.md": "source-only",
+      "../docs/requirements/non-destructive.md": "source-only",
+      "../docs/requirements/persistence.md": "source-only",
+      "../docs/requirements/use-cases.md": "source-only"
     }
   }
 }

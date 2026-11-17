@@ -1,10 +1,19 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  renameSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { inspectGroup as inspect } from "./inspect-group.js";
 import { filesystemPorts } from "../infrastructure/filesystem/adapter.js";
 import { defaults } from "../infrastructure/filesystem/settings.js";
+import { canonicalDefinition } from "../domain/group.js";
 const inspectGroup = (file: string) => inspect(file, filesystemPorts, defaults);
 
 const roots: string[] = [];
@@ -351,4 +360,207 @@ it("invalidates membership comparison when the final readable definition differs
   expect(result.removed).toBeNull();
   expect(result.snapshot).toBeNull();
   expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+});
+
+describe("directional inspection", () => {
+  function directional(dynamic = false) {
+    const { root, file } = fixture();
+    mkdirSync(join(root, "source"));
+    mkdirSync(join(root, "target"));
+    writeFileSync(join(root, "source", "a"), "source");
+    writeFileSync(join(root, "target", "b"), "target");
+    writeFileSync(
+      file,
+      JSON.stringify({
+        version: 3,
+        name: "directional",
+        reason: "source impact",
+        files: dynamic ? [] : ["../source/a", "../target/b"],
+        ...(dynamic ? { globs: ["../source/*", "../target/*"] } : {}),
+        roles: {
+          files: dynamic ? {} : { "../source/a": "source-only", "../target/b": "target-only" },
+          globs: dynamic ? { "../source/*": "source-only", "../target/*": "target-only" } : {},
+        },
+      }),
+    );
+    return { root, file };
+  }
+  function record(file: string) {
+    const current = inspectGroup(file);
+    expect(current.errors).toEqual([]);
+    const group = filesystemPorts.groups.read(file).group;
+    group.confirmation = {
+      definition: filesystemPorts.digest(canonicalDefinition(group)),
+      hashes: Object.fromEntries(current.files.map((f) => [f.path, f.hash!])),
+      roles: Object.fromEntries(current.files.map((f) => [f.path, f.role!])),
+    };
+    filesystemPorts.groups.write(file, group);
+  }
+  it.each([false, true])(
+    "keeps target-only changes confirmed and exposes source changes and review targets (glob=%s)",
+    (dynamic) => {
+      const { root, file } = directional(dynamic);
+      expect(inspectGroup(file).status).toBe("unconfirmed");
+      record(file);
+      writeFileSync(join(root, "target/b"), "changed");
+      const target = inspectGroup(file);
+      expect(target.status).toBe("confirmed");
+      expect(target.files[1]!.changed).toBe(true);
+      expect(target.reviewTargets).toEqual(["../target/b"]);
+      expect(target.sourceChanges).toEqual([]);
+      writeFileSync(join(root, "source/a"), "changed");
+      expect(inspectGroup(file).sourceChanges).toEqual(["../source/a"]);
+      expect(inspectGroup(file).status).toBe("unconfirmed");
+      writeFileSync(join(root, "source/a"), "source");
+      expect(inspectGroup(file).status).toBe("confirmed");
+    },
+  );
+  it.each(["source", "target"])(
+    "compares %s glob additions, removals and same-content rename",
+    (side) => {
+      const { root, file } = directional(true);
+      record(file);
+      writeFileSync(join(root, side, "extra"), side);
+      expect(inspectGroup(file).status).toBe(side === "source" ? "unconfirmed" : "confirmed");
+      rmSync(join(root, side, "extra"));
+      expect(inspectGroup(file).status).toBe("confirmed");
+      renameSync(join(root, side, side === "source" ? "a" : "b"), join(root, side, "renamed"));
+      const renamed = inspectGroup(file);
+      expect(renamed.status).toBe(side === "source" ? "unconfirmed" : "confirmed");
+      expect(renamed.removed?.[0]?.role).toBe(side === "source" ? "source-only" : "target-only");
+      rmSync(join(root, side, "renamed"));
+      expect(inspectGroup(file).errors.some((e) => e.code === "GLOB_NO_MATCH")).toBe(true);
+    },
+  );
+  it("merges selector overlaps into one effective both without permitting physical aliases", () => {
+    const { root, file } = directional(true);
+    const group = filesystemPorts.groups.read(file).group;
+    group.files = ["../source/a"];
+    group.roles!.files = { "../source/a": "target-only" };
+    filesystemPorts.groups.write(file, group);
+    const current = inspectGroup(file);
+    expect(current.errors).toEqual([]);
+    expect(current.files).toHaveLength(2);
+    expect(current.files[0]!.role).toBe("both");
+    symlinkSync(join(root, "source/a"), join(root, "target/alias"));
+    expect(inspectGroup(file).errors.some((e) => e.code === "DUPLICATE_MEMBER")).toBe(true);
+  });
+  it.each(["source-only", "target-only"])(
+    "allows saving a %s draft but rejects missing effective side",
+    (role) => {
+      const { file } = directional();
+      const group = filesystemPorts.groups.read(file).group;
+      group.roles!.files = Object.fromEntries(
+        group.files.map((path) => [path, role as "source-only" | "target-only"]),
+      );
+      filesystemPorts.groups.write(file, group);
+      expect(inspectGroup(file).errors.some((e) => e.code === "MISSING_ROLE")).toBe(true);
+      expect(inspectGroup(file).snapshot).toBeNull();
+    },
+  );
+  it.for(
+    [false, true].flatMap((reverse) =>
+      [false, true].flatMap((baseline) =>
+        ["source/a", "target/b"].map((path) => ({ reverse, baseline, path })),
+      ),
+    ),
+  )(
+    "rejects static v3 $path content races (reverse=$reverse, baseline=$baseline)",
+    ({ path, reverse, baseline }) => {
+      const { root, file } = directional();
+      if (reverse) {
+        const group = filesystemPorts.groups.read(file).group;
+        group.roles!.files = { "../source/a": "target-only", "../target/b": "source-only" };
+        filesystemPorts.groups.write(file, group);
+      }
+      if (baseline) record(file);
+      let count = 0;
+      const ports = {
+        ...filesystemPorts,
+        files: {
+          ...filesystemPorts.files,
+          hash: (p: string) => {
+            const value = filesystemPorts.files.hash(p);
+            if (++count === 2) writeFileSync(join(root, path), "racing");
+            return value;
+          },
+        },
+      };
+      const current = inspect(file, ports, defaults);
+      expect(current.errors.some((e) => e.code === "FILE_CHANGED")).toBe(true);
+      expect(current.snapshot).toBeNull();
+      expect(current.sourceChanges).toBeNull();
+    },
+  );
+  it("never skips target read failures or definition final revalidation", () => {
+    const { root, file } = directional();
+    rmSync(join(root, "target/b"));
+    expect(inspectGroup(file).errors.some((e) => e.code === "FILE_UNREADABLE")).toBe(true);
+    writeFileSync(join(root, "target/b"), "restored");
+    const ports = {
+      ...filesystemPorts,
+      groups: {
+        ...filesystemPorts.groups,
+        readRaw: () => {
+          throw new Error("unavailable");
+        },
+      },
+    };
+    expect(inspect(file, ports, defaults)).toMatchObject({
+      definitionVerified: false,
+      snapshot: null,
+      status: "unconfirmed",
+      sourceChanges: null,
+      reviewTargets: null,
+    });
+  });
+});
+
+it("rejects fixed lexical aliases even across source and target roles", () => {
+  const { file } = fixture(["../a", ".././a", "../b"]);
+  const group = filesystemPorts.groups.read(file).group;
+  group.roles = { files: { "../a": "source-only", ".././a": "target-only" }, globs: {} };
+  filesystemPorts.groups.write(file, group);
+  expect(inspectGroup(file).errors.some((error) => error.code === "DUPLICATE_MEMBER")).toBe(true);
+});
+it("tracks source-role changes caused by overlapping dynamic membership", () => {
+  const { root, file } = fixture([]);
+  writeFileSync(
+    file,
+    JSON.stringify({
+      version: 3,
+      name: "overlap",
+      reason: "dynamic roles",
+      files: ["../a", "../b"],
+      globs: ["../[a]*"],
+      roles: { files: { "../a": "target-only" }, globs: { "../[a]*": "source-only" } },
+    }),
+  );
+  const group = filesystemPorts.groups.read(file).group;
+  const current = inspectGroup(file);
+  group.confirmation = {
+    definition: filesystemPorts.digest(canonicalDefinition(group)),
+    hashes: Object.fromEntries(current.files.map((f) => [f.path, f.hash!])),
+    roles: Object.fromEntries(current.files.map((f) => [f.path, f.role!])),
+  };
+  filesystemPorts.groups.write(file, group);
+  // globがaを外しa-extraを追加する。固定targetのaは残るがsourceから外れる。
+  writeFileSync(join(root, "a-extra"), "a");
+  const ports = {
+    ...filesystemPorts,
+    files: { ...filesystemPorts.files, expandGlob: () => ["../a-extra"] },
+  };
+  const result = inspect(file, ports, defaults);
+  expect(result.status).toBe("unconfirmed");
+  expect(result.sourceChanges).toEqual(["../a", "../a-extra"]);
+});
+
+it("treats prototype-named selectors as ordinary paths with default both roles", () => {
+  const { root, file } = fixture(["__proto__", "constructor"]);
+  writeFileSync(join(root, ".crosslink/__proto__"), "a");
+  writeFileSync(join(root, ".crosslink/constructor"), "b");
+  const group = filesystemPorts.groups.read(file).group;
+  group.roles = { files: {}, globs: {} };
+  filesystemPorts.groups.write(file, group);
+  expect(inspectGroup(file).files.map((f) => f.role)).toEqual(["both", "both"]);
 });

@@ -1,7 +1,7 @@
 import { dirname, resolve } from "node:path";
 import { CrosslinkError } from "../domain/errors.js";
 import { canonicalDefinition, validateGroup, type Group } from "../domain/group.js";
-import { inspectGroup } from "./inspect-group.js";
+import { inspectGroup, inspectionSnapshot } from "./inspect-group.js";
 import type { CrosslinkPorts, Settings } from "./ports.js";
 
 function withoutRecord(group: Group): Group {
@@ -10,6 +10,7 @@ function withoutRecord(group: Group): Group {
     reason: group.reason,
     files: [...group.files].sort(),
     ...(group.globs?.length ? { globs: [...new Set(group.globs)].sort() } : {}),
+    ...(group.roles ? { roles: structuredClone(group.roles) } : {}),
   };
 }
 
@@ -61,17 +62,17 @@ export function updateGroup(
   update: (group: Group) => Group,
   ports: CrosslinkPorts,
   settings: Settings,
+  preserveUnchanged = false,
 ): void {
   file = resolve(file);
   ports.groups.withLocks([file], () => {
     const old = ports.groups.read(file).group;
     const next = withoutRecord(update(structuredClone(old)));
     validateMembers(file, next, ports, settings);
-    if (
-      ports.digest(canonicalDefinition(old)) === ports.digest(canonicalDefinition(next)) &&
-      old.confirmation
-    )
-      next.confirmation = old.confirmation;
+    const unchanged =
+      ports.digest(canonicalDefinition(old)) === ports.digest(canonicalDefinition(next));
+    if (unchanged && preserveUnchanged) return;
+    if (unchanged && old.confirmation) next.confirmation = old.confirmation;
     ports.groups.write(file, next);
   });
 }
@@ -98,16 +99,7 @@ export function confirmGroups(
           "STALE_SNAPSHOT",
           `State changed after inspection: ${file}. Run check --json again and read all related files before confirming with the new report.`,
         );
-      if (
-        current.snapshot !==
-        ports.digest(
-          JSON.stringify({
-            file,
-            raw,
-            files: current.files.map((entry) => [entry.path, entry.hash]),
-          }),
-        )
-      )
+      if (current.snapshot !== ports.digest(inspectionSnapshot(file, raw, current.files)))
         throw new CrosslinkError(
           "STALE_SNAPSHOT",
           `Management data changed during inspection: ${file}. Run check --json again and read all related files before confirming with the new report.`,
@@ -115,6 +107,9 @@ export function confirmGroups(
       group.confirmation = {
         definition: ports.digest(canonicalDefinition(group)),
         hashes: Object.fromEntries(current.files.map((entry) => [entry.path, entry.hash!])),
+        ...(group.roles
+          ? { roles: Object.fromEntries(current.files.map((entry) => [entry.path, entry.role!])) }
+          : {}),
       };
       return { file, group, snapshot: current.snapshot };
     });

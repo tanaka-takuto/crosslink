@@ -397,3 +397,197 @@ it("rejects empty, unsupported and ambiguous glob syntax before converting from 
     expect(result.report.errors[0]?.code).toBe("INVALID_DEFINITION");
   }
 });
+
+it("creates directional selectors, edits roles explicitly and preserves the ordinary v1/v2 format", () => {
+  const root = fixture();
+  const call = (...args: string[]) => run(args, root);
+  expect(
+    call("create", "direction", "a", "--role", "source-only", "--reason", "ADR impact").code,
+  ).toBe(0);
+  expect(call("add", ".crosslink/direction.json", "b", "--role", "target-only").code).toBe(0);
+  const file = join(root, ".crosslink/direction.json");
+  expect(JSON.parse(readFileSync(file, "utf8"))).toMatchObject({
+    version: 3,
+    roles: { files: { "../a": "source-only", "../b": "target-only" } },
+  });
+  let checked = call("check");
+  writeFileSync(join(root, "snapshot.json"), JSON.stringify(checked.report));
+  expect(call("confirm", "--all", "--snapshot", "snapshot.json").code).toBe(0);
+  writeFileSync(join(root, "b"), "changed target");
+  expect(call("check").code).toBe(0);
+  expect(call("role", ".crosslink/direction.json", "a", "--role", "target-only").code).toBe(0);
+  expect(call("role", ".crosslink/direction.json", "b", "--role", "source-only").code).toBe(0);
+  expect(call("check").code).toBe(1);
+  expect(call("role", ".crosslink/direction.json", "a", "b", "--role", "both").code).toBe(0);
+  expect(call("check").report.groups[0]!.files.every((f) => f.role === undefined)).toBe(true);
+  expect(call("remove", ".crosslink/direction.json", "b").code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8"))).not.toHaveProperty("roles");
+  expect(call("create", "legacy", "a", "b", "--reason", "legacy").code).toBe(0);
+  expect(JSON.parse(readFileSync(join(root, ".crosslink/legacy.json"), "utf8"))).toMatchObject({
+    version: 1,
+  });
+  expect(call("check", "--file", ".crosslink/legacy.json").report.groups[0]).not.toHaveProperty(
+    "roles",
+  );
+  checked = call("create", "dynamic", "--glob", "*", "--role", "source-only", "--reason", "glob");
+  expect(checked.code).toBe(0);
+  expect(call("role", ".crosslink/dynamic.json", "--glob", "*", "--role", "target-only").code).toBe(
+    0,
+  );
+  expect(call("remove", ".crosslink/dynamic.json", "--glob", "*").code).toBe(0);
+});
+it.each(["invalid", "SOURCE", ""])("rejects invalid role %s without writing", (role) => {
+  const root = fixture();
+  expect(run(["create", "x", "a", "b", "--reason", "r", "--role", role], root).code).toBe(2);
+});
+it("rejects role editing of unregistered selectors and duplicate role flags", () => {
+  const root = fixture();
+  run(["create", "x", "a", "b", "--reason", "r"], root);
+  const file = join(root, ".crosslink/x.json"),
+    before = readFileSync(file, "utf8");
+  for (const args of [
+    ["role", file, "c", "--role", "both"],
+    ["role", file, "--glob", "*", "--role", "source-only"],
+    ["role", file, "a"],
+    ["role", file, "a", "--role", "both", "--role", "source-only"],
+  ]) {
+    expect(run(args, root).code).toBe(2);
+    expect(readFileSync(file, "utf8")).toBe(before);
+  }
+});
+
+it("explains confirmed target differences and directional reverse membership in generated HTML", () => {
+  const root = fixture();
+  const created = run(
+    ["create", "ADR", "a", "--role", "source-only", "--reason", "ADR → code"],
+    root,
+  );
+  expect(created.code, JSON.stringify(created.report)).toBe(0);
+  // 作成結果の正確なパスを使い、大小文字を区別するFSでも同じ管理ファイルを編集する。
+  const file = created.report.groups[0]!.file;
+  const added = run(["add", file, "b", "--role", "target-only"], root);
+  expect(added.code, JSON.stringify(added.report)).toBe(0);
+  const checked = run(["check"], root);
+  expect(checked.code, JSON.stringify(checked.report)).toBe(1);
+  writeFileSync(join(root, "snapshot.json"), JSON.stringify(checked.report));
+  // 同じ一回の失敗に含まれる診断を保持し、再実行で置き換えない。
+  const confirmed = run(["confirm", file, "--snapshot", "snapshot.json"], root);
+  expect(confirmed.code, JSON.stringify(confirmed.report)).toBe(0);
+  writeFileSync(join(root, "b"), "changed target");
+  const generated = run(["report", "--format", "html", "--output", "direction.html"], root);
+  expect(generated.code, JSON.stringify(generated.report)).toBe(0);
+  const html = readFileSync(join(root, "direction.html"), "utf8");
+  for (const text of [
+    "Source only",
+    "Target only",
+    "Source changes",
+    "Review targets",
+    "No unreviewed source impact",
+    "Target-only content may differ",
+    "Changes here trigger target review",
+    "Receives review when sources change",
+  ])
+    expect(html).toContain(text);
+  expect(html).not.toContain(
+    "Group confirmation also depends on the group definition and the complete path set.",
+  );
+  expect(html).not.toContain(
+    "Confirmed means the inspected content matches a recorded confirmation",
+  );
+});
+
+it("keeps old both assignments and existing glob additions byte-identical without implicit role edits", () => {
+  const root = fixture();
+  const call = (...args: string[]) => run(args, root);
+  call("create", "legacy", "a", "--glob", "b", "--reason", "legacy");
+  const file = join(root, ".crosslink/legacy.json"),
+    snapshot = join(root, "snapshot.json");
+  writeFileSync(snapshot, JSON.stringify(call("check").report));
+  expect(call("confirm", "--all", "--snapshot", snapshot).code).toBe(0);
+  const before = readFileSync(file, "utf8");
+  for (const args of [
+    ["role", file, "a", "--glob", "b", "--role", "both"],
+    ["add", file, "--glob", "b"],
+    ["add", file, "--glob", "b", "--role", "both"],
+  ]) {
+    expect(call(...args).code).toBe(0);
+    expect(readFileSync(file, "utf8")).toBe(before);
+  }
+  expect(call("create", "allboth", "a", "b", "--role", "both", "--reason", "both").code).toBe(0);
+  expect(JSON.parse(readFileSync(join(root, ".crosslink/allboth.json"), "utf8")).version).toBe(1);
+  expect(call("role", file, "--glob", "b", "--role", "source-only").code).toBe(0);
+  const directional = readFileSync(file, "utf8");
+  expect(call("add", file, "--glob", "b").code).toBe(0);
+  expect(readFileSync(file, "utf8")).toBe(directional);
+  expect(call("add", file, "--glob", "b", "--role", "source-only").code).toBe(0);
+  expect(readFileSync(file, "utf8")).toBe(directional);
+  const refused = call("add", file, "--glob", "b", "--glob", "c", "--role", "target-only");
+  expect(refused.code).toBe(2);
+  expect(refused.report.errors[0]!.message).toContain("role");
+  expect(readFileSync(file, "utf8")).toBe(directional);
+  expect(call("add", file, "--glob", "b", "--glob", "c", "--role", "source-only").code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).roles.globs).toEqual({
+    "../b": "source-only",
+    "../c": "source-only",
+  });
+  expect(call("role", file, "--glob", "b", "--glob", "c", "--role", "both").code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8"))).toMatchObject({ version: 2 });
+  expect(JSON.parse(readFileSync(file, "utf8"))).not.toHaveProperty("confirmation");
+});
+it("preserves external empty-role v3 on no-op and explicit confirmation", () => {
+  const root = fixture();
+  mkdirSync(join(root, ".crosslink"));
+  const file = join(root, ".crosslink/empty.json");
+  const raw = JSON.stringify({
+    version: 3,
+    name: "empty",
+    reason: "external",
+    files: ["../a", "../b"],
+    roles: { files: {}, globs: {} },
+  });
+  writeFileSync(file, raw);
+  expect(run(["role", file, "a", "--role", "both"], root).code).toBe(0);
+  expect(readFileSync(file, "utf8")).toBe(raw);
+  const snapshot = join(root, "snapshot.json");
+  writeFileSync(snapshot, JSON.stringify(run(["check"], root).report));
+  expect(run(["confirm", "--all", "--snapshot", snapshot], root).code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8"))).toMatchObject({
+    version: 3,
+    roles: { files: {}, globs: {} },
+    confirmation: { roles: { "../a": "both", "../b": "both" } },
+  });
+});
+
+it("keeps directional groups independent and target reverse lookup distinct from propagation", () => {
+  const root = fixture(),
+    call = (...args: string[]) => run(args, root);
+  for (const [name, source, target] of [
+    ["first", "a", "b"],
+    ["second", "b", "c"],
+  ]) {
+    expect(call("create", name!, source!, "--role", "source-only", "--reason", "impact").code).toBe(
+      0,
+    );
+    expect(call("add", `.crosslink/${name}.json`, target!, "--role", "target-only").code).toBe(0);
+  }
+  const snapshot = join(root, "snapshot.json");
+  writeFileSync(snapshot, JSON.stringify(call("check").report));
+  expect(call("confirm", "--all", "--snapshot", snapshot).code).toBe(0);
+  writeFileSync(join(root, "a"), "changed a");
+  expect(call("check").report.groups.map((g) => g.status)).toEqual(["unconfirmed", "confirmed"]);
+  expect(call("related", "a").report.groups.map((g) => g.name)).toEqual(["first"]);
+  writeFileSync(join(root, "a"), "a");
+  writeFileSync(join(root, "b"), "changed b");
+  const related = call("related", "b").report.groups;
+  expect(related.map((g) => g.status)).toEqual(["confirmed", "unconfirmed"]);
+  expect(related.map((g) => g.sourceChanges)).toEqual([[], ["../b"]]);
+  expect(related.map((g) => g.reviewTargets)).toEqual([["../b"], ["../c"]]);
+  expect(call("role", ".crosslink/first.json", "a", "--role", "both").code).toBe(0);
+  expect(call("role", ".crosslink/first.json", "a", "--role", "source-only").code).toBe(0);
+  expect(call("check", "--file", ".crosslink/first.json").report.groups[0]!.status).toBe(
+    "unconfirmed",
+  );
+  expect(JSON.parse(readFileSync(join(root, ".crosslink/first.json"), "utf8"))).not.toHaveProperty(
+    "confirmation",
+  );
+});

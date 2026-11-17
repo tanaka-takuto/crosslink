@@ -1,12 +1,23 @@
 import { validateGlob } from "./glob.js";
 import { CrosslinkError, type Problem } from "./errors.js";
 
+export type Role = "both" | "source-only" | "target-only";
+export interface SelectorRoles {
+  files: Record<string, Exclude<Role, "both">>;
+  globs: Record<string, Exclude<Role, "both">>;
+}
+
 export interface Group {
   name: string;
   reason: string;
   files: string[];
   globs?: string[];
-  confirmation?: { definition: string; hashes: Record<string, string> };
+  roles?: SelectorRoles;
+  confirmation?: {
+    definition: string;
+    hashes: Record<string, string>;
+    roles?: Record<string, Role>;
+  };
 }
 
 export function validateGroup(group: Group): void {
@@ -26,6 +37,28 @@ export function validateGroup(group: Group): void {
     if (!Array.isArray(group.globs))
       throw new CrosslinkError("INVALID_DEFINITION", "globs must be an array of patterns.");
     group.globs.forEach(validateGlob);
+  }
+  if (group.roles !== undefined) {
+    const roles = group.roles;
+    const object = (value: unknown): value is Record<string, unknown> =>
+      typeof value === "object" && value !== null && !Array.isArray(value);
+    if (
+      !object(roles) ||
+      Object.keys(roles).some((key) => !["files", "globs"].includes(key)) ||
+      !object(roles.files) ||
+      !object(roles.globs)
+    )
+      throw new CrosslinkError("INVALID_DEFINITION", "roles must contain files and globs maps.");
+    for (const kind of ["files", "globs"] as const)
+      for (const [selector, role] of Object.entries(roles[kind]))
+        if (
+          !(group[kind] ?? []).includes(selector) ||
+          !["source-only", "target-only"].includes(role)
+        )
+          throw new CrosslinkError(
+            "INVALID_DEFINITION",
+            "Roles must reference registered selectors and use source-only or target-only; omit both overrides.",
+          );
   }
   if (new Set(group.files).size !== group.files.length)
     throw new CrosslinkError("DUPLICATE_MEMBER", "The same path is registered more than once.");
@@ -48,5 +81,17 @@ export function canonicalDefinition(group: Group): string {
     reason: group.reason,
     files: [...group.files].sort(),
     ...(group.globs?.length ? { globs: [...new Set(group.globs)].sort() } : {}),
+    ...(group.roles
+      ? {
+          roles: Object.fromEntries(
+            (["files", "globs"] as const).map((kind) => [
+              kind,
+              Object.fromEntries(
+                Object.entries(group.roles![kind]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+              ),
+            ]),
+          ),
+        }
+      : {}),
   });
 }

@@ -15,13 +15,13 @@
   "confirmation": {
     "definition": "6b052ab11d39bde3ce6cd4d7b774638e11f55878e329a8f6030dee884ba6e929",
     "hashes": {
-      "../docs/requirements/change-and-confirmation.md": "b7ae143edad6cdf9554f40fb5519bc1536a2df5eda8c6310f428322b959a57ca",
-      "../docs/specifications/cli.md": "ebf7c503b2a854c4b20a7c71f1b8627ec220151b7c0a8ac752bd9a3e8470a9d4",
-      "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
-      "../src/application/group-operations.test.ts": "cd2b01e9435964fecdb25911014fdc77371c7918b0681637ecf15ff2954e7c8a",
-      "../src/application/group-operations.ts": "62b7c4134a6adaaabf8bd6e0623bcfd1fa4b3dd5acefd5d33cc6b41e9ffcde33",
+      "../docs/requirements/change-and-confirmation.md": "de52cd3929175d78228c769588351152a9aab1624905b11646a7a9af439a4345",
+      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/storage.md": "2da2a3b477eed2633b25a7cee51cd2886ae57f3e2c83008f17423f68b1ae856f",
+      "../src/application/group-operations.test.ts": "2e284d4e7d9b444227f3b9cb3dfcc60c8d87c44b7b7bc5236b0e2cc84279856c",
+      "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
-      "../src/domain/confirmation.ts": "8aa547ad7d41e3a0c1c85da179758d1b834db30638de615445f4fad26ff472c4"
+      "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf"
     }
   }
 }

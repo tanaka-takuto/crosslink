@@ -22,6 +22,22 @@ export function human(report: Report, cwd: string, verbose = false): string {
     lines.push(`${status}: ${group.name} (${relative(cwd, group.file)})`);
     if (compact) continue;
     lines.push(`  Reason: ${group.reason}`);
+    if (group.roles) {
+      lines.push("  Direction: sources → targets within this group; no cross-group propagation.");
+      lines.push(
+        "  Confirmed means: No unreviewed source impact. Target-only content may differ from the last confirmation.",
+      );
+      lines.push(
+        `  Source changes: ${group.sourceChanges === null ? (group.errors.length ? "unavailable; inspection failed" : "no baseline; explicit review required") : group.sourceChanges?.length ? group.sourceChanges.join(", ") : "none"}`,
+      );
+      lines.push(
+        `  Review targets: ${group.reviewTargets === null ? "unavailable; collected files may be incomplete" : group.reviewTargets?.join(", ") || "none"}`,
+      );
+      if (report.operation === "related")
+        lines.push(
+          "  Related lists current directional membership and removed history; target-only edits do not trigger source review.",
+        );
+    }
     for (const pattern of group.globs ?? []) lines.push(`  Glob: ${pattern}`);
     if (group.definitionVerified === false)
       lines.push(
@@ -31,9 +47,10 @@ export function human(report: Report, cwd: string, verbose = false): string {
       lines.push("  Membership comparison unavailable; current member list may be incomplete.");
     for (const file of group.files)
       lines.push(
-        `  ${group.added?.includes(file.path) ? "Added" : file.changed === null ? (group.globs ? "No baseline" : "New") : file.changed ? "Changed" : "Unchanged"}: ${file.path}`,
+        `  ${file.role ? { both: "Both", "source-only": "Source only", "target-only": "Target only" }[file.role] + " · " : ""}${group.added?.includes(file.path) ? "Added" : file.changed === null ? (group.globs ? "No baseline" : "New") : file.changed ? "Changed" : "Unchanged"}: ${file.path}`,
       );
-    for (const file of group.removed ?? []) lines.push(`  Removed: ${file.path}`);
+    for (const file of group.removed ?? [])
+      lines.push(`  Removed${file.role ? " (" + file.role + ")" : ""}: ${file.path}`);
     for (const error of group.errors) lines.push(`  ${error.code}: ${error.message}`);
   }
   if (compact && report.groups.some((group) => group.status !== "confirmed" || group.errors.length))

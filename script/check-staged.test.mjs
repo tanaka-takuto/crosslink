@@ -552,3 +552,30 @@ test("core.symlinks=falseで再現不能なindex mode120000を同hashの通常�
   assert.deepEqual(readFileSync(join(f.root, "broken.bin")), Buffer.from([0, 97]));
   assert.equal(f.git("config", "--get", "core.symlinks").trim(), "false");
 });
+
+test("方向付きindexはtarget編集を許可しsource編集を拒否してindexと設定を保持する", () => {
+  const f = fixture({ groups: false });
+  assert.equal(f.cli("create", "direction", "a", "--role", "source-only", "--reason", "impact").status, 0);
+  assert.equal(f.cli("add", ".crosslink/direction.json", "b", "--role", "target-only").status, 0);
+  f.confirm(); f.git("add", ".");
+  let result = f.commit(); assert.equal(result.status, 0, f.output(result));
+  writeFileSync(join(f.root, "b"), "target changed"); f.git("add", "b");
+  const config = readFileSync(join(f.root, ".git/config"));
+  result = f.commit(); assert.equal(result.status, 0, f.output(result));
+  writeFileSync(join(f.root, "a"), "source changed"); f.git("add", "a");
+  const index = f.git("ls-files", "--stage");
+  result = f.commit(); assert.notEqual(result.status, 0, f.output(result));
+  assert.match(f.output(result), /Source changes: .*a/); assert.match(f.output(result), /Review targets: .*b/);
+  assert.equal(f.git("ls-files", "--stage"), index); assert.deepEqual(readFileSync(join(f.root, ".git/config")), config);
+});
+
+test("方向付きtargetの外部固定参照もglob混在hookで拒否し内容とindexを保持する", () => {
+  const f = fixture({ groups: false }), outside = join(dirname(f.root), "outside-target.txt"); writeFileSync(outside, "external target");
+  assert.equal(f.cli("create", "direction", "a", "--role", "source-only", "--reason", "impact").status, 0);
+  assert.equal(f.cli("add", ".crosslink/direction.json", "--glob", "b", "--role", "target-only").status, 0);
+  assert.equal(f.cli("add", ".crosslink/direction.json", outside, "--role", "target-only").status, 0);
+  f.confirm(); assert.equal(f.cli("check").status, 0); f.git("add", ".");
+  const index = f.git("ls-files", "--stage"), config = readFileSync(join(f.root, ".git/config")), record = readFileSync(join(f.root, ".crosslink/direction.json"));
+  const result = f.commit(); assert.notEqual(result.status, 0, f.output(result)); assert.match(f.output(result), /STAGED_REFERENCE_UNSUPPORTED/);
+  assert.equal(f.git("ls-files", "--stage"), index); assert.deepEqual(readFileSync(join(f.root, ".git/config")), config); assert.deepEqual(readFileSync(join(f.root, ".crosslink/direction.json")), record); assert.equal(readFileSync(outside, "utf8"), "external target");
+});
