@@ -25,23 +25,23 @@
   "confirmation": {
     "definition": "b0dd9c61503f208c8dcb62e336e4a9a71f96278d17690e265efbf4b6b31a4e52",
     "hashes": {
-      "../README.md": "8dda427c7c47574b8eb548ddd141fe78f6f9611eba692e407051e0de1b119d29",
+      "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
-      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
-      "../docs/specifications/storage.md": "620c68de7581fdf2963f6aaeb9091dba18cce8ff1e71fb53c6ef160407280494",
-      "../package.json": "4a153923e0d8921f818462d791d18d2fcb6e5074c62aa5c17b450680bdfb7ae9",
-      "../script/build-binary.test.ts": "3956f4c7e07ce99b906707d95e8b11ba8da4c78ac509044c97db581c5e1ce7d3",
+      "../docs/specifications/cli.md": "ebf7c503b2a854c4b20a7c71f1b8627ec220151b7c0a8ac752bd9a3e8470a9d4",
+      "../docs/specifications/storage.md": "ce41ff0e1ceeaeaa45d664c54dc69619404957cc133ac126b38eb5597484e332",
+      "../package.json": "1373120e2df0275272f0f119d69edfa1f51827f0dc34edab046a9318c3d202bf",
+      "../script/build-binary.test.ts": "2f3fbcbbde2d1cad23322bf95dbe2175dea8e23008ba7eb1a5e4445bce7cfbb5",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
-      "../src/application/ports.ts": "1ecf93c30a2e617eec52d349655ab476fa30516ac9e81d857b5ade222721fe30",
+      "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
-      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
+      "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/infrastructure/filesystem/settings.test.ts": "a56950eba3197dc434024265da4a7a87d9a994bcc06522fd93c3f20072e979f1",
       "../src/infrastructure/filesystem/settings.ts": "ea1e15d4e66f20da09981ef9e5f051fca64878910a028ddb87efb55df50e983a",
       "../src/infrastructure/version-reader.test.ts": "32043b35c52c58004f350886714683157f4bf4c6be6864424fbd7dd5a6eacd8c",
       "../src/infrastructure/version-reader.ts": "cc151cc05025ce8608d2fda465ea9ef0a48ff539031fdf6d92e4d6486a59e837",
-      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
-      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279"
+      "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
+      "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c"
     }
   }
 }

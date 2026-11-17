@@ -52,3 +52,32 @@ it("keeps related output detailed without requiring verbose", () => {
     "Confirmed: 名前 (group.json)\n  Reason: 利用者の理由\n  Unchanged: ファイル\n",
   );
 });
+
+it("shows selectors, added and removed paths while keeping compact check concise", () => {
+  const report: Report = {
+    version: 1,
+    operation: "check",
+    result: "unconfirmed",
+    groups: [
+      {
+        file: "/group.json",
+        name: "ADR",
+        reason: "review",
+        status: "unconfirmed",
+        files: [{ path: "new.md", hash: "hash", changed: true }],
+        globs: ["**/*.md"],
+        added: ["new.md"],
+        removed: [{ path: "old.md", hash: "hash" }],
+        membershipComplete: true,
+        snapshot: "s",
+        errors: [],
+      },
+    ],
+    errors: [],
+    messages: [],
+  };
+  expect(human(report, "/", true)).toContain("Glob: **/*.md");
+  expect(human(report, "/", true)).toContain("Added: new.md");
+  expect(human(report, "/", true)).toContain("Removed: old.md");
+  expect(human(report, "/")).not.toContain("old.md");
+});

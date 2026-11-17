@@ -15,6 +15,8 @@ export interface GroupStorage {
 }
 
 export interface RelatedFiles {
+  matchesGlob(file: string, pattern: string, cwd: string): boolean;
+  expandGlob(pattern: string, cwd: string): string[];
   isManagementFile(member: string, groupFile: string, settings: Settings): boolean;
   hash(file: string): { hash: string; identity: string };
   info(file: string): { isFile: boolean; identity: string };

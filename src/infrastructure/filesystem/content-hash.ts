@@ -32,7 +32,19 @@ export function hashFile(file: string): { hash: string; identity: string } {
       before.ctimeMs !== after.ctimeMs
     )
       throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
-    return { hash: hash.digest("hex"), identity: realpathSync(file) };
+    const current = statSync(file);
+    if (
+      current.dev !== after.dev ||
+      current.ino !== after.ino ||
+      current.size !== after.size ||
+      current.mtimeMs !== after.mtimeMs ||
+      current.ctimeMs !== after.ctimeMs
+    )
+      throw new CrosslinkError("FILE_CHANGED", `File changed while being read: ${file}`);
+    return {
+      hash: hash.digest("hex"),
+      identity: realpathSync.native(file),
+    };
   } finally {
     closeSync(fd);
   }

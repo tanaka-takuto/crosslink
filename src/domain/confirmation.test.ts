@@ -62,3 +62,24 @@ it("never confirms a missing or unreadable member", () => {
     inspectConfirmation(group, "definition", [members[0]!, { path: "b", hash: null }]).status,
   ).toBe("unconfirmed");
 });
+
+it("compares the complete baseline key set for dynamic membership", () => {
+  const dynamic = { ...group, files: [], globs: ["*"] };
+  expect(inspectConfirmation(dynamic, "definition", members).status).toBe("confirmed");
+  expect(
+    inspectConfirmation(dynamic, "definition", [...members, { path: "c", hash: "hash-a" }]).status,
+  ).toBe("unconfirmed");
+  expect(
+    inspectConfirmation(
+      {
+        ...dynamic,
+        confirmation: {
+          definition: "definition",
+          hashes: { a: "hash-a", b: "hash-b", c: "hash-a" },
+        },
+      },
+      "definition",
+      members,
+    ).status,
+  ).toBe("unconfirmed");
+});

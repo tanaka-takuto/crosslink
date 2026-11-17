@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { appendFileSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 // SemVer 2.0.0の識別子規則を文字列として検査し、巨大な数値も丸めない。
 const semver =
@@ -17,7 +18,14 @@ export function validateVersion(value: unknown, base?: string): string {
   return version;
 }
 
-if (import.meta.main) {
+const entryPoint = process.argv[1];
+// eval/printではargv[1]も利用者引数。import先と一致してもfile直接起動ではない。
+const evaluation = process.execArgv.some(arg => ["-e", "--eval", "-p", "--print", "-pe"].includes(arg) || arg.startsWith("--eval=") || arg.startsWith("--print="));
+if (
+  import.meta.main ??
+  (!evaluation && entryPoint !== undefined && existsSync(entryPoint) &&
+    realpathSync.native(entryPoint) === realpathSync.native(fileURLToPath(import.meta.url)))
+) {
   try {
     const args = process.argv.slice(2);
     let base: string | undefined;

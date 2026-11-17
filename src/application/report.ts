@@ -54,7 +54,9 @@ export function generateReport(
       ...(selection ?? []),
       ...result.report.groups.flatMap((group) => [
         group.file,
-        ...group.files.map((member) => resolve(dirname(group.file), member.path)),
+        ...[...group.files, ...(group.removed ?? [])].map((member) =>
+          resolve(dirname(group.file), member.path),
+        ),
       ]),
     ];
     // 読取不能な入力の実体パスを取得できなくても、描画可能な診断は保存する。
@@ -68,6 +70,13 @@ export function generateReport(
     };
     const outputIdentity = canonical(output);
     if (
+      result.report.groups.some((group) =>
+        group.globs?.some(
+          (pattern) =>
+            ports.files.matchesGlob(output, pattern, dirname(group.file)) ||
+            ports.files.matchesGlob(outputIdentity, pattern, canonical(dirname(group.file))),
+        ),
+      ) ||
       protectedPaths.some((file) => resolve(file) === output || canonical(file) === outputIdentity)
     )
       throw new CrosslinkError(

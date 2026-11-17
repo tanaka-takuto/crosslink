@@ -1,7 +1,8 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { validateVersion } from "./check-version.ts";
 
@@ -83,7 +84,51 @@ it("CLI compares the specified base package and fails closed for a missing base"
     spawnSync(process.execPath, [script, "--base", ref], { cwd, encoding: "utf8" });
   expect(run(base).status).toBe(1);
   writeFileSync(join(cwd, "package.json"), JSON.stringify({ version: "0.3.1", private: true }));
-  expect(run(base).status).toBe(0);
+  const valid = run(base);
+  expect(valid.status, valid.stderr).toBe(0);
+  expect(valid.stdout).toBe("Version policy passed: 0.3.1\n");
   expect(run("f".repeat(40)).status).toBe(1);
   expect(run("--help").status).toBe(1);
+});
+
+it("does not run the version CLI when imported by a module or eval", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "crosslink-version-import-"));
+  directories.push(cwd);
+  const code = `const module = await import(${JSON.stringify(pathToFileURL(resolve("script/check-version.ts")).href)}); if (module.validateVersion({version:"1.0.0",private:true}) !== "1.0.0") throw Error("Import failed"); console.log("imported");`;
+  const runner = join(cwd, "runner.mjs");
+  writeFileSync(runner, code);
+  for (const args of [[runner, "--unsupported"], ["--input-type=module", "--eval", code, "missing-entry"]]) {
+    const result = spawnSync(process.execPath, args, { cwd, encoding: "utf8" });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toBe("imported\n");
+  }
+});
+
+it.each(["-e", "--eval", "--eval=", "-p", "--print", "-pe", "--print=true"])("does not write version output when %s imports argv[1] itself", (flag) => {
+  const cwd = mkdtempSync(join(tmpdir(), "crosslink-version-eval-")); directories.push(cwd);
+  writeFileSync(join(cwd, "package.json"), JSON.stringify({ version: "1.2.3", private: true }));
+  const output = join(cwd, "github-output"); writeFileSync(output, "unchanged\n");
+  const print = ["-p", "--print", "-pe", "--print=true"].includes(flag);
+  const code = print ? 'import(require("node:url").pathToFileURL(process.argv[1]).href).then(() => console.log("import-only"));' : 'import {pathToFileURL} from "node:url"; await import(pathToFileURL(process.argv[1]).href); console.log("import-only");';
+  const args = [...(print ? [] : ["--input-type=module"]), ...(flag.endsWith("=") ? [flag + code] : [flag, code]), resolve("script/check-version.ts")];
+  const result = spawnSync(process.execPath, args, { cwd, encoding: "utf8", env: { ...process.env, GITHUB_OUTPUT: output } });
+  expect(result.status, result.stderr).toBe(0);
+  if (print) { expect(result.stdout.split("\n").filter(line => line === "import-only")).toHaveLength(1); expect(result.stdout).not.toContain("Version policy passed"); }
+  else expect(result.stdout).toBe("import-only\n");
+  expect(readFileSync(output, "utf8")).toBe("unchanged\n");
+});
+
+it("runs the version CLI directly through an existing native directory alias", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "crosslink-version-native-")); directories.push(cwd);
+  mkdirSync(join(cwd, "café"));
+  copyFileSync(resolve("script/check-version.ts"), join(cwd, "café/check-version.ts"));
+  const alias = join(cwd, "cafe\u0301/check-version.ts");
+  const entry = existsSync(alias) ? alias : join(cwd, "café/check-version.ts");
+  expect(realpathSync.native(entry)).toBe(realpathSync.native(join(cwd, "café/check-version.ts")));
+  writeFileSync(join(cwd, "package.json"), JSON.stringify({ version: "1.2.3", private: true }));
+  const output = join(cwd, "github-output");
+  const result = spawnSync(process.execPath, [entry], { cwd, encoding: "utf8", env: { ...process.env, GITHUB_OUTPUT: output } });
+  expect(result.status, result.stderr).toBe(0);
+  expect(result.stdout).toBe("Version policy passed: 1.2.3\n");
+  expect(readFileSync(output, "utf8")).toBe("version=1.2.3\n");
 });

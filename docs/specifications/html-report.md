@@ -28,7 +28,7 @@ HTML自体は `confirm --snapshot` へ渡すJSONではない。確認する場�
 - 各グループの名前・理由・管理ファイル・全構成ファイル・診断を常時読める。確認記録のない読取可能なメンバーは `No baseline`、読取不能は比較値より優先して `Unreadable` とする。
 - `Changed` / `Unchanged` は最後の確認との内容比較。構成の変更だけでもグループがUnconfirmedになりうる旨を表示する。
 - グループの検索は名前・理由・登録パス・解決した絶対パス・管理ファイルパスに対する大文字小文字を区別しない部分一致。`Needs attention` は未確認と検査エラーを含む。`Clear filters` で検索と絞り込みを解除する。
-- File indexはこの検査対象内の全構成ファイルを保持する。グループのフィルターでは隠さない。管理ファイルを基準に解決した同一絶対パスを同じファイルとしてまとめ、直接所属だけ列挙する。グループ名に依存しない内部IDでリンクし、同名グループも管理ファイルで区別する。
+- File indexは、範囲とメンバー集合を完全に列挙できた場合、この検査対象内の全構成ファイルを保持する。グループのフィルターでは隠さない。管理ファイルを基準に解決した同一絶対パスを同じファイルとしてまとめ、直接所属だけ列挙する。グループ名に依存しない内部IDでリンクし、同名グループも管理ファイルで区別する。
 - 絞り込みで隠れたグループへ逆引きリンクをたどるとフィルターを解除し、その対象へフォーカスする。内部リンクとフォームはキーボード操作できる。
 - `Open local file` は生成時の絶対パスからNode標準の `pathToFileURL` で構築する。HTMLの移動先や保存先からの相対解決は行わない。共有先で元ファイルが存在する保証はなく、ブラウザーによりローカルファイルの遷移が拒否される場合もある。各Groupsカードの操作付近にもこの制約と、隣のCopy pathまたは表示パスを利用できる旨を案内する。
 - `Copy path` は絶対パスをコピーする。Clipboard APIが拒否・未提供なら、その場で選択可能な読取専用入力を表示する。パスは常に本文からも選択できる。
@@ -44,6 +44,28 @@ CSPは外部取得を禁止し、生成時にハッシュを計算した内包CS
 アプリケーション操作が既存の `inspectGroup` と共通の結果集約を利用し、HTMLプレゼンターは検査結果を読み取って表示へ変換する。
 出力アダプターは同じディレクトリに完成した一時ファイルを作ってから、既存先を置換しないリンク操作で公開する。既存ファイル・ディレクトリ・symlinkを上書きしない。
 さらにアプリケーションは選択管理ファイル・取得済みメンバー・設定パスそのものを出力先に指定することを拒否する。消失メンバーや未作成の既定設定もレポートで作り直さない。
+globがliteralだけで現在0一致でも、新しい一致先へHTMLを作らない。既存親のnative alias、未作成の末尾や親階層を含め`REPORT_INPUT_COLLISION`で拒否し、書出し処理を呼ばない。正当な非一致先への診断HTMLは保存できる。
 入力に対する確認・編集・削除は行わず、ブラウザーも自動起動しない。
 
 関連：[HTML要件](../requirements/html-report.md)、[CLI仕様](cli.md)、[実装の責務](../development/architecture.md)。
+
+## 動的集合の表示
+
+glob利用グループには`Glob selectors`、`Current member files`、追加/削除件数を示す。
+新規一致は`Added`、最後の確認から外れたパスは`Removed since last confirmation`へ分ける。renameはAddedとRemovedの組合せとして表示する。
+removedは現メンバーでもFile indexの所属でもなく、旧パスと最後の確認との比較情報である。旧パスを現在の読取不能として表示しない。
+初回は`No baseline`。探索不完全なら`Membership comparison unavailable`と現リストが不完全になりうる旨を示し、増減は断定しない。
+選択パターンとremovedもグループ検索の対象にする。0一致等の検査エラーは通常のエラー表示と終了コード2を維持する。
+出力先が現在のメンバー、removedパス、またはglobに一致するパスなら拒否し、HTML生成によって選択集合へファイルを追加しない。
+関連：[動的集合の要件](../requirements/dynamic-membership.md)、[選択構文](glob-selection.md)。
+
+## File indexの完全性
+
+範囲探索が未完了、globメンバー列挙が不完全、管理定義の読取/解釈が不能、検査中に定義が変化した場合は、File index局所とnavにincompleteを表示する。
+初回取得した定義の最終再読取がENOENT/EACCES等で失敗した場合も、`definitionVerified: false`から不完全と判断する。初回の理由・収集済みパスは保持し、グループ見出しはCollectedとして現在集合の完全性を断定しない。globの追加/削除比較は未検証とし、No baselineとは表示しない。
+取得済みのパス・直接所属カードは残し、件数は`N found, incomplete`として収集数に限定する。0件しか収集できない場合はnavを`File index (incomplete)`とし、All 0やNo member filesで不存在を断定しない。
+グループカードでも、定義不明は`Member files unavailable`、部分列挙は`Collected member files (N, incomplete)`とし、不明な空状態をNo registered member filesと表示しない。
+File index内に総件数が不明であることと、`Resolve the inspection errors, run check again, and regenerate this report.`の案内を表示する。
+正常に全範囲を列挙して0件だった場合は、従来の0件・空一覧表示を維持する。
+内容だけがFILE_UNREADABLEであっても、全メンバーパスが判明している場合は既知の対象件数を維持し、対象行をUnreadableにする。全エラーを一律の列挙未完了として扱わない。
+この表示変更でJSONトップ構造・終了コード・確認操作を変更しない。

@@ -98,9 +98,15 @@ Dependabot を含む bot の PR にも例外はありません。必要な Issue
 
 コミット対象のindexを一時ディレクトリへ取り出し、まずCIと同じ設定で `oxfmt --check .` と `oxlint --deny-warnings src vitest.config.ts` を実行します。
 整形やlintの違反があれば、元のファイルを修正して再ステージしてください。
-crosslinkの検査は、同じステージ済み内容のCLIをビルドして実行します。
+crosslinkの検査は、同じステージ済み内容のCLIを取り出したツリー外へビルドして実行します。
 作業ツリーの未ステージ変更や古いdistは使いません。`git commit --only` でGitが用意する一時indexも対象にします。
+index mode 120000のsymlinkは、検査用checkoutの一回だけ`core.symlinks=true`を指定して再現します。利用者の設定は変更しません。checkout後の型とindex blobのtargetを確認し、通常ファイルのリンク文字列を対象本文として検査しません。再現不能ならmode/path/blobを含む`STAGED_REFERENCE_UNSUPPORTED`で拒否します。
 検査の成否にかかわらず、元の作業ツリーとindexの内容を保持し、検査用ディレクトリを削除します。
+glob利用グループは混在する固定指定も含めindexツリー内で全参照を再現できる必要があります。
+絶対/外部参照や外部へのメンバーsymlinkはhookだけで明示拒否します。通常CLIは外部参照も利用できます。
+既存の静的グループの外部固定参照は引き続きライブFSに依存し、その部分はindexのみの検査を保証しません。
+正当に再現できた内部file symlinkと、静的グループだけの外部file symlinkは維持します。directory symlinkへは通常CLIと同様に降りません。
+ユーザーがstageしたdist/node_modulesの実ファイルは保持し、検査用に生成したCLIや注入リンクを混入させません。
 Node.js 24以上とインストール済みの開発依存が必要です。依存不足・ビルド不能・検査不能はコミットを止め、修復方法を表示します。自動installはしません。
 管理グループと設定が存在しない場合も、開発プロジェクトでは整形・lintを検査し、crosslinkは登録0件を通知します。
 

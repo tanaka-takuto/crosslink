@@ -22,6 +22,7 @@ src/
 | -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | domain         | [group.ts](../../src/domain/group.ts)                                        | 名前・理由・メンバーの条件、検査可能な構成、定義の正規化                 |
 | domain         | [confirmation.ts](../../src/domain/confirmation.ts)                          | 確認記録と現在の組み合わせの比較、変更ファイルと確認状態                 |
+| domain         | [glob.ts](../../src/domain/glob.ts)                                          | 全OS共通の制限glob文法・case-sensitive照合・構文検証                     |
 | domain         | [errors.ts](../../src/domain/errors.ts)                                      | 共通の診断型とエラー表現                                                 |
 | application    | [ports.ts](../../src/application/ports.ts)                                   | 保存・対象ファイル・設定・ハッシュ計算・アプリメタデータの外部機能の契約 |
 | application    | [inspect-group.ts](../../src/application/inspect-group.ts)                   | 定義と全メンバーを取得し、ドメインの判定とsnapshotを組み立てる           |
@@ -31,7 +32,9 @@ src/
 | infrastructure | [content-hash.ts](../../src/infrastructure/filesystem/content-hash.ts)       | SHA-256計算、バイト列の読み取り、読取中の変更検出                        |
 | infrastructure | [group-storage.ts](../../src/infrastructure/filesystem/group-storage.ts)     | ファイル単位のロック、既存ファイルを上書きしない新規作成、置換保存       |
 | infrastructure | [settings.ts](../../src/infrastructure/filesystem/settings.ts)               | 設定の既定値と検証、保存名の生成、管理ディレクトリの探索                 |
+| infrastructure | [glob-members.ts](../../src/infrastructure/filesystem/glob-members.ts)       | strict列挙・symlinkを降りない選択・探索失敗の伝達                        |
 | infrastructure | [adapter.ts](../../src/infrastructure/filesystem/adapter.ts)                 | 上記の実装をapplicationのポートとして提供                                |
+| interfaces     | [member-path.ts](../../src/interfaces/cli/member-path.ts)                    | CWD入力から管理ファイル基準へのglob変換・literal CWD保持                 |
 | interfaces     | [commands.ts](../../src/interfaces/cli/commands.ts)                          | 引数検証、操作の選択、逆引き、結果と終了コード                           |
 | infrastructure | [version-reader.ts](../../src/infrastructure/version-reader.ts)              | 実行先CWDに依存せず同梱package.jsonからversionを取得                     |
 | interfaces     | [output.ts](../../src/interfaces/cli/output.ts)                              | 簡潔/verboseの英語テキスト表示、全情報を持つJSON結果からの変換           |
@@ -80,3 +83,8 @@ applicationの隣接テストは実際のファイルアダプターを組み合
 ファイルの分割・移動や責務の変更があれば、構成表と該当する要件グループを見直す。
 
 関連：[文書の管理方針](documentation.md)、[開発ツール](toolchain.md)、[要件一覧](../requirements.md)。
+
+動的集合は選択定義と現在の実パス集合を分け、inspectが再展開・内容再照合・増減情報を所有する。
+confirmは各グループの検査に加え、一括の全対象を保存前にもう一度検査する。有限回の再照合で観測した競合を拒否し、外部プロセスに対するFS全体の原子性は保証しない。
+HTMLは同じInspectionのglobs/added/removedを表示し、removedを現在のFile indexへ混入させない。
+開発用hookはindexツリー外へstaged CLIをビルドする。globグループの全参照についてindex内再現可能性を別途検証し、通常CLIの外部参照契約へ制限を広げない。

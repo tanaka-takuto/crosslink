@@ -19,16 +19,16 @@
   "confirmation": {
     "definition": "757f59f132c426d863f8b5e9ba10438601abf630b1a7c2514d58ee2aa772a110",
     "hashes": {
-      "../.githooks/pre-commit": "2526a60fd3d2fa0714aae9e6501506498d7ca85c20b590e10299a7704d3632f0",
+      "../.githooks/pre-commit": "940b862d45ab4dda4db528ce91b4e21074ec664bac3521e4e2d3854a13d50bed",
       "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
       "../.gitignore": "e4f32e3839615212b67b8f22700a773d20c377149d40e7d146169e1949c827b9",
       "../.oxfmtrc.json": "b13a11224659ff2ac1472f1f46fb3de40751aa0fc99ce891bdc977cb5d48d66c",
       "../.oxlintrc.json": "69fafc2664ec67ae0538000b59b1f51c1410494d0e5e932de9819e702d1cbd3f",
-      "../CONTRIBUTING.md": "e80e44a5afabdcbfc875d4af1b5cdf65a9c300da284cc79115cce84796b7ddf0",
-      "../docs/development/toolchain.md": "8c309bfc30301830d214ee9d50ac4ffc2689ee4e710f5a1e590a2e67bf24ad3e",
-      "../package.json": "4a153923e0d8921f818462d791d18d2fcb6e5074c62aa5c17b450680bdfb7ae9",
-      "../script/check-staged.mjs": "b5a0ca99c149e33670f9232913fddcf2f36d36e521e2c1d2346fb3167431880e",
-      "../script/check-staged.test.mjs": "1246b5a6be3f31746ed5d4d1dea86a619b19ab804c91e743955606ebf91df018",
+      "../CONTRIBUTING.md": "1ad0722bf5227400b53f62c0f92e5e24689c7eca87d2a9f159200bcae63ecbf7",
+      "../docs/development/toolchain.md": "36eec38ada684c2bf344a18e9a48a12174a017186014c373034dcf974a2a0172",
+      "../package.json": "1373120e2df0275272f0f119d69edfa1f51827f0dc34edab046a9318c3d202bf",
+      "../script/check-staged.mjs": "8b4ffa4ebc04523b980d35678e0ec3c4f4b412316a71e678e3ac0d65b707fcce",
+      "../script/check-staged.test.mjs": "8179e83d94549ceb4095c84ef27db26872910c678431fa9c1ff171d559a429fa",
       "../script/test-githooks.sh": "f7c7e1b86b8a40ebc249f3b275484b9174d9cac5a2b0d8adb3b346f4bc866ac0"
     }
   }

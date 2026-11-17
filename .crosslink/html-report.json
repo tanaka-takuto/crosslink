@@ -25,23 +25,23 @@
   "confirmation": {
     "definition": "16c0c3a9b9ca01fa14b113bf61282a68e9ff139cf0e0cc782b5dc07eaef52ea9",
     "hashes": {
-      "../README.md": "8dda427c7c47574b8eb548ddd141fe78f6f9611eba692e407051e0de1b119d29",
-      "../docs/requirements/html-report.md": "4116408f4c658e584fbfcba6c228704ba4ec99a9fe83e69f001a198612a491ba",
-      "../docs/specifications/cli.md": "cdc324b4e472d82e7b3688b39da1fa0b54ef7882b2bf48f3c2b8daf70f26c88d",
-      "../docs/specifications/html-report.md": "41064c968fca8a978b918bd2421fb66504d910f00f0bca4d8e6fc06551230534",
+      "../README.md": "15a81cd9faa978b7c709211922b1ef7d0a811ec8952aea38d1e3311396012bf0",
+      "../docs/requirements/html-report.md": "39262783b0789393cee0ebb1fbfd793e592b752a6bee4789147288313408b8dc",
+      "../docs/specifications/cli.md": "ebf7c503b2a854c4b20a7c71f1b8627ec220151b7c0a8ac752bd9a3e8470a9d4",
+      "../docs/specifications/html-report.md": "59beb164a2b89d96bda1963795b34ed033cafcc23e07aed58a70b2f385ff8846",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
-      "../src/application/report.test.ts": "9ecb7601aed9d320f046cee42210c3f8c96c36d80e96f8fb5658b00536c31b28",
-      "../src/application/report.ts": "6e6f0d88dc00a38e2d52dfa24345888359cab0a29485c8b12fb8d658f62baa36",
+      "../src/application/report.test.ts": "c0a27e9c873d200936770c0e55f348115e2438083bd2218cb0fc3ce21ca57400",
+      "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
-      "../src/cli.test.ts": "bdf6682de075fc63273a9262be99ad416241cfde573a53b05ef4a17a5fb97437",
+      "../src/cli.test.ts": "e41ba7544490020e864beefd5d6a87556b866325a613c0f41a2d7af9c7045feb",
       "../src/infrastructure/filesystem/report-output.test.ts": "013473eb477d139a4671280b3da2aca6e7a49562b3429fa468d54d07a15cf1fd",
       "../src/infrastructure/filesystem/report-output.ts": "2ba4ebb9f9ae8aefb223f7d0d056b7d8b78fde2a02542b2db8e09360be88ac5b",
-      "../src/interfaces/cli/commands.test.ts": "6afe77d3aecc12ee7720f2e7f82c74f0a506910945041e3988a837d444a7ea54",
-      "../src/interfaces/cli/commands.ts": "f02037757a0fed6ab92ed7074c123dbedfd5b8f3b471e5c9dea4563bab09e279",
-      "../src/interfaces/html/report-assets.ts": "0b334488d26cbb7482c79c59472e23c27ca7af16ad08046a306cc22ae181aa25",
-      "../src/interfaces/html/report.test.ts": "bcc5cc78b44b953c848ac322afe8f31895a1a917a0b3a497d5b1990938c8d87c",
-      "../src/interfaces/html/report.ts": "15ba17445aa0ead3a6c3aca879d6fcdc2aac38d7419631980ff5048e3ccd66b1"
+      "../src/interfaces/cli/commands.test.ts": "d8cdc3b7b863e275c8ebcd2e69fb1f40ad3c92ce0acdf2af453545e0799dc69d",
+      "../src/interfaces/cli/commands.ts": "3bd47238ec4fd73b0015d3d90c5c2b4d84e7ffaeaf21cbf0080f00f3af13fd8c",
+      "../src/interfaces/html/report-assets.ts": "9efb564625ef5b42410feea83e500d97b1c15fd1fcfe3b9309aeff522f1b47f6",
+      "../src/interfaces/html/report.test.ts": "83774a11499e5ef3ba37a20c2e6883e34268fbace871888220c79971d8172e6a",
+      "../src/interfaces/html/report.ts": "57e346e4762d7c495a2489d7c1b6434364cdb6675b77c853788b4193d58a47af"
     }
   }
 }

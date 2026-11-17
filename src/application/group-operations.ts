@@ -5,7 +5,12 @@ import { inspectGroup } from "./inspect-group.js";
 import type { CrosslinkPorts, Settings } from "./ports.js";
 
 function withoutRecord(group: Group): Group {
-  return { name: group.name, reason: group.reason, files: [...group.files].sort() };
+  return {
+    name: group.name,
+    reason: group.reason,
+    files: [...group.files].sort(),
+    ...(group.globs?.length ? { globs: [...new Set(group.globs)].sort() } : {}),
+  };
 }
 
 function validateMembers(
@@ -111,8 +116,17 @@ export function confirmGroups(
         definition: ports.digest(canonicalDefinition(group)),
         hashes: Object.fromEntries(current.files.map((entry) => [entry.path, entry.hash!])),
       };
-      return { file, group };
+      return { file, group, snapshot: current.snapshot };
     });
+    // 後続グループの検査中に先行グループが変わった競合も、保存前に拒否する。
+    for (const item of prepared) {
+      const final = inspectGroup(item.file, ports, settings);
+      if (final.errors.length || final.snapshot !== item.snapshot)
+        throw new CrosslinkError(
+          "STALE_SNAPSHOT",
+          `State changed before saving confirmation: ${item.file}. Run check --json again and read all related files before confirming with the new report.`,
+        );
+    }
     const updated: string[] = [];
     try {
       for (const item of prepared) {
