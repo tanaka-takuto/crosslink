@@ -29,7 +29,7 @@
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
       "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
-      "../package.json": "2563b2a0dce11be1d6be998e2de6a8d66d9c14683f8c5f226394ffc54c502a05",
+      "../package.json": "b37e1c55beb0228257f36c57ebad313c0f5ad76583d315334ed6ef8335a79366",
       "../script/build-binary.test.ts": "19e80ba01251dad8a4050042039daf6f776fa2bbd63013491fb11edade5f5b24",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",

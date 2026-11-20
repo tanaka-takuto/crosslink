@@ -18,7 +18,7 @@
     "definition": "6cc6012644070ecde6757f644f86f522a682851dbc3f26aafc2ca119ad79c503",
     "hashes": {
       "../.github/rulesets/default-branch.json": "313cddec6aeab5ca5fe4e88a8ccef9c46f013e282e028ddfc5d8467b1c8e0567",
-      "../.github/workflows/cli-policy.yml": "49c51fe6a50f9783228ed71f299b2f6789085020609fbadaf479eb2883447286",
+      "../.github/workflows/cli-policy.yml": "88da14636905c2bcd8f591ac7531a5d2fd263a0d54f82306e13c5f0de5200692",
       "../docs/requirements/ci.md": "ef0839fd448fa74d0d0591d7db99d8b619df77fef825d437d9545cdda6c7a430",
       "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
