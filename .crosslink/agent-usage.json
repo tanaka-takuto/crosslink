@@ -19,10 +19,10 @@
     "definition": "cd21e62a6951b156f3ecf73cfb24ea4c9895ec5622b7e6e85d9a57b4c99f3420",
     "hashes": {
       "../docs/requirements/agent-usage.md": "c4c7ee9e97dd885dee19479d3724c351df52de11477c9c8494ed8c227d45bedc",
-      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/cli.md": "9dae6744e145f069600ad11054453bedd1190add6bb0dc57e1e953de8672af58",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
-      "../src/cli.test.ts": "38828fd1d9ebd453944cfa21bf3cf7b9ae136671276fb4437c8f9ec771c9f338",
+      "../src/cli.test.ts": "36ff1dd0a83f63dbf7564c667fe268ed5849b3cedfd3e46778a94ff220755dd2",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
       "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb",

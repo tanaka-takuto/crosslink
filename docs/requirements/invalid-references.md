@@ -12,6 +12,7 @@
 - 診断により、利用者が修復対象を特定できる。
 - 診断には原因・対象と英語の次の行動を添える。対象の消失・読取不能では存在と読取権限の確認、復元、移動時の登録パス変更、意図した削除時の登録解除を選択肢として示し、原因や利用者の意図を断定しない。
 - 壊れた管理JSON・定義・確認記録では修復または有効なコピーの復元後の再検査へ案内する。自動修復は行わない。
+- 設定の読取・JSON解析・構造検証が失敗した場合も、解決済み設定パスと元の原因を保持し、原因に合う英語の対処・再検査を案内する。構文不正と消失・読取不能を混同せず、黙ってdefaultsへ戻さない。
 - ファイル移動・グループ構成の変更を、明示的な操作で反映できる。
 - メンバーの追加・削除・登録パスの変更で構成を変えた場合、未確認に戻し、確認し直す。
 - 編集途中の0件・1件の構成は保存できるが、検査では不正として失敗する。メンバーの入れ替えを完了して2件以上に戻した後も、構成変更後の確認を必要とする。
@@ -28,12 +29,25 @@
 - 0・1ファイルの診断は現在の件数と2件以上という必要構成を示し、メンバー追加後の再検査・関連内容の読み直しを確認操作より先に案内する。
 - 壊れた管理JSON・不正な定義・確認記録は既存のエラーコードで拒否し、修復または復元後の再検査を案内する。未対応の管理形式versionでは対応するcrosslink版または対応形式のコピーを案内する。
 - テキスト診断と既存JSONのmessageに同じ対処情報があり、終了コード2・JSONの構造とversionを維持する。通常checkの件数・対象一覧は簡潔なまま、詳細はverbose・JSONから得られる。
+- 既定/明示設定の不正JSONは、CWD相対の指定も絶対パスへ解決し、設定JSONという文脈・元のparse原因・修復または有効コピーの復元と再検査を表示する。既存 `IO_ERROR`・終了2を維持する。
+- JSONとして解釈できても構造・値・未知field・fileNameTemplateが不正なら `INVALID_CONFIG` を維持して対象と修復を案内する。明示設定の消失・読取不能では `IO_ERROR` と元の読取原因を保持し、存在・読取権限の確認と再検査を案内する。
+- 設定エラーでも設定・メンバー・管理記録・snapshotのbytesを変更しない。`report` は安全な出力先へ検査未完了の診断HTMLを保存し、終了2を維持する。既定設定なしのdefaultsと、壊れた設定のあるCWDでのhelp・単独versionの成功を維持する。
 
 関連：[確認状態](confirmation-state.md)、[要件一覧](../requirements.md)。
 
 詳細仕様：[CLI仕様](../specifications/cli.md)、[保存形式](../specifications/storage.md)。
 
 診断案内の決定：[Issue #20](https://github.com/tanaka-takuto/crosslink/issues/20)。
+
+設定診断の受入条件は[Issue #36](https://github.com/tanaka-takuto/crosslink/issues/36)に基づき、次の隣接テストで確認する。parse原因は実行中のNodeで取得し、特定版のSyntaxError全文には固定しない。
+
+| 条件                                                                       | 対応テスト                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 既定/明示の不正JSON・絶対パス・parse原因・修復案内・既存コード             | `guides malformed configuration JSON at its resolved path: %s` (settings.test.ts)、`reports configuration JSON context in text, JSON and incomplete HTML without writes: $raw / $config` (cli.test.ts)                                        |
+| 構造・未知field・directoryName・fileNameTemplateの検証原因とINVALID_CONFIG | `guides invalid configuration values without changing their code: $value` (settings.test.ts)、上記のtext/JSON/HTMLテスト                                                                                                                      |
+| 消失・読取不能・EACCESを構文不正と区別し元原因を保持                       | `keeps the actual configuration read cause for %s`、`keeps an access-denied configuration cause without calling it malformed JSON` (settings.test.ts)、`reports configuration read failures separately from malformed JSON: %s` (cli.test.ts) |
+| 入力・record・snapshot bytes不変、診断HTML保存時も検査未完了/終了2         | 上記のtext/JSON/HTMLテスト (cli.test.ts)                                                                                                                                                                                                      |
+| 既定設定なしのdefaults、壊れたCWD設定からhelp/versionが独立                | `uses defaults without settings and keeps help and version independent of broken settings` (cli.test.ts)、`uses defaults without a configuration or initialization` (settings.test.ts)                                                        |
 
 整数精度の受入条件は[Issue #32](https://github.com/tanaka-takuto/crosslink/issues/32)に基づき、次の隣接テストで確認する。制御したStatsは過去のWindows実行の未採取ID値を復元したものではない。
 

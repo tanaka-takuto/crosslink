@@ -70,6 +70,159 @@ it("serializes invocation errors as JSON without a stack trace", () => {
 });
 
 it.each([
+  { config: undefined, raw: "{", code: "IO_ERROR", cause: null },
+  { config: "settings/../設定 ' $().json", raw: "{", code: "IO_ERROR", cause: null },
+  {
+    config: undefined,
+    raw: "[]",
+    code: "INVALID_CONFIG",
+    cause: "Configuration must be a JSON object.",
+  },
+  {
+    config: undefined,
+    raw: '{"unknown":true}',
+    code: "INVALID_CONFIG",
+    cause: "Unsupported configuration fields.",
+  },
+  {
+    config: undefined,
+    raw: '{"directoryName":"bad/path"}',
+    code: "INVALID_CONFIG",
+    cause: "directoryName must be a single directory name.",
+  },
+  {
+    config: undefined,
+    raw: '{"fileNameTemplate":"../{name}.json"}',
+    code: "INVALID_CONFIG",
+    cause: "fileNameTemplate must be a JSON filename containing exactly one {name}.",
+  },
+])(
+  "reports configuration JSON context in text, JSON and incomplete HTML without writes: $raw / $config",
+  ({ config, raw, code, cause }) => {
+    const { root: fixtureRoot, call } = fixture();
+    const root = realpathSync(fixtureRoot);
+    expect(call("create", "診断", "a", "b", "--reason", "入力を保持").status).toBe(0);
+    const record = join(root, ".crosslink/診断.json"),
+      review = join(root, "review.json");
+    writeFileSync(review, call("check", "--json").stdout);
+    expect(call("confirm", record, "--snapshot", review).status).toBe(0);
+    mkdirSync(join(root, "settings"));
+    const file = resolve(root, config ?? "crosslink.config.json");
+    writeFileSync(file, raw);
+    const protectedFiles = [file, record, review, join(root, "a"), join(root, "b")];
+    const before = protectedFiles.map((path) => readFileSync(path));
+    const options = config ? ["--config", config] : [];
+    let actualCause = cause;
+    if (actualCause === null) {
+      try {
+        JSON.parse(raw);
+      } catch (error) {
+        actualCause = (error as Error).message;
+      }
+    }
+    const checked = call("check", ...options, "--json");
+    expect(checked.status).toBe(2);
+    expect(checked.stderr).toBe("");
+    const json = JSON.parse(checked.stdout);
+    expect(Object.keys(json).sort()).toEqual([
+      "errors",
+      "groups",
+      "messages",
+      "operation",
+      "result",
+      "version",
+    ]);
+    expect(json).toMatchObject({
+      version: 1,
+      operation: "check",
+      result: "error",
+      groups: [],
+      messages: [],
+    });
+    expect(json.errors).toHaveLength(1);
+    expect(Object.keys(json.errors[0]).sort()).toEqual(["code", "message"]);
+    const error = json.errors[0];
+    expect(error.code).toBe(code);
+    expect(error.message).toContain(`Invalid configuration JSON: ${file}. ${actualCause}`);
+    expect(error.message).toContain(
+      "Repair the configuration JSON or restore a valid copy, then run check again.",
+    );
+    const text = call("check", ...options);
+    expect(text.status).toBe(2);
+    expect(text.stderr).toContain(`${code}: ${error.message}`);
+    expect(text.stdout).not.toContain("No registered groups.");
+    expect(call("confirm", record, "--snapshot", review, ...options, "--json").status).toBe(2);
+    mkdirSync(join(root, "output"));
+    const report = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      "output/error.html",
+      ...options,
+      "--json",
+    );
+    expect(report.status).toBe(2);
+    expect(report.stderr).toBe("");
+    expect(JSON.parse(report.stdout)).toMatchObject({ result: "error", errors: [error] });
+    const html = readFileSync(join(root, "output/error.html"), "utf8");
+    expect(html).toContain("Inspection incomplete");
+    expect(html).toContain("Invalid configuration JSON");
+    expect(html).toContain(file.replaceAll("'", "&#39;"));
+    expect(html).toContain(
+      "Repair the configuration JSON or restore a valid copy, then run check again.",
+    );
+    expect(html).toContain("total member file count is unknown");
+    expect(protectedFiles.map((path) => readFileSync(path))).toEqual(before);
+  },
+);
+
+it.each(["missing.json", "settings-directory"])(
+  "reports configuration read failures separately from malformed JSON: %s",
+  (config) => {
+    const { root: fixtureRoot, call } = fixture();
+    const root = realpathSync(fixtureRoot);
+    mkdirSync(join(root, "settings-directory"));
+    const file = join(root, config);
+    let cause = "";
+    try {
+      readFileSync(file, "utf8");
+    } catch (error) {
+      cause = (error as Error).message;
+    }
+    const result = call("check", "--config", config, "--json");
+    expect(result.status).toBe(2);
+    const error = JSON.parse(result.stdout).errors[0];
+    expect(error.code).toBe("IO_ERROR");
+    expect(error.message).toContain(`Cannot read configuration JSON: ${file}. ${cause}`);
+    expect(error.message).toContain(
+      "Check that the configuration file exists and is readable, then run check again.",
+    );
+    expect(error.message).not.toContain("Repair the configuration JSON");
+    expect(call("check", "--config", config).stderr).toContain(error.message);
+  },
+);
+
+it("uses defaults without settings and keeps help and version independent of broken settings", () => {
+  const { root: fixtureRoot, call } = fixture();
+  const root = realpathSync(fixtureRoot);
+  const defaults = call("check", "--json");
+  expect(defaults.status).toBe(0);
+  expect(JSON.parse(defaults.stdout)).toMatchObject({ result: "ok", groups: [] });
+  const expected = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
+  const file = join(root, "crosslink.config.json");
+  writeFileSync(file, "{");
+  for (const args of [["--help"], ["check", "--help"], ["--version"], ["--version", "--json"]]) {
+    const result = call(...args);
+    expect(result.status, result.stdout + result.stderr).toBe(0);
+    expect(result.stderr).toBe("");
+    if (args[0] === "--version") expect(result.stdout).toContain(expected);
+    else expect(result.stdout).toContain("crosslink check");
+  }
+  expect(readFileSync(file, "utf8")).toBe("{");
+});
+
+it.each([
   { report: "{", code: "IO_ERROR" },
   { report: '{"version":2,"groups":[]}', code: "INVALID_SNAPSHOT" },
   { report: '{"version":1}', code: "INVALID_SNAPSHOT" },
