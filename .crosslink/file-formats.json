@@ -26,7 +26,7 @@
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/group-operations.test.ts": "c0f8444847e919b1f756bd0236ec9cea8e5f7161043c29ce8ea9839bce720e0a",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
-      "../src/cli.test.ts": "6ab42d562b14f5c80b12cf4a8244969b28b16e9f5650a23b859494052bf027f3",
+      "../src/cli.test.ts": "902f33a1f8acc35eb5561fefad0a626e01fdf446fb37251877ad380452bf91dd",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/infrastructure/filesystem/content-hash.test.ts": "1bee75f887051abd7a813117dab30d4d6db1a7f8af5bc626224577e8de4ad4fc",
       "../src/infrastructure/filesystem/content-hash.ts": "7b156256f60e8fab2036b5065e94272fc8615edff1fbe80f81b3808666aadcc9",

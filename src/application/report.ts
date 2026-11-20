@@ -71,6 +71,12 @@ export function generateReport(
       }
     };
     const outputIdentity = canonical(output);
+    // 設定不明時は管理名を推測せず、次の探索入力になり得るJSON保存を拒否する。
+    if (!settings && (output.endsWith(".json") || outputIdentity.endsWith(".json")))
+      throw new CrosslinkError(
+        "REPORT_INPUT_COLLISION",
+        `Cannot establish that JSON report output is safe because configuration could not be loaded: ${output}. Choose a non-JSON output path such as errors.data, or repair the configuration, run check again, and retry the report.`,
+      );
     if (
       // 未作成のJSONも次回の管理入力になり得る。既存親の別名も実体で照合する。
       (settings &&

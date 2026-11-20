@@ -22,14 +22,14 @@
   "confirmation": {
     "definition": "aaa7003361bb4f782ac745bf58cd1919934b90f6eaa9dc3e3b76ab0a3f1c38e9",
     "hashes": {
-      "../docs/requirements/html-report.md": "07dee931ec84c57424cafa41adf0037535bbf026c1767ff8fce4bcbb6d1b8e84",
+      "../docs/requirements/html-report.md": "8e958d99ab561c89ed808a229420590414e79057ffc24cd86072eea80bb422ab",
       "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
       "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/inspect-group.test.ts": "72e09e42d434bc9e7af17c4d6380e99656a773aa469e9caf43cfa2c866581170",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
-      "../src/application/report.test.ts": "3c764051bccbbc56639cdd2de416d5b0f4fcb997cee66fb9d707a2f0b545bbf6",
-      "../src/application/report.ts": "502b3d9ee602cc53ce81c03a05d0501f54bf7863c67687574ebf89e71f46d84f",
+      "../src/application/report.test.ts": "1f22346e83662108eb83659d303f06a37ebf47601c2a03a786f615617de0d49b",
+      "../src/application/report.ts": "1d0557696a5e351b952940c0f7952fabf44ab2d188627d5dcf3192d6b5b3d3a7",
       "../src/infrastructure/filesystem/management-file.test.ts": "a6a1e031a3cc0cb809a3913809e6c13a596613ca47c042cbac1de4dce28cb010",
       "../src/infrastructure/filesystem/management-file.ts": "f249b3b12cdab946e5fd112773f312957a18da5fadddc49c2e4628a4276d97f0",
       "../src/infrastructure/filesystem/report-output.test.ts": "013473eb477d139a4671280b3da2aca6e7a49562b3429fa468d54d07a15cf1fd",

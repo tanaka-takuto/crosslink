@@ -27,7 +27,7 @@
   "confirmation": {
     "definition": "5038dbddd75cf2873b77c3654863528797e3fefc3376b989f2a75fc2020a161c",
     "hashes": {
-      "../docs/requirements/html-report.md": "07dee931ec84c57424cafa41adf0037535bbf026c1767ff8fce4bcbb6d1b8e84",
+      "../docs/requirements/html-report.md": "8e958d99ab561c89ed808a229420590414e79057ffc24cd86072eea80bb422ab",
       "../docs/requirements/impact-output.md": "16bbed1c750b6fe8477ffc89a89edb3475565146eb7a2de21f2b8b135e7a09c1",
       "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
@@ -35,7 +35,7 @@
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
-      "../src/cli.test.ts": "6ab42d562b14f5c80b12cf4a8244969b28b16e9f5650a23b859494052bf027f3",
+      "../src/cli.test.ts": "902f33a1f8acc35eb5561fefad0a626e01fdf446fb37251877ad380452bf91dd",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf",

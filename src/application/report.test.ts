@@ -262,6 +262,108 @@ it.each(["ordinary.json", "report.data", ".crosslink/report.html", ".crosslink/r
   },
 );
 
+it.each([
+  "explicit structural failure",
+  "default structural failure",
+  "explicit malformed JSON",
+  "default malformed JSON",
+  "explicit missing configuration",
+  "custom management child directory",
+  "native parent alias",
+  "directory symlink alias",
+  "ordinary JSON outside management directories",
+  "explicit file selection",
+])("refuses JSON output when configuration safety is unknown: %s", (scenario) => {
+  const root = fixture();
+  const custom = scenario === "custom management child directory";
+  const settings = custom ? { ...defaults, directoryName: ".links" } : defaults;
+  if (custom) renameSync(join(root, ".crosslink"), join(root, ".links"));
+  const file = join(root, settings.directoryName, "valid.json");
+  const initial = inspectGroup(file, filesystemPorts, settings);
+  confirmGroups([file], new Map([[file, initial.snapshot!]]), filesystemPorts, settings);
+  writeFileSync(join(root, "known-good.json"), JSON.stringify(settings));
+  const checked = runCli(["check", "--config", "known-good.json"], root);
+  expect(checked.code).toBe(0);
+  writeFileSync(join(root, "review.json"), JSON.stringify(checked.report));
+  const config = scenario.startsWith("default") ? undefined : "bad-config.json";
+  const configPath = join(root, config ?? "crosslink.config.json");
+  if (scenario !== "explicit missing configuration")
+    writeFileSync(
+      configPath,
+      scenario.includes("malformed")
+        ? "{"
+        : JSON.stringify({ directoryName: ".unknown", fileNameTemplate: "invalid.json" }),
+    );
+  const configArgs = config ? ["--config", config] : [];
+  const failed = runCli(["check", ...configArgs], root);
+  expect(failed.code).toBe(2);
+  let output = join(root, settings.directoryName, "report.json");
+  if (custom) {
+    mkdirSync(join(root, ".links/child"));
+    output = join(root, ".links/child/report.json");
+  }
+  if (scenario === "native parent alias") {
+    mkdirSync(join(root, "café/.crosslink"), { recursive: true });
+    output = join(
+      root,
+      existsSync(join(root, "cafe\u0301")) ? "cafe\u0301" : "café",
+      ".crosslink/report.json",
+    );
+  }
+  if (scenario === "directory symlink alias") {
+    symlinkSync(
+      join(root, ".crosslink"),
+      join(root, "alias"),
+      process.platform === "win32" ? "junction" : "dir",
+    );
+    output = join(root, "alias/report.json");
+  }
+  if (scenario === "ordinary JSON outside management directories")
+    output = join(root, "ordinary.json");
+  const inputs = [
+    file,
+    ...["a", "b", "known-good.json", "review.json"].map((path) => join(root, path)),
+  ];
+  if (existsSync(configPath)) inputs.push(configPath);
+  const before = inputs.map((path) => readFileSync(path));
+  const capture = services();
+  const request = {
+    cwd: root,
+    output,
+    ...(config ? { config } : {}),
+    ...(scenario === "explicit file selection" ? { files: [file] } : {}),
+  };
+  const result = generateReport(request, filesystemPorts, metadata, capture.ports);
+  expect(result.code).toBe(2);
+  expect(result.report.errors.slice(0, -1)).toEqual(failed.report.errors);
+  expect(result.report.errors.at(-1)).toMatchObject({
+    code: "REPORT_INPUT_COLLISION",
+    message: expect.stringContaining(output),
+  });
+  expect(result.report.errors.at(-1)?.message).toContain("configuration");
+  expect(result.report.errors.at(-1)?.message).toContain("non-JSON");
+  expect(result.report.errors.at(-1)?.message).toContain("run check again");
+  expect(capture.rendered()).toBeUndefined();
+  expect(capture.written).toEqual([]);
+  expect(result.report.messages.some((message) => message.startsWith("HTML report saved:"))).toBe(
+    false,
+  );
+  expect(existsSync(output)).toBe(false);
+  expect(runCli(["check", "--config", "known-good.json"], root)).toEqual(checked);
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  const safe = services();
+  const diagnostic = generateReport(
+    { ...request, output: "errors.data" },
+    filesystemPorts,
+    metadata,
+    safe.ports,
+  );
+  expect(diagnostic.code).toBe(2);
+  expect(diagnostic.report.errors).toEqual(failed.report.errors);
+  expect(safe.rendered()?.scope.complete).toBe(false);
+  expect(safe.written).toEqual([join(root, "errors.data"), "html"]);
+});
+
 it("does not create a report at a removed baseline path or a new matching glob path", () => {
   const root = fixture();
   const file = join(root, ".crosslink/valid.json");

@@ -30,7 +30,7 @@
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/application/inspect-group.test.ts": "72e09e42d434bc9e7af17c4d6380e99656a773aa469e9caf43cfa2c866581170",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
-      "../src/cli.test.ts": "6ab42d562b14f5c80b12cf4a8244969b28b16e9f5650a23b859494052bf027f3",
+      "../src/cli.test.ts": "902f33a1f8acc35eb5561fefad0a626e01fdf446fb37251877ad380452bf91dd",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf",
       "../src/domain/directional-members.test.ts": "2e0136590bb4152be16fb274aa0a23afe3860041a273f5127002fd7747d5dccf",

@@ -19,6 +19,7 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 - 登録0件は通知して成功する。未確認は1、不正・検査不能・書出し不能は2とする。描画可能な検査失敗はHTMLへ残す。探索・設定の失敗は対象0件の成功と区別する。
 - 既存の出力・管理ファイル・構成ファイル・設定やソースを上書きしない。衝突時には別名を指定できるエラーを返す。
 - 未作成でも、実効設定の管理ディレクトリ内（子階層を含む）のJSONを出力先にしない。登録0件・明示選択でも保存前に拒否し、次回の検査入力を増やさない。管理情報ではない場所への任意拡張子の出力は許容する。
+- 設定を読み込めず安全性を判定できない場合は、管理ディレクトリ名を推測せず、管理JSONになり得る新規`.json`出力を場所にかかわらず保存前に拒否する。元の設定診断を保持し、安全な非JSON出力先または設定修復後の再検査を案内する。`errors.data`等への診断HTML保存は維持する。
 - 外部runtimeパッケージ、CDN、ネットワーク、Git、自動ブラウザー起動を必要としない。HTMLからの確認・編集、ライブ更新、グラフ、内容の差分は含めない。
 
 ## 受入条件
@@ -30,8 +31,10 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 5. 生成前後で入力内容と確認記録が変わらず、日時・version・範囲・スナップショットと確認の限界を表示する。
 6. 最終HTMLを実装者とは別のUI/UXデザイナー役エージェントが実ブラウザーで確認する。表示・操作・キーボード・狭い画面・エラー表示の証拠を残し、重大・高の指摘があれば変更後の生成物を再レビューする。対象commit SHAとHTMLのSHA-256を結び付け、未実施を合格にしない。
 7. 既定/カスタム管理名、テンプレートに一致しないJSON名、子階層、登録0件、明示選択、別CWD、既存親のnative aliasでも新規管理JSON出力を`REPORT_INPUT_COLLISION`と英語の別パス案内で拒否する。描画・保存を呼ばず、入力bytesと確認記録を保持し、元の確認済み検査は0のままとする。管理情報ではない`.json`等のHTML保存と描画可能な検査/設定エラーの保存は維持する。
+8. 既定/明示設定の構造不正・破損JSON・明示読取失敗でも、元の`INVALID_CONFIG`/`IO_ERROR`を保持し、設定不明の`.json`出力を描画/保存0で拒否する。カスタム管理名・子階層・native alias・明示選択でもファイル未作成とし、元の有効設定によるcheck0、入力・記録・snapshotのbytesを保持する。安全な`errors.data`等は検査未完了の診断HTMLを保存する。有効設定で管理外への任意拡張子出力は引き続き許容する。
 
 受入条件7は`refuses new management JSON output before rendering or writing: %s`、`allows non-management HTML output with an arbitrary extension: %s`（application/report.test.ts）、`refuses new report JSON inputs and keeps the next confirmed check successful`（cli.test.ts）で検証する。設定/検査エラーの保存は`honors --config and retains configuration failures in an HTML report`、`keeps drawable inspection errors in HTML and returns 2`（interfaces/cli/commands.test.ts）を維持する。変更の起点は[Issue #35](https://github.com/tanaka-takuto/crosslink/issues/35)。
+受入条件8は`refuses JSON output when configuration safety is unknown: %s`（application/report.test.ts）と`refuses JSON report writes after configuration failure without worsening the next check`（cli.test.ts）で確認する。終了2だけで保護成功とせず、保存の有無と次回検査を検証する。
 
 関連：[HTML仕様](../specifications/html-report.md)、[CLI仕様](../specifications/cli.md)、[変更影響の出力](impact-output.md)、[非破壊的動作](non-destructive.md)。
 
