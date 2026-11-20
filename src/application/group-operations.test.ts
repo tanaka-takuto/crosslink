@@ -68,6 +68,51 @@ it("refuses stale file contents without changing the record", () => {
   );
   expect(readFileSync(file, "utf8")).toBe(before);
 });
+it.each([1, 2])(
+  "refuses an old static v%s snapshot when confirmation observes a content race without writing",
+  (version) => {
+    const { root, file } = fixture();
+    confirm(file);
+    const group = JSON.parse(readFileSync(file, "utf8"));
+    writeFileSync(file, JSON.stringify({ ...group, version }));
+    const current = inspectGroup(file);
+    expect(current.errors).toEqual([]);
+    expect(current.status).toBe("confirmed");
+    const before = readFileSync(file);
+    const bBefore = readFileSync(join(root, "b"));
+    const write = vi.fn(filesystemPorts.groups.write);
+    let changed = false;
+    const ports = {
+      ...filesystemPorts,
+      groups: { ...filesystemPorts.groups, write },
+      files: {
+        ...filesystemPorts.files,
+        hash: (target: string) => {
+          const value = filesystemPorts.files.hash(target);
+          if (target === join(root, "b") && !changed) {
+            changed = true;
+            writeFileSync(join(root, "a"), "changed during confirmation");
+          }
+          return value;
+        },
+      },
+    };
+    const expected = new Map([[file, current.snapshot!]]);
+    expect(() => operations.confirmGroups([file], expected, ports, defaults)).toThrow(
+      expect.objectContaining({ code: "INVALID_GROUP" }),
+    );
+    expect(write).not.toHaveBeenCalled();
+    expect(readFileSync(file)).toEqual(before);
+    // 同じ新状態が安定した後は、検査不能ではなく古いsnapshotとして拒否する。
+    expect(() => operations.confirmGroups([file], expected, ports, defaults)).toThrow(
+      expect.objectContaining({ code: "STALE_SNAPSHOT" }),
+    );
+    expect(write).not.toHaveBeenCalled();
+    expect(readFileSync(file)).toEqual(before);
+    expect(readFileSync(join(root, "a"), "utf8")).toBe("changed during confirmation");
+    expect(readFileSync(join(root, "b"))).toEqual(bBefore);
+  },
+);
 it("guides invalid groups through inspection and repair before explicit confirmation", () => {
   const { file } = fixture();
   updateGroup(file, (group) => ({ ...group, files: [] }));

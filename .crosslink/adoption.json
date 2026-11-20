@@ -27,9 +27,9 @@
     "hashes": {
       "../README.md": "394c6a8b829050f6b0a603ecdb75892f5e452a209fde93d845813f3cabac0a3f",
       "../docs/requirements/adoption.md": "8c6b659a6b153c2304e490ef7c4891adbac6e83c9b42ec4dbe1287e3fe3aa3a6",
-      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
-      "../package.json": "ba1275b03102bc7cd8250f1e8498cf3a916993cd6c28f64de46f0a81bc7bed5b",
+      "../package.json": "2563b2a0dce11be1d6be998e2de6a8d66d9c14683f8c5f226394ffc54c502a05",
       "../script/build-binary.test.ts": "19e80ba01251dad8a4050042039daf6f776fa2bbd63013491fb11edade5f5b24",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../src/application/ports.ts": "9d263632718f5a2d4774bde79003dd2874f182990b7dbdb8d274ae01830657ab",

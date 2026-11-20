@@ -38,6 +38,137 @@ function fixture(files: string[] = ["../a", "../b"]) {
 
 afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
 
+describe.each([
+  { format: "legacy v1", fields: { version: 1 } },
+  { format: "v2 without globs", fields: { kind: "crosslink-group", version: 2 } },
+  { format: "v2 empty globs", fields: { version: 2, globs: [] } },
+  { format: "v3 default both", fields: { version: 3, roles: { files: {}, globs: {} } } },
+])("static inspection: $format", ({ fields }) => {
+  function staticFixture(confirmed: boolean) {
+    const { root, file } = fixture();
+    const group = { ...JSON.parse(readFileSync(file, "utf8")), ...fields };
+    writeFileSync(file, JSON.stringify(group));
+    if (confirmed) {
+      const initial = inspectGroup(file);
+      expect(initial.errors).toEqual([]);
+      group.confirmation = {
+        definition: filesystemPorts.digest(canonicalDefinition(group)),
+        hashes: Object.fromEntries(initial.files.map((entry) => [entry.path, entry.hash])),
+        ...("roles" in fields
+          ? { roles: Object.fromEntries(initial.files.map((entry) => [entry.path, entry.role])) }
+          : {}),
+      };
+      writeFileSync(file, JSON.stringify(group));
+    }
+    return { root, file };
+  }
+
+  it("preserves stable initial, confirmed and unconfirmed results and legacy snapshot shape", () => {
+    const { root, file } = staticFixture(false);
+    const initialBytes = readFileSync(file, "utf8");
+    const initial = inspectGroup(file);
+    expect(initial.errors).toEqual([]);
+    expect(initial.status).toBe("unconfirmed");
+    expect(initial.files.every((entry) => entry.changed === null)).toBe(true);
+    expect(inspectGroup(file)).toEqual(initial);
+    expect(readFileSync(file, "utf8")).toBe(initialBytes);
+    if (!("roles" in fields)) {
+      expect(Object.keys(initial).sort()).toEqual(
+        ["file", "name", "reason", "status", "files", "snapshot", "errors"].sort(),
+      );
+      expect(initial.snapshot).toBe(
+        filesystemPorts.digest(
+          JSON.stringify({
+            file,
+            raw: initialBytes,
+            files: initial.files.map((entry) => [entry.path, entry.hash]),
+          }),
+        ),
+      );
+    }
+    const group = filesystemPorts.groups.read(file).group;
+    writeFileSync(
+      file,
+      JSON.stringify({
+        ...JSON.parse(initialBytes),
+        confirmation: {
+          definition: filesystemPorts.digest(canonicalDefinition(group)),
+          hashes: Object.fromEntries(initial.files.map((entry) => [entry.path, entry.hash])),
+          ...(group.roles
+            ? { roles: Object.fromEntries(initial.files.map((entry) => [entry.path, entry.role])) }
+            : {}),
+        },
+      }),
+    );
+    const confirmedBytes = readFileSync(file, "utf8");
+    expect(inspectGroup(file).status).toBe("confirmed");
+    writeFileSync(join(root, "a"), "changed");
+    const changed = inspectGroup(file);
+    expect(changed.errors).toEqual([]);
+    expect(changed.status).toBe("unconfirmed");
+    expect(changed.snapshot).toMatch(/^[a-f0-9]{64}$/);
+    expect(changed.files[0]!.changed).toBe(true);
+    writeFileSync(join(root, "a"), "a");
+    expect(inspectGroup(file).status).toBe("confirmed");
+    expect(readFileSync(file, "utf8")).toBe(confirmedBytes);
+  });
+
+  describe.each([false, true])("baseline confirmed=%s", (confirmed) => {
+    it.each(["content", "unreadable", "symlink"] as const)(
+      "rejects an earlier member's %s change observed after reading the next member",
+      (change) => {
+        const { root, file } = staticFixture(confirmed);
+        const a = join(root, "a"),
+          b = join(root, "b");
+        if (change === "symlink") {
+          writeFileSync(join(root, "first"), "a");
+          writeFileSync(join(root, "second"), "a");
+          rmSync(a);
+          symlinkSync(join(root, "first"), a);
+        }
+        const before = readFileSync(file);
+        const bBefore = readFileSync(b);
+        const bHash = filesystemPorts.files.hash(b).hash;
+        let changed = false;
+        const ports = {
+          ...filesystemPorts,
+          files: {
+            ...filesystemPorts.files,
+            hash: (target: string) => {
+              const value = filesystemPorts.files.hash(target);
+              // 実adapterの通常読取を通し、後続Bの読取時に先行Aだけを変更する。
+              if (target === b && !changed) {
+                changed = true;
+                if (change === "content") writeFileSync(a, "changed");
+                else {
+                  rmSync(a);
+                  if (change === "symlink") symlinkSync(join(root, "second"), a);
+                }
+              }
+              return value;
+            },
+          },
+        };
+        const result = inspect(file, ports, defaults);
+        expect(changed).toBe(true);
+        expect(result.errors.map((error) => error.code)).toEqual([
+          change === "unreadable" ? "FILE_UNREADABLE" : "FILE_CHANGED",
+        ]);
+        expect(result.status).toBe("unconfirmed");
+        expect(result.snapshot).toBeNull();
+        expect(result.files[0]).toMatchObject({
+          path: "../a",
+          hash: null,
+          changed: confirmed ? true : null,
+        });
+        expect(result.files[1]!.hash).toBe(bHash);
+        expect(readFileSync(file)).toEqual(before);
+        expect(readFileSync(b)).toEqual(bBefore);
+      },
+    );
+  });
+});
+
 describe("inspection", () => {
   it("new groups are unconfirmed and expose every file, including binary files", () => {
     const { file } = fixture();
