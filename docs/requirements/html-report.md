@@ -18,6 +18,7 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 - 固定UIは英語とし、入力した名前・理由・パスを保持する。ユーザーデータをHTMLやスクリプトとして実行せず、ユーザーデータから危険なURLスキームを生成しない。
 - 登録0件は通知して成功する。未確認は1、不正・検査不能・書出し不能は2とする。描画可能な検査失敗はHTMLへ残す。探索・設定の失敗は対象0件の成功と区別する。
 - 既存の出力・管理ファイル・構成ファイル・設定やソースを上書きしない。衝突時には別名を指定できるエラーを返す。
+- 未作成でも、実効設定の管理ディレクトリ内（子階層を含む）のJSONを出力先にしない。登録0件・明示選択でも保存前に拒否し、次回の検査入力を増やさない。管理情報ではない場所への任意拡張子の出力は許容する。
 - 外部runtimeパッケージ、CDN、ネットワーク、Git、自動ブラウザー起動を必要としない。HTMLからの確認・編集、ライブ更新、グラフ、内容の差分は含めない。
 
 ## 受入条件
@@ -28,6 +29,9 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 4. 同名グループ、日本語、長いパス、多数グループ、HTML特殊文字を扱う。検索・要対応フィルター・逆引きがオフラインで動く。スクリプト不実行時も全件を読める。
 5. 生成前後で入力内容と確認記録が変わらず、日時・version・範囲・スナップショットと確認の限界を表示する。
 6. 最終HTMLを実装者とは別のUI/UXデザイナー役エージェントが実ブラウザーで確認する。表示・操作・キーボード・狭い画面・エラー表示の証拠を残し、重大・高の指摘があれば変更後の生成物を再レビューする。対象commit SHAとHTMLのSHA-256を結び付け、未実施を合格にしない。
+7. 既定/カスタム管理名、テンプレートに一致しないJSON名、子階層、登録0件、明示選択、別CWD、既存親のnative aliasでも新規管理JSON出力を`REPORT_INPUT_COLLISION`と英語の別パス案内で拒否する。描画・保存を呼ばず、入力bytesと確認記録を保持し、元の確認済み検査は0のままとする。管理情報ではない`.json`等のHTML保存と描画可能な検査/設定エラーの保存は維持する。
+
+受入条件7は`refuses new management JSON output before rendering or writing: %s`、`allows non-management HTML output with an arbitrary extension: %s`（application/report.test.ts）、`refuses new report JSON inputs and keeps the next confirmed check successful`（cli.test.ts）で検証する。設定/検査エラーの保存は`honors --config and retains configuration failures in an HTML report`、`keeps drawable inspection errors in HTML and returns 2`（interfaces/cli/commands.test.ts）を維持する。変更の起点は[Issue #35](https://github.com/tanaka-takuto/crosslink/issues/35)。
 
 関連：[HTML仕様](../specifications/html-report.md)、[CLI仕様](../specifications/cli.md)、[変更影響の出力](impact-output.md)、[非破壊的動作](non-destructive.md)。
 

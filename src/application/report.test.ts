@@ -6,6 +6,7 @@ import {
   readFileSync,
   rmSync,
   realpathSync,
+  renameSync,
   statSync,
   symlinkSync,
   writeFileSync,
@@ -22,6 +23,7 @@ import { defaults } from "../infrastructure/filesystem/settings.js";
 import { run } from "../interfaces/cli/commands.js";
 import { human } from "../interfaces/cli/output.js";
 import { renderHtmlReport } from "../interfaces/html/report.js";
+import { run as runCli } from "../bootstrap.js";
 
 const roots: string[] = [];
 function fixture() {
@@ -168,6 +170,97 @@ it("still renders inspection evidence when an input cannot be canonicalized", ()
   expect(result.code).toBe(1);
   expect(capture.written).toEqual([join(root, "report.html"), "html"]);
 });
+
+it.each([
+  "default directory",
+  "custom directory and filename template",
+  "explicit custom configuration",
+  "nested management directory",
+  "zero registered groups",
+  "explicit file selection",
+  "different working directory",
+  "inside management directory",
+  "native parent alias",
+  "directory symlink alias",
+  "uncreated child directories",
+])("refuses new management JSON output before rendering or writing: %s", (scenario) => {
+  const root = fixture();
+  const custom =
+    scenario === "custom directory and filename template" ||
+    scenario === "explicit custom configuration";
+  const config = scenario === "explicit custom configuration" ? "settings.json" : undefined;
+  const checkArgs = ["check", ...(config ? ["--config", config] : [])];
+  const settings = custom
+    ? { directoryName: ".links", fileNameTemplate: "group-{name}.json" }
+    : defaults;
+  if (custom) {
+    renameSync(join(root, ".crosslink"), join(root, ".links"));
+    writeFileSync(join(root, config ?? "crosslink.config.json"), JSON.stringify(settings));
+  }
+  let storage = join(root, settings.directoryName);
+  const file = join(storage, "valid.json");
+  const initial = inspectGroup(file, filesystemPorts, settings);
+  confirmGroups([file], new Map([[file, initial.snapshot!]]), filesystemPorts, settings);
+  if (scenario === "zero registered groups") rmSync(file);
+  if (scenario === "nested management directory" || scenario === "native parent alias") {
+    const parent = join(root, scenario === "native parent alias" ? "café" : "nested");
+    mkdirSync(join(parent, settings.directoryName), { recursive: true });
+    storage = join(parent, settings.directoryName);
+  }
+  let cwd = root;
+  if (scenario === "different working directory") {
+    cwd = join(root, "elsewhere");
+    mkdirSync(cwd);
+  }
+  if (scenario === "inside management directory") cwd = storage;
+  let output = join(storage, "report.json");
+  if (scenario === "native parent alias" && existsSync(join(root, "cafe\u0301")))
+    output = join(root, "cafe\u0301", settings.directoryName, "report.json");
+  if (scenario === "directory symlink alias") {
+    symlinkSync(storage, join(root, "alias"), process.platform === "win32" ? "junction" : "dir");
+    output = join(root, "alias/report.json");
+  }
+  if (scenario === "uncreated child directories")
+    output = join(storage, "missing/child/report.json");
+  const inputs = [join(root, "a"), join(root, "b")];
+  if (scenario !== "zero registered groups") inputs.push(file);
+  if (custom) inputs.push(join(root, config ?? "crosslink.config.json"));
+  const before = inputs.map((path) => readFileSync(path));
+  expect(runCli(checkArgs, root).code).toBe(0);
+  const capture = services();
+  const result = generateReport(
+    {
+      cwd,
+      output,
+      ...(config ? { config } : {}),
+      ...(scenario === "explicit file selection" ? { files: [file] } : {}),
+    },
+    filesystemPorts,
+    metadata,
+    capture.ports,
+  );
+  expect(result.code).toBe(2);
+  expect(result.report.errors.at(-1)).toMatchObject({
+    code: "REPORT_INPUT_COLLISION",
+    message: expect.stringContaining("Choose a different output path."),
+  });
+  expect(capture.rendered()).toBeUndefined();
+  expect(capture.written).toEqual([]);
+  expect(existsSync(output)).toBe(false);
+  expect(runCli(checkArgs, root).code).toBe(0);
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+});
+
+it.each(["ordinary.json", "report.data", ".crosslink/report.html", ".crosslink/report.JSON"])(
+  "allows non-management HTML output with an arbitrary extension: %s",
+  (output) => {
+    const root = fixture();
+    const capture = services();
+    const result = generateReport({ cwd: root, output }, filesystemPorts, metadata, capture.ports);
+    expect(result.code).toBe(1);
+    expect(capture.written).toEqual([join(root, output), "html"]);
+  },
+);
 
 it("does not create a report at a removed baseline path or a new matching glob path", () => {
   const root = fixture();

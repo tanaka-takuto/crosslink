@@ -34,7 +34,7 @@
       "../CONTRIBUTING.md": "1ad0722bf5227400b53f62c0f92e5e24689c7eca87d2a9f159200bcae63ecbf7",
       "../docs/development/distribution.md": "c85d349987beae90585e3cdfb966c7fa5aa19bd362159b40e032c99edb9df2c7",
       "../docs/development/release.md": "b415f871131ae9dcbfc159294b17d317dee90b51c11ff96b57c298352077ca6e",
-      "../package.json": "ba1275b03102bc7cd8250f1e8498cf3a916993cd6c28f64de46f0a81bc7bed5b",
+      "../package.json": "48837448b6b02ece89ebc04517fb86c4f9cf099437220c2dbe2759b97c83ba44",
       "../script/build-binary.test.ts": "19e80ba01251dad8a4050042039daf6f776fa2bbd63013491fb11edade5f5b24",
       "../script/build-binary.ts": "0c2c1bb30ae5a22337b37acfc966c5a4dd2aba12cf9f18eb356e2890aeb22f2e",
       "../script/check-version.test.ts": "e3c1a770aeac098e351375f4f1af8aba32b7c94c52af59490fe538443ff6d4ca",
