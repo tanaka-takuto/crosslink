@@ -34,7 +34,7 @@
       "../src/application/report.test.ts": "d766870ed52b2c8806797e3b5298315fa871810e2323bce9a7a87bfbc6bb9d42",
       "../src/application/report.ts": "5c50c51eb5f3fb10f4b0cd09b44f628288d4539c06ae6d7b31d99c070f735f6f",
       "../src/bootstrap.ts": "aa42396dd4349806a71f9587d1b358d6eb102752db6fca30658ede2005155c90",
-      "../src/cli.test.ts": "f900b47ebe4b63a201a40fc3f04741814323aa99456db54c7ef58fecc711a466",
+      "../src/cli.test.ts": "96812fb2ca2cbaad72576dcde04315b5efedf4bab3346b34954799e96ed10fe1",
       "../src/infrastructure/filesystem/report-output.test.ts": "013473eb477d139a4671280b3da2aca6e7a49562b3429fa468d54d07a15cf1fd",
       "../src/infrastructure/filesystem/report-output.ts": "2ba4ebb9f9ae8aefb223f7d0d056b7d8b78fde2a02542b2db8e09360be88ac5b",
       "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",

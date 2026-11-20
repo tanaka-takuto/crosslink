@@ -35,7 +35,8 @@ function testTiming(test: string) {
   const events: { operation: string; ms: number; depth: number; outcome: string }[] = [];
   let total = 0,
     depth = 0,
-    completed = false;
+    assertionsCompleted = false,
+    cleanupCompleted = false;
   const measure = <T>(operation: string, call: () => T): T => {
     const start = performance.now(),
       level = depth++;
@@ -62,7 +63,7 @@ function testTiming(test: string) {
             node: process.version,
             platform: process.platform,
             parallelism: availableParallelism(),
-            completed,
+            completed: assertionsCompleted && cleanupCompleted,
             elapsedMs: performance.now() - started,
             events,
             total,
@@ -78,11 +79,18 @@ function testTiming(test: string) {
   return {
     measure,
     complete: () => {
-      completed = true;
+      assertionsCompleted = true;
+    },
+    cleanup: <T>(call: () => T): T => {
+      // 本体完了とは別に保持し、イベント上限の外で失敗しても完了にしない。
+      cleanupCompleted = false;
+      const value = measure("fixture.cleanup", call);
+      cleanupCompleted = true;
+      return value;
     },
   };
 }
-const cleanupTimings = new Map<string, ReturnType<typeof testTiming>["measure"]>();
+const cleanupTimings = new Map<string, ReturnType<typeof testTiming>>();
 
 const roots: string[] = [];
 function fixture() {
@@ -103,8 +111,8 @@ afterEach(() =>
   roots.splice(0).forEach((root) => {
     const cleanup = () => rmSync(root, { recursive: true, force: true });
     try {
-      const measure = cleanupTimings.get(root);
-      if (measure) measure("fixture.cleanup", cleanup);
+      const timing = cleanupTimings.get(root);
+      if (timing) timing.cleanup(cleanup);
       else cleanup();
     } finally {
       cleanupTimings.delete(root);
@@ -646,7 +654,7 @@ it.each(["a", "b"])("revalidates an earlier directional %s before any batch writ
   const timing = testTiming(`directional batch: ${path}`);
   const { measure } = timing;
   const { root, file, group } = measure("fixture.create", fixture);
-  cleanupTimings.set(root, measure);
+  cleanupTimings.set(root, timing);
   measure("setup.directional-save", () =>
     filesystemPorts.groups.write(file, {
       ...group,

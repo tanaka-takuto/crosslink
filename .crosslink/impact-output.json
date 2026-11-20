@@ -35,7 +35,7 @@
       "../src/application/inspect-group.ts": "7064c35f3286247338a3932fa9aaf1c34657c8aa7978259c76a6375ad3c6e75b",
       "../src/application/inspection-report.test.ts": "2f42623fb4faaec0b89b7878e0794058abf40a65b478e5e1f152437458768de9",
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
-      "../src/cli.test.ts": "f900b47ebe4b63a201a40fc3f04741814323aa99456db54c7ef58fecc711a466",
+      "../src/cli.test.ts": "96812fb2ca2cbaad72576dcde04315b5efedf4bab3346b34954799e96ed10fe1",
       "../src/cli.ts": "b6ce1aad78a292b329ab205b1adc419a0e57dbfd84fa6f9cf128c89b73db7051",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf",
