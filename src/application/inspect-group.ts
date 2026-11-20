@@ -215,7 +215,7 @@ export function inspectGroup(file: string, ports: CrosslinkPorts, settings: Sett
             ].sort()
           : null;
     }
-    if ((group.globs?.length || group.roles) && result.errors.length === 0) {
+    if (result.errors.length === 0) {
       // 後の対象を読んでいる間に、先に読んだ内容が変わった場合も拒否する。
       for (const entry of result.files) {
         try {
