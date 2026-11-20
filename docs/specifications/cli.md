@@ -30,6 +30,17 @@
 `--version` にコマンドや `--config` は併用できない。`--help` があればhelpを優先する。
 `--` 以降の引数はオプションと解釈しない。例えば `create flags --reason review -- --verbose --version` は2つのファイル名を登録する。
 
+## 個別removeとroleの選択
+
+入力パスはCWD基準で解決し、管理ファイル基準で解決した登録済みfilesのパスとの直接一致を優先する。
+symlinkの参照先が別の登録メンバーへ変わっても、その登録パスを指定した操作を他のselectorへ広げない。
+直接一致がない場合だけnative canonicalパスで照合し、一意な候補への既存の別名指定を維持する。
+複数候補なら`AMBIGUOUS_MEMBER`と英語の`Specify a registered path explicitly.`を返し、登録パスの明示を案内する。
+候補なしは従来どおり`NOT_A_MEMBER`。複数の個別/glob指定に一つでも選択エラーがあれば管理bytesを保存しない。
+この選択はremoveとroleで共通とし、指定外の登録と役割を保持する。removeは対応するrole overrideだけを除く。
+消失した登録パスの直接remove、明示したglobだけのremove、0/1件のdraft保存を維持する。
+検査・編集時の実体重複拒否は維持し、role操作だけで不正な重複構成を有効化しない。
+
 ## HTMLレポート
 
 `report --format html --output <path>` は必須オプションをそれぞれ一回指定する。

@@ -24,7 +24,7 @@
     "hashes": {
       "../docs/requirements/html-report.md": "8d8d23cf2995f4118668690eb2efd3556925672e47e40a42ca4cb1ba43cf9809",
       "../docs/requirements/non-destructive.md": "e58655b1e127d067a18faeec9121f7bfc28508d93d9eafedaa62264f39ba777c",
-      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/cli.md": "f3108ab94a4c7c0876ae39c9afe51e161adff902be1bc5685cfc30ea742ee52c",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/inspect-group.test.ts": "72e09e42d434bc9e7af17c4d6380e99656a773aa469e9caf43cfa2c866581170",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
@@ -34,8 +34,8 @@
       "../src/infrastructure/filesystem/management-file.ts": "f249b3b12cdab946e5fd112773f312957a18da5fadddc49c2e4628a4276d97f0",
       "../src/infrastructure/filesystem/report-output.test.ts": "013473eb477d139a4671280b3da2aca6e7a49562b3429fa468d54d07a15cf1fd",
       "../src/infrastructure/filesystem/report-output.ts": "2ba4ebb9f9ae8aefb223f7d0d056b7d8b78fde2a02542b2db8e09360be88ac5b",
-      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
-      "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb"
+      "../src/interfaces/cli/commands.test.ts": "dda130ff4cb4d8161c094dccabed910b3fb262ba19127f19b2cbec8c616ed14f",
+      "../src/interfaces/cli/commands.ts": "61f4c3dabc32947542012f68b51e19e8bdac108dc672cf97eda8c985f99bdf0e"
     }
   }
 }

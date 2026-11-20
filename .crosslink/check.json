@@ -22,7 +22,7 @@
     "definition": "9296cbda29d19ba803a20461332727e63d40903f53bf6bec7414f986b3901e7b",
     "hashes": {
       "../docs/requirements/check.md": "866ae1e48204490de5ae87a8855d5f0cbb3bda0efd72620589ff50938170ae91",
-      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/cli.md": "f3108ab94a4c7c0876ae39c9afe51e161adff902be1bc5685cfc30ea742ee52c",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/inspect-group.test.ts": "72e09e42d434bc9e7af17c4d6380e99656a773aa469e9caf43cfa2c866581170",
       "../src/application/inspect-group.ts": "661fd0477e534ae65accefbde5a713143537492defe88324349f63c355e671aa",
@@ -30,8 +30,8 @@
       "../src/application/inspection-report.ts": "b5ac065c1bf484b15667b9f94cde5fb231b11dde0ea250a761cbcbb20a11ac72",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf",
-      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
-      "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb",
+      "../src/interfaces/cli/commands.test.ts": "dda130ff4cb4d8161c094dccabed910b3fb262ba19127f19b2cbec8c616ed14f",
+      "../src/interfaces/cli/commands.ts": "61f4c3dabc32947542012f68b51e19e8bdac108dc672cf97eda8c985f99bdf0e",
       "../src/interfaces/cli/output.test.ts": "2043345e0ce09f418667c81c79f71cde8903dbb622a8302795760273513fd41f",
       "../src/interfaces/cli/output.ts": "97c72bbfd25b22a5c3dc7387ab668e8e5bcaf258ba5d707b98c63fc2a95bd99b"
     }

@@ -5,12 +5,14 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { run } from "../../bootstrap.js";
+import { filesystemPorts } from "../../infrastructure/filesystem/adapter.js";
 
 const roots: string[] = [];
 function fixture() {
@@ -22,6 +24,173 @@ function fixture() {
   return root;
 }
 afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
+
+// 実symlinkを使う。Windowsでも既存のFSテストと同じく作成権限が必要で、失敗をskipしない。
+function retargetedMember() {
+  const root = fixture();
+  const file = join(root, ".crosslink/alias.json");
+  symlinkSync(join(root, "a"), join(root, "link"), "file");
+  expect(run(["create", "alias", "link", "b", "c", "--reason", "関連の修復"], root).code).toBe(0);
+  const review = join(root, "review.json");
+  writeFileSync(review, JSON.stringify(run(["check"], root).report));
+  expect(run(["confirm", file, "--snapshot", review], root).code).toBe(0);
+  rmSync(join(root, "link"));
+  symlinkSync(join(root, "b"), join(root, "link"), "file");
+  const checked = run(["check"], root);
+  expect(checked.code).toBe(2);
+  expect(checked.report.errors.map((error) => error.code)).toContain("DUPLICATE_MEMBER");
+  return { root, file };
+}
+
+it("removes only the registered path after a symlink retarget and keeps the other members valid", () => {
+  const { root, file } = retargetedMember();
+  const removed = run(["remove", file, "link"], root);
+  expect(removed.code).toBe(0);
+  const saved = JSON.parse(readFileSync(file, "utf8"));
+  expect(saved.files).toEqual(["../b", "../c"]);
+  expect(saved).not.toHaveProperty("confirmation");
+  expect(saved.reason).toBe("関連の修復");
+  expect(run(["check"], root).code).toBe(1);
+  for (const name of ["a", "b", "c"]) expect(readFileSync(join(root, name), "utf8")).toBe(name);
+});
+
+it.each(["remove", "role"])(
+  "rejects an ambiguous native alias during %s without changing record bytes",
+  (operation) => {
+    const { root, file } = retargetedMember();
+    symlinkSync(join(root, "b"), join(root, "another-link"), "file");
+    const before = readFileSync(file);
+    const result = run(
+      [operation, file, "another-link", ...(operation === "role" ? ["--role", "source-only"] : [])],
+      root,
+    );
+    expect(result.code).toBe(2);
+    expect(result.report.errors[0]).toMatchObject({ code: "AMBIGUOUS_MEMBER" });
+    expect(result.report.errors[0]!.message).toContain("Specify a registered path");
+    expect(result.report.errors[0]!.message).toContain(join(root, "another-link"));
+    expect(readFileSync(file)).toEqual(before);
+  },
+);
+
+it.each(
+  ["remove", "role"].flatMap((operation) =>
+    ["ambiguous", "unregistered"].map((error) => ({ operation, error })),
+  ),
+)(
+  "does not partially save $operation when valid selections precede an $error input",
+  ({ operation, error }) => {
+    const { root, file } = retargetedMember();
+    symlinkSync(join(root, "b"), join(root, "another-link"), "file");
+    const before = readFileSync(file);
+    const result = run(
+      [
+        operation,
+        file,
+        "c",
+        error === "ambiguous" ? "another-link" : "a",
+        ...(operation === "role" ? ["--role", "target-only"] : []),
+      ],
+      root,
+    );
+    expect(result.code).toBe(2);
+    expect(result.report.errors[0]!.code).toBe(
+      error === "ambiguous" ? "AMBIGUOUS_MEMBER" : "NOT_A_MEMBER",
+    );
+    expect(readFileSync(file)).toEqual(before);
+  },
+);
+
+it.each(
+  ["remove", "role"].flatMap((operation) =>
+    ["link", "./link", "absolute"].map((input) => ({ operation, input })),
+  ),
+)(
+  "preserves unique native alias selection for $operation with $input input",
+  ({ operation, input }) => {
+    const root = fixture();
+    symlinkSync(join(root, "a"), join(root, "link"), "file");
+    const file = join(root, ".crosslink/unique.json");
+    expect(
+      run(["create", "unique", join(root, "a"), "b", "c", "--reason", "互換"], root).code,
+    ).toBe(0);
+    const result = run(
+      [
+        operation,
+        file,
+        input === "absolute" ? join(root, "link") : input,
+        ...(operation === "role" ? ["--role", "source-only"] : []),
+      ],
+      root,
+    );
+    expect(result.code).toBe(0);
+    const saved = JSON.parse(readFileSync(file, "utf8"));
+    expect(saved.files).toEqual(
+      operation === "remove" ? ["../b", "../c"] : ["../b", "../c", join(root, "a")],
+    );
+    if (operation === "role")
+      expect(saved.roles.files).toEqual({ [join(root, "a")]: "source-only" });
+  },
+);
+
+it.each(["link", "b"])(
+  "limits role edits to registered %s when a retargeted symlink recovers before validation",
+  (selected) => {
+    const { root, file } = retargetedMember();
+    // 選択時はlinkとbが同じ実体、保存前の検証時にはlinkがaへ復旧する競合境界を固定する。
+    // 重複構成のrole保存は通常どおり拒否されるため、検証を弱めず選択結果を観測する。
+    const info = filesystemPorts.files.info;
+    const restore = vi.spyOn(filesystemPorts.files, "info").mockImplementationOnce((target) => {
+      rmSync(join(root, "link"));
+      symlinkSync(join(root, "a"), join(root, "link"), "file");
+      return info(target);
+    });
+    try {
+      const result = run(["role", file, selected, "--role", "source-only"], root);
+      expect(result.code).toBe(0);
+      const saved = JSON.parse(readFileSync(file, "utf8"));
+      expect(saved.roles.files).toEqual({ [`../${selected}`]: "source-only" });
+      expect(saved.files).toEqual(["../b", "../c", "../link"]);
+      expect(saved).not.toHaveProperty("confirmation");
+    } finally {
+      restore.mockRestore();
+    }
+  },
+);
+
+it("cleans only removed fixed and glob role overrides while preserving mixed selectors", () => {
+  const { root, file } = retargetedMember();
+  const group = JSON.parse(readFileSync(file, "utf8"));
+  group.version = 3;
+  group.globs = ["../a", "../c"];
+  group.roles = {
+    files: { "../link": "source-only", "../b": "target-only" },
+    globs: { "../a": "source-only", "../c": "target-only" },
+  };
+  delete group.confirmation;
+  writeFileSync(file, JSON.stringify(group));
+  expect(run(["remove", file, "link", "--glob", "a"], root).code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8"))).toMatchObject({
+    files: ["../b", "../c"],
+    globs: ["../c"],
+    roles: { files: { "../b": "target-only" }, globs: { "../c": "target-only" } },
+  });
+  expect(run(["remove", file, "b", "--glob", "c"], root).code).toBe(0);
+  const saved = JSON.parse(readFileSync(file, "utf8"));
+  expect(saved.files).toEqual(["../c"]);
+  expect(saved).not.toHaveProperty("roles");
+  expect(run(["remove", file, "c"], root).code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).files).toEqual([]);
+});
+
+it("removes a missing registered path using an absolute input without resolving its contents", () => {
+  const root = fixture();
+  const file = join(root, ".crosslink/missing.json");
+  expect(run(["create", "missing", "a", "b", "c", "--reason", "消失"], root).code).toBe(0);
+  rmSync(join(root, "a"));
+  expect(run(["remove", file, join(root, "a")], root).code).toBe(0);
+  expect(JSON.parse(readFileSync(file, "utf8")).files).toEqual(["../b", "../c"]);
+  expect(run(["check"], root).code).toBe(1);
+});
 
 it("notifies that there are no registered groups, without initialization", () => {
   const result = run(["check", "--json"], fixture());
