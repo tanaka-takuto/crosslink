@@ -9,9 +9,10 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
+import { performance } from "node:perf_hooks";
 import { join } from "node:path";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, onTestFinished, vi } from "vitest";
 import type { Group } from "../domain/group.js";
 import * as inspection from "./inspect-group.js";
 import { inspectGroup as inspect } from "./inspect-group.js";
@@ -26,6 +27,70 @@ const createGroup = (file: string, group: Group) =>
   operations.createGroup(file, group, filesystemPorts, defaults);
 const updateGroup = (file: string, update: (group: Group) => Group) =>
   operations.updateGroup(file, update, filesystemPorts, defaults);
+
+// 同じ通常処理を一度だけforwardし、遅延した呼出自身の完了時間を上限96件で記録する。
+// 計測値を合否には使わず、timeoutや振る舞いの期待値を変更しない。
+function testTiming(test: string) {
+  const started = performance.now();
+  const events: { operation: string; ms: number; depth: number; outcome: string }[] = [];
+  let total = 0,
+    depth = 0,
+    assertionsCompleted = false,
+    cleanupCompleted = false;
+  const measure = <T>(operation: string, call: () => T): T => {
+    const start = performance.now(),
+      level = depth++;
+    let outcome = "returned";
+    try {
+      return call();
+    } catch (error) {
+      outcome = "threw";
+      throw error;
+    } finally {
+      depth--;
+      total++;
+      if (events.length < 96)
+        events.push({ operation, ms: performance.now() - start, depth: level, outcome });
+    }
+  };
+  onTestFinished(() => {
+    // 補助ログの出力失敗を製品のassertion失敗として扱わない。
+    try {
+      process.stderr.write(
+        "CROSSLINK_TEST_TIMING " +
+          JSON.stringify({
+            test,
+            node: process.version,
+            platform: process.platform,
+            parallelism: availableParallelism(),
+            completed: assertionsCompleted && cleanupCompleted,
+            elapsedMs: performance.now() - started,
+            events,
+            total,
+            limit: 96,
+            truncated: total > 96,
+          }) +
+          "\n",
+      );
+    } catch {
+      /* 計測は診断専用。 */
+    }
+  });
+  return {
+    measure,
+    complete: () => {
+      assertionsCompleted = true;
+    },
+    cleanup: <T>(call: () => T): T => {
+      // 本体完了とは別に保持し、イベント上限の外で失敗しても完了にしない。
+      cleanupCompleted = false;
+      const value = measure("fixture.cleanup", call);
+      cleanupCompleted = true;
+      return value;
+    },
+  };
+}
+const cleanupTimings = new Map<string, ReturnType<typeof testTiming>>();
 
 const roots: string[] = [];
 function fixture() {
@@ -42,7 +107,18 @@ function fixture() {
 function confirm(file: string) {
   confirmGroups([file], new Map([[file, inspectGroup(file).snapshot!]]));
 }
-afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
+afterEach(() =>
+  roots.splice(0).forEach((root) => {
+    const cleanup = () => rmSync(root, { recursive: true, force: true });
+    try {
+      const timing = cleanupTimings.get(root);
+      if (timing) timing.cleanup(cleanup);
+      else cleanup();
+    } finally {
+      cleanupTimings.delete(root);
+    }
+  }),
+);
 
 it("records explicit confirmation, detects either direction and restores identical content", () => {
   const { root, file } = fixture();
@@ -68,6 +144,51 @@ it("refuses stale file contents without changing the record", () => {
   );
   expect(readFileSync(file, "utf8")).toBe(before);
 });
+it.each([1, 2])(
+  "refuses an old static v%s snapshot when confirmation observes a content race without writing",
+  (version) => {
+    const { root, file } = fixture();
+    confirm(file);
+    const group = JSON.parse(readFileSync(file, "utf8"));
+    writeFileSync(file, JSON.stringify({ ...group, version }));
+    const current = inspectGroup(file);
+    expect(current.errors).toEqual([]);
+    expect(current.status).toBe("confirmed");
+    const before = readFileSync(file);
+    const bBefore = readFileSync(join(root, "b"));
+    const write = vi.fn(filesystemPorts.groups.write);
+    let changed = false;
+    const ports = {
+      ...filesystemPorts,
+      groups: { ...filesystemPorts.groups, write },
+      files: {
+        ...filesystemPorts.files,
+        hash: (target: string) => {
+          const value = filesystemPorts.files.hash(target);
+          if (target === join(root, "b") && !changed) {
+            changed = true;
+            writeFileSync(join(root, "a"), "changed during confirmation");
+          }
+          return value;
+        },
+      },
+    };
+    const expected = new Map([[file, current.snapshot!]]);
+    expect(() => operations.confirmGroups([file], expected, ports, defaults)).toThrow(
+      expect.objectContaining({ code: "INVALID_GROUP" }),
+    );
+    expect(write).not.toHaveBeenCalled();
+    expect(readFileSync(file)).toEqual(before);
+    // 同じ新状態が安定した後は、検査不能ではなく古いsnapshotとして拒否する。
+    expect(() => operations.confirmGroups([file], expected, ports, defaults)).toThrow(
+      expect.objectContaining({ code: "STALE_SNAPSHOT" }),
+    );
+    expect(write).not.toHaveBeenCalled();
+    expect(readFileSync(file)).toEqual(before);
+    expect(readFileSync(join(root, "a"), "utf8")).toBe("changed during confirmation");
+    expect(readFileSync(join(root, "b"))).toEqual(bBefore);
+  },
+);
 it("guides invalid groups through inspection and repair before explicit confirmation", () => {
   const { file } = fixture();
   updateGroup(file, (group) => ({ ...group, files: [] }));
@@ -530,38 +651,65 @@ it.each(["both", "source-only", "target-only"] as const)(
   },
 );
 it.each(["a", "b"])("revalidates an earlier directional %s before any batch write", (path) => {
-  const { root, file, group } = fixture();
-  filesystemPorts.groups.write(file, {
-    ...group,
-    roles: { files: { "../a": "source-only", "../b": "target-only" }, globs: {} },
+  const timing = testTiming(`directional batch: ${path}`);
+  const { measure } = timing;
+  const { root, file, group } = measure("fixture.create", fixture);
+  cleanupTimings.set(root, timing);
+  measure("setup.directional-save", () =>
+    filesystemPorts.groups.write(file, {
+      ...group,
+      roles: { files: { "../a": "source-only", "../b": "target-only" }, globs: {} },
+    }),
+  );
+  measure("setup.member-writes", () => {
+    for (const member of ["c", "d"]) writeFileSync(join(root, member), member);
   });
-  for (const member of ["c", "d"]) writeFileSync(join(root, member), member);
   const later = join(root, ".crosslink/z.json");
-  createGroup(later, { ...group, name: "later", files: ["../c", "../d"] });
-  const expected = new Map([file, later].map((f) => [f, inspectGroup(f).snapshot!]));
+  measure("setup.later-create", () =>
+    createGroup(later, { ...group, name: "later", files: ["../c", "../d"] }),
+  );
+  const expected = measure(
+    "baseline.inspect-both",
+    () => new Map([file, later].map((f) => [f, inspectGroup(f).snapshot!])),
+  );
   const writes: string[] = [];
   let changed = false;
-  const ports = {
+  const ports: import("./ports.js").CrosslinkPorts = {
     ...filesystemPorts,
     groups: {
       ...filesystemPorts.groups,
+      read: (f: string) => measure(`groups.read ${f}`, () => filesystemPorts.groups.read(f)),
+      readRaw: (f: string) =>
+        measure(`groups.readRaw ${f}`, () => filesystemPorts.groups.readRaw(f)),
+      withLocks: (files, operation) =>
+        measure("groups.withLocks", () => filesystemPorts.groups.withLocks(files, operation)),
       write: (f: string) => {
         writes.push(f);
       },
     },
     files: {
       ...filesystemPorts.files,
-      hash: (f: string) => {
-        if (!changed && f === join(root, "c")) {
-          changed = true;
-          writeFileSync(join(root, path), "changed during later inspection");
-        }
-        return filesystemPorts.files.hash(f);
-      },
+      isManagementFile: (member, groupFile, settings) =>
+        measure(`files.isManagementFile ${member}`, () =>
+          filesystemPorts.files.isManagementFile(member, groupFile, settings),
+        ),
+      hash: (f: string) =>
+        measure(`files.hash ${f}`, () => {
+          if (!changed && f === join(root, "c")) {
+            changed = true;
+            measure("inject.member-write", () =>
+              writeFileSync(join(root, path), "changed during later inspection"),
+            );
+          }
+          return filesystemPorts.files.hash(f);
+        }),
     },
   };
-  expect(() => operations.confirmGroups([file, later], expected, ports, defaults)).toThrow(
-    expect.objectContaining({ code: "STALE_SNAPSHOT" }),
-  );
+  expect(() =>
+    measure("confirmGroups", () =>
+      operations.confirmGroups([file, later], expected, ports, defaults),
+    ),
+  ).toThrow(expect.objectContaining({ code: "STALE_SNAPSHOT" }));
   expect(writes).toEqual([]);
+  timing.complete();
 });
