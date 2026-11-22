@@ -48,6 +48,7 @@
 | 消失・読取不能・EACCESを構文不正と区別し元原因を保持                       | `keeps the actual configuration read cause for %s`、`keeps an access-denied configuration cause without calling it malformed JSON` (settings.test.ts)、`reports configuration read failures separately from malformed JSON: %s` (cli.test.ts) |
 | 入力・record・snapshot bytes不変、診断HTML保存時も検査未完了/終了2         | 上記のtext/JSON/HTMLテスト (cli.test.ts)                                                                                                                                                                                                      |
 | 既定設定なしのdefaults、壊れたCWD設定からhelp/versionが独立                | `uses defaults without settings and keeps help and version independent of broken settings` (cli.test.ts)、`uses defaults without a configuration or initialization` (settings.test.ts)                                                        |
+| 設定取得不能でも管理JSONへの保存拒否と安全な診断HTML保存を両立             | `refuses JSON report writes after configuration failure without worsening the next check: $config` (cli.test.ts)。元の設定診断を保持し、入力bytesと有効設定での次回checkを維持する                                                            |
 
 整数精度の受入条件は[Issue #32](https://github.com/tanaka-takuto/crosslink/issues/32)に基づき、次の隣接テストで確認する。制御したStatsは過去のWindows実行の未採取ID値を復元したものではない。
 

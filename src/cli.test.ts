@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import {
   cpSync,
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -12,10 +13,75 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
+import { performance } from "node:perf_hooks";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, onTestFinished } from "vitest";
+
+// 同じ通常処理を一度だけforwardし、遅延した呼出自身の完了時間を上限96件で記録する。
+// 計測値を合否には使わず、timeoutや振る舞いの期待値を変更しない。
+function testTiming(test: string) {
+  const started = performance.now();
+  const events: { operation: string; ms: number; depth: number; outcome: string }[] = [];
+  let total = 0,
+    depth = 0,
+    assertionsCompleted = false,
+    cleanupCompleted = false;
+  const measure = <T>(operation: string, call: () => T): T => {
+    const start = performance.now(),
+      level = depth++;
+    let outcome = "returned";
+    try {
+      return call();
+    } catch (error) {
+      outcome = "threw";
+      throw error;
+    } finally {
+      depth--;
+      total++;
+      if (events.length < 96)
+        events.push({ operation, ms: performance.now() - start, depth: level, outcome });
+    }
+  };
+  onTestFinished(() => {
+    // 補助ログの出力失敗を製品のassertion失敗として扱わない。
+    try {
+      process.stderr.write(
+        "CROSSLINK_TEST_TIMING " +
+          JSON.stringify({
+            test,
+            node: process.version,
+            platform: process.platform,
+            parallelism: availableParallelism(),
+            completed: assertionsCompleted && cleanupCompleted,
+            elapsedMs: performance.now() - started,
+            events,
+            total,
+            limit: 96,
+            truncated: total > 96,
+          }) +
+          "\n",
+      );
+    } catch {
+      /* 計測は診断専用。 */
+    }
+  });
+  return {
+    measure,
+    complete: () => {
+      assertionsCompleted = true;
+    },
+    cleanup: <T>(call: () => T): T => {
+      // 本体完了とは別に保持し、イベント上限の外で失敗しても完了にしない。
+      cleanupCompleted = false;
+      const value = measure("fixture.cleanup", call);
+      cleanupCompleted = true;
+      return value;
+    },
+  };
+}
+const cleanupTimings = new Map<string, ReturnType<typeof testTiming>>();
 
 const roots: string[] = [];
 function fixture() {
@@ -39,7 +105,18 @@ function fixture() {
     });
   return { root, call };
 }
-afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
+afterEach(() =>
+  roots.splice(0).forEach((root) => {
+    const cleanup = () => rmSync(root, { recursive: true, force: true });
+    try {
+      const timing = cleanupTimings.get(root);
+      if (timing) timing.cleanup(cleanup);
+      else cleanup();
+    } finally {
+      cleanupTimings.delete(root);
+    }
+  }),
+);
 
 it("runs the full CLI with Node alone and keeps JSON stdout clean", () => {
   const { root, call } = fixture();
@@ -68,6 +145,120 @@ it("serializes invocation errors as JSON without a stack trace", () => {
   expect(result.stderr).toBe("");
   expect(JSON.parse(result.stdout).result).toBe("error");
 });
+
+it("refuses new report JSON inputs and keeps the next confirmed check successful", () => {
+  const { root, call } = fixture();
+  expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
+  const snapshot = join(root, "review.json");
+  writeFileSync(snapshot, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
+  expect(call("check").status).toBe(0);
+  const inputs = ["a", "b", ".crosslink/api.json", "review.json"].map((path) => join(root, path));
+  const before = inputs.map((path) => readFileSync(path));
+  const output = join(root, ".crosslink/report.json");
+  const result = call("report", "--format", "html", "--output", output, "--json");
+  const next = call("check", "--json");
+  expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
+    report: 2,
+    nextCheck: 0,
+    created: false,
+  });
+  expect(result.stderr).toBe("");
+  expect(JSON.parse(result.stdout).errors).toContainEqual({
+    code: "REPORT_INPUT_COLLISION",
+    message: expect.stringContaining("Choose a different output path."),
+  });
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  expect(JSON.parse(next.stdout).groups[0].status).toBe("confirmed");
+  for (const safe of [
+    "ordinary.json",
+    "report.data",
+    ".crosslink/report.html",
+    ".crosslink/report.JSON",
+  ]) {
+    const saved = call("report", "--format", "html", "--output", safe, "--json");
+    expect(saved.status, safe).toBe(0);
+    expect(readFileSync(join(root, safe), "utf8")).toContain("<!doctype html>");
+    expect(call("check").status, safe).toBe(0);
+  }
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+});
+
+it.each([
+  { config: "bad-config.json", raw: '{"fileNameTemplate":"invalid.json"}', code: "INVALID_CONFIG" },
+  { config: "malformed-config.json", raw: "{", code: "IO_ERROR" },
+  { config: "missing-config.json", raw: null, code: "IO_ERROR" },
+  { config: "config-directory", raw: null, code: "IO_ERROR" },
+])(
+  "refuses JSON report writes after configuration failure without worsening the next check: $config",
+  ({ config, raw, code }) => {
+    const { root, call } = fixture();
+    expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
+    const snapshot = join(root, "review.json");
+    writeFileSync(snapshot, call("check", "--json").stdout);
+    expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
+    const checked = call("check", "--json");
+    expect(checked.status).toBe(0);
+    if (raw !== null) writeFileSync(join(root, config), raw);
+    if (config === "config-directory") mkdirSync(join(root, config));
+    const inputs = [
+      "a",
+      "b",
+      ".crosslink/api.json",
+      "review.json",
+      ...(raw === null ? [] : [config]),
+    ].map((path) => join(root, path));
+    const before = inputs.map((path) => readFileSync(path));
+    const original = call("check", "--config", config, "--json");
+    expect(original.status).toBe(2);
+    const diagnostic = JSON.parse(original.stdout).errors[0];
+    expect(diagnostic.code).toBe(code);
+    expect(diagnostic.message).toContain(resolve(realpathSync(root), config));
+    expect(diagnostic.message).toContain("configuration JSON");
+    expect(diagnostic.message).toContain("then run check again.");
+    const output = join(root, ".crosslink/report.json");
+    const result = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      output,
+      "--config",
+      config,
+      "--json",
+    );
+    const next = call("check", "--json");
+    expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
+      report: 2,
+      nextCheck: 0,
+      created: false,
+    });
+    const errors = JSON.parse(result.stdout).errors;
+    expect(errors[0]).toEqual(diagnostic);
+    expect(errors.map((error: { code: string }) => error.code)).toEqual([
+      code,
+      "REPORT_INPUT_COLLISION",
+    ]);
+    expect(result.stderr).toBe("");
+    expect(next.stdout).toBe(checked.stdout);
+    expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+    const safe = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      "errors.data",
+      "--config",
+      config,
+      "--json",
+    );
+    expect(safe.status).toBe(2);
+    expect(JSON.parse(safe.stdout).errors).toEqual([diagnostic]);
+    expect(readFileSync(join(root, "errors.data"), "utf8")).toContain("Inspection incomplete");
+    expect(call("check", "--json").stdout).toBe(checked.stdout);
+    expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  },
+);
 
 it.each([
   { config: undefined, raw: "{", code: "IO_ERROR", cause: null },
@@ -292,7 +483,11 @@ it.each([
 ])(
   "keeps check compact and exposes safe guidance for $scenario",
   ({ scenario, code, guidance }) => {
-    const { root, call } = fixture();
+    const timing = testTiming(`compact guidance: ${scenario}`);
+    const { root, call: originalCall } = timing.measure("fixture.copy-and-write", fixture);
+    cleanupTimings.set(root, timing);
+    const call = (...args: string[]) =>
+      timing.measure(`spawn ${args.join(" ")}`, () => originalCall(...args));
     call("create", "要確認", "a", "b", "--reason", "理由を保持する");
     const groupFile = join(root, ".crosslink/要確認.json");
     const review = join(root, "review.json");
@@ -343,6 +538,7 @@ it.each([
     expect(call("confirm", "--all", "--snapshot", review).status).toBe(2);
     expect(readFileSync(groupFile, "utf8")).toBe(before);
     expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+    timing.complete();
   },
 );
 

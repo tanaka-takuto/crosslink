@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import { CrosslinkError, problem } from "../domain/errors.js";
 import { inspectGroup } from "./inspect-group.js";
 import { inspectionReport, type InspectionResult, type Report } from "./inspection-report.js";
-import type { ApplicationMetadata, CrosslinkPorts } from "./ports.js";
+import type { ApplicationMetadata, CrosslinkPorts, Settings } from "./ports.js";
 
 export interface HtmlReport {
   inspection: Report;
@@ -34,12 +34,14 @@ export function generateReport(
   const configuration = resolve(cwd, request.config ?? "crosslink.config.json");
   let result = inspectionReport("report", []);
   let complete = false;
+  let settings: Settings | undefined;
   try {
-    const settings = ports.configuration.load(cwd, request.config);
-    const files = selection ?? ports.configuration.findGroups(cwd, settings);
+    const loaded = ports.configuration.load(cwd, request.config);
+    settings = loaded;
+    const files = selection ?? ports.configuration.findGroups(cwd, loaded);
     result = inspectionReport(
       "report",
-      [...new Set(files)].sort().map((file) => inspectGroup(file, ports, settings)),
+      [...new Set(files)].sort().map((file) => inspectGroup(file, ports, loaded)),
     );
     complete = true;
   } catch (error) {
@@ -69,7 +71,17 @@ export function generateReport(
       }
     };
     const outputIdentity = canonical(output);
+    // 設定不明時は管理名を推測せず、次の探索入力になり得るJSON保存を拒否する。
+    if (!settings && (output.endsWith(".json") || outputIdentity.endsWith(".json")))
+      throw new CrosslinkError(
+        "REPORT_INPUT_COLLISION",
+        `Cannot establish that JSON report output is safe because configuration could not be loaded: ${output}. Choose a non-JSON output path such as errors.data, or repair the configuration, run check again, and retry the report.`,
+      );
     if (
+      // 未作成のJSONも次回の管理入力になり得る。既存親の別名も実体で照合する。
+      (settings &&
+        (ports.files.isManagementFile(output, configuration, settings) ||
+          ports.files.isManagementFile(outputIdentity, configuration, settings))) ||
       result.report.groups.some((group) =>
         group.globs?.some(
           (pattern) =>
