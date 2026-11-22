@@ -24,7 +24,7 @@
     "definition": "c465d839cb28f7e05efa756cecf849cf8b900ef747f1b6e48695d84b7227eb7b",
     "hashes": {
       "../docs/requirements/directional-impact.md": "3ecac2a5ec867cc57da1aef77963cd58fddcfaa688a743233fcc987a57a71ba0",
-      "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
+      "../docs/specifications/cli.md": "2ea5061d9ba0c697951453331be6f9760918542b90d4b8dc87328b645b8b6607",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/group-operations.test.ts": "e74375b9d406f6903fa1fa5a1ba10c5f6a8380a022f2784ba39d471f99524591",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
@@ -36,8 +36,8 @@
       "../src/domain/directional-members.test.ts": "2e0136590bb4152be16fb274aa0a23afe3860041a273f5127002fd7747d5dccf",
       "../src/domain/group.test.ts": "4f7bef6e6a4f01e7415f2b4c1595d4f52978dc0bf2aea8bf3a72ae63c0017438",
       "../src/domain/group.ts": "65edee45697eee70330000e544bc84de690b3605acab9bb1fdd7c4c6cde5c8a8",
-      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
-      "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb"
+      "../src/interfaces/cli/commands.test.ts": "dda130ff4cb4d8161c094dccabed910b3fb262ba19127f19b2cbec8c616ed14f",
+      "../src/interfaces/cli/commands.ts": "61f4c3dabc32947542012f68b51e19e8bdac108dc672cf97eda8c985f99bdf0e"
     }
   }
 }

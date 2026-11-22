@@ -377,23 +377,32 @@ export function run(
               patterns.filter((pattern) => !globs.includes(pattern)),
             );
           }
-          const targets = new Set(
-            members.map((member) => ports.files.canonical(resolve(cwd, member))),
-          );
-          for (const target of targets)
-            if (
-              !group.files.some(
-                (member) => ports.files.canonical(resolve(dirname(file), member)) === target,
-              )
-            )
-              throw new CrosslinkError("NOT_A_MEMBER", `Not a registered member: ${target}`);
+          const registered = new Set<string>();
+          for (const member of members) {
+            const target = resolve(cwd, member);
+            // 登録パスの直接指定を優先し、参照先が変わったsymlinkから別selectorへ広げない。
+            let candidates = group.files.filter(
+              (entry) => resolve(dirname(file), entry) === target,
+            );
+            if (!candidates.length) {
+              const identity = ports.files.canonical(target);
+              candidates = group.files.filter(
+                (entry) => ports.files.canonical(resolve(dirname(file), entry)) === identity,
+              );
+              if (!candidates.length)
+                throw new CrosslinkError("NOT_A_MEMBER", `Not a registered member: ${identity}`);
+            }
+            if (candidates.length > 1)
+              throw new CrosslinkError(
+                "AMBIGUOUS_MEMBER",
+                `Multiple registered members match: ${target}. Specify a registered path explicitly.`,
+              );
+            registered.add(candidates[0]!);
+          }
           for (const pattern of patterns)
             if (!globs.includes(pattern))
               throw new CrosslinkError("NOT_A_MEMBER", `Not a registered glob: ${pattern}`);
-          const registered = group.files.filter((member) =>
-            targets.has(ports.files.canonical(resolve(dirname(file), member))),
-          );
-          if (operation === "role") return assign(group, registered, patterns);
+          if (operation === "role") return assign(group, [...registered], patterns);
           if (group.roles) {
             for (const member of registered) delete group.roles.files[member];
             for (const pattern of patterns) delete group.roles.globs[pattern];
@@ -403,9 +412,7 @@ export function run(
           return {
             ...group,
             globs: globs.filter((pattern) => !patterns.includes(pattern)),
-            files: group.files.filter(
-              (member) => !targets.has(ports.files.canonical(resolve(dirname(file), member))),
-            ),
+            files: group.files.filter((member) => !registered.has(member)),
           };
         },
         ports,

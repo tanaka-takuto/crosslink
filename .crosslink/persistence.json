@@ -22,7 +22,7 @@
     "definition": "686bbbe0b7fdf390e13358bdac1a82e91b23d397af995f4dffc000503e406e7f",
     "hashes": {
       "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
-      "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
+      "../docs/specifications/cli.md": "2ea5061d9ba0c697951453331be6f9760918542b90d4b8dc87328b645b8b6607",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
       "../src/application/group-operations.test.ts": "e74375b9d406f6903fa1fa5a1ba10c5f6a8380a022f2784ba39d471f99524591",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
@@ -32,8 +32,8 @@
       "../src/infrastructure/filesystem/group-storage.ts": "023ec4ebe7058b2947522eaf17606b8e5c23bff45243a9e29e7cede3965e965a",
       "../src/infrastructure/filesystem/management-file.test.ts": "a6a1e031a3cc0cb809a3913809e6c13a596613ca47c042cbac1de4dce28cb010",
       "../src/infrastructure/filesystem/management-file.ts": "f249b3b12cdab946e5fd112773f312957a18da5fadddc49c2e4628a4276d97f0",
-      "../src/interfaces/cli/commands.test.ts": "3a1fa16aaf58316b182d76ae5d940a33301ad53cfd84e04fbe3122ba943bb2ac",
-      "../src/interfaces/cli/commands.ts": "cdeca89949c77e0e495a6cee43e7e81a4e6be23d055676eca3865ada12d6adbb"
+      "../src/interfaces/cli/commands.test.ts": "dda130ff4cb4d8161c094dccabed910b3fb262ba19127f19b2cbec8c616ed14f",
+      "../src/interfaces/cli/commands.ts": "61f4c3dabc32947542012f68b51e19e8bdac108dc672cf97eda8c985f99bdf0e"
     }
   }
 }
