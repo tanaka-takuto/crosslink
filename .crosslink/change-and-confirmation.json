@@ -16,9 +16,9 @@
     "definition": "6b052ab11d39bde3ce6cd4d7b774638e11f55878e329a8f6030dee884ba6e929",
     "hashes": {
       "../docs/requirements/change-and-confirmation.md": "de52cd3929175d78228c769588351152a9aab1624905b11646a7a9af439a4345",
-      "../docs/specifications/cli.md": "1a3f023c2f1eaf8a25e7575894fc35e1ab5a477e59b4bce8f7f6be2bc0a68f78",
+      "../docs/specifications/cli.md": "6ef2df4acaff73fc37b2ad8ea7108ed2ad27d82b2a9fc5ad70ff2c4d29cc74c4",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
-      "../src/application/group-operations.test.ts": "c0f8444847e919b1f756bd0236ec9cea8e5f7161043c29ce8ea9839bce720e0a",
+      "../src/application/group-operations.test.ts": "e74375b9d406f6903fa1fa5a1ba10c5f6a8380a022f2784ba39d471f99524591",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/domain/confirmation.test.ts": "fb5661c361eb47729169828c8da1fdd03c91d653f70701a837b6a0acdcc90726",
       "../src/domain/confirmation.ts": "a88542e83a1f26ad544db2fed4f1c7162610745a6e7496db9c30188673eff1cf"
