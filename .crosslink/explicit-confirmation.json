@@ -27,7 +27,7 @@
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/application/inspect-group.test.ts": "0316b317e6934f48553376e23ce49f917036c06ad88ef1dd4487b73d7bff6fbb",
       "../src/application/inspect-group.ts": "7064c35f3286247338a3932fa9aaf1c34657c8aa7978259c76a6375ad3c6e75b",
-      "../src/cli.test.ts": "96812fb2ca2cbaad72576dcde04315b5efedf4bab3346b34954799e96ed10fe1",
+      "../src/cli.test.ts": "6e7a7277114dd851b8a4324b198e1a606e74102d5dfdd4b522cbad8f3f19bd08",
       "../src/infrastructure/filesystem/group-storage.test.ts": "8f4a572ed8d4aaaadf12d7b98520e96ab358c88d29b140ad3fbbd55b27e9b578",
       "../src/infrastructure/filesystem/group-storage.ts": "023ec4ebe7058b2947522eaf17606b8e5c23bff45243a9e29e7cede3965e965a",
       "../src/interfaces/cli/commands.test.ts": "dda130ff4cb4d8161c094dccabed910b3fb262ba19127f19b2cbec8c616ed14f",

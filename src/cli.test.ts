@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import {
   cpSync,
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -143,6 +144,100 @@ it("serializes invocation errors as JSON without a stack trace", () => {
   expect(result.status).toBe(2);
   expect(result.stderr).toBe("");
   expect(JSON.parse(result.stdout).result).toBe("error");
+});
+
+it("refuses new report JSON inputs and keeps the next confirmed check successful", () => {
+  const { root, call } = fixture();
+  expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
+  const snapshot = join(root, "review.json");
+  writeFileSync(snapshot, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
+  expect(call("check").status).toBe(0);
+  const inputs = ["a", "b", ".crosslink/api.json", "review.json"].map((path) => join(root, path));
+  const before = inputs.map((path) => readFileSync(path));
+  const output = join(root, ".crosslink/report.json");
+  const result = call("report", "--format", "html", "--output", output, "--json");
+  const next = call("check", "--json");
+  expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
+    report: 2,
+    nextCheck: 0,
+    created: false,
+  });
+  expect(result.stderr).toBe("");
+  expect(JSON.parse(result.stdout).errors).toContainEqual({
+    code: "REPORT_INPUT_COLLISION",
+    message: expect.stringContaining("Choose a different output path."),
+  });
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  expect(JSON.parse(next.stdout).groups[0].status).toBe("confirmed");
+  for (const safe of [
+    "ordinary.json",
+    "report.data",
+    ".crosslink/report.html",
+    ".crosslink/report.JSON",
+  ]) {
+    const saved = call("report", "--format", "html", "--output", safe, "--json");
+    expect(saved.status, safe).toBe(0);
+    expect(readFileSync(join(root, safe), "utf8")).toContain("<!doctype html>");
+    expect(call("check").status, safe).toBe(0);
+  }
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+});
+
+it("refuses JSON report writes after configuration failure without worsening the next check", () => {
+  const { root, call } = fixture();
+  expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
+  const snapshot = join(root, "review.json");
+  writeFileSync(snapshot, call("check", "--json").stdout);
+  expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
+  const checked = call("check", "--json");
+  expect(checked.status).toBe(0);
+  writeFileSync(join(root, "bad-config.json"), '{"fileNameTemplate":"invalid.json"}');
+  const inputs = ["a", "b", ".crosslink/api.json", "review.json", "bad-config.json"].map((path) =>
+    join(root, path),
+  );
+  const before = inputs.map((path) => readFileSync(path));
+  const output = join(root, ".crosslink/report.json");
+  const result = call(
+    "report",
+    "--format",
+    "html",
+    "--output",
+    output,
+    "--config",
+    "bad-config.json",
+    "--json",
+  );
+  const next = call("check", "--json");
+  expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
+    report: 2,
+    nextCheck: 0,
+    created: false,
+  });
+  expect(JSON.parse(result.stdout).errors.map((error: { code: string }) => error.code)).toEqual([
+    "INVALID_CONFIG",
+    "REPORT_INPUT_COLLISION",
+  ]);
+  expect(result.stderr).toBe("");
+  expect(next.stdout).toBe(checked.stdout);
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  const safe = call(
+    "report",
+    "--format",
+    "html",
+    "--output",
+    "errors.data",
+    "--config",
+    "bad-config.json",
+    "--json",
+  );
+  expect(safe.status).toBe(2);
+  expect(JSON.parse(safe.stdout).errors.map((error: { code: string }) => error.code)).toEqual([
+    "INVALID_CONFIG",
+  ]);
+  expect(readFileSync(join(root, "errors.data"), "utf8")).toContain("Inspection incomplete");
+  expect(call("check", "--json").stdout).toBe(checked.stdout);
+  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
 });
 
 it.each([
