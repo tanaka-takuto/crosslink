@@ -22,9 +22,9 @@
     "definition": "686bbbe0b7fdf390e13358bdac1a82e91b23d397af995f4dffc000503e406e7f",
     "hashes": {
       "../docs/requirements/persistence.md": "cdf1768ead20d72156a5819541f269a3efea05cd3836915461b6cc5832f15257",
-      "../docs/specifications/cli.md": "f3108ab94a4c7c0876ae39c9afe51e161adff902be1bc5685cfc30ea742ee52c",
+      "../docs/specifications/cli.md": "2ea5061d9ba0c697951453331be6f9760918542b90d4b8dc87328b645b8b6607",
       "../docs/specifications/storage.md": "28cc7e27524b3d3763cb22ca1942692be617338e749c864f0539b2795956949a",
-      "../src/application/group-operations.test.ts": "c0f8444847e919b1f756bd0236ec9cea8e5f7161043c29ce8ea9839bce720e0a",
+      "../src/application/group-operations.test.ts": "e74375b9d406f6903fa1fa5a1ba10c5f6a8380a022f2784ba39d471f99524591",
       "../src/application/group-operations.ts": "61a8adf6705ef1c5788ae1b873b67bc7382c7921aea936c8e0ce8fbe43dbb26b",
       "../src/infrastructure/filesystem/group-format.test.ts": "bade4c68f1130bd43f07d54cf3d362a8274e338f4ec1a0de0ae483510007b8c9",
       "../src/infrastructure/filesystem/group-format.ts": "13c05807b5c06c314019febd0bca09dee1fe9e2965473f16a69e4a77203989bb",

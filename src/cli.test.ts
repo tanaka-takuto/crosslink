@@ -12,10 +12,75 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
+import { performance } from "node:perf_hooks";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, onTestFinished } from "vitest";
+
+// 同じ通常処理を一度だけforwardし、遅延した呼出自身の完了時間を上限96件で記録する。
+// 計測値を合否には使わず、timeoutや振る舞いの期待値を変更しない。
+function testTiming(test: string) {
+  const started = performance.now();
+  const events: { operation: string; ms: number; depth: number; outcome: string }[] = [];
+  let total = 0,
+    depth = 0,
+    assertionsCompleted = false,
+    cleanupCompleted = false;
+  const measure = <T>(operation: string, call: () => T): T => {
+    const start = performance.now(),
+      level = depth++;
+    let outcome = "returned";
+    try {
+      return call();
+    } catch (error) {
+      outcome = "threw";
+      throw error;
+    } finally {
+      depth--;
+      total++;
+      if (events.length < 96)
+        events.push({ operation, ms: performance.now() - start, depth: level, outcome });
+    }
+  };
+  onTestFinished(() => {
+    // 補助ログの出力失敗を製品のassertion失敗として扱わない。
+    try {
+      process.stderr.write(
+        "CROSSLINK_TEST_TIMING " +
+          JSON.stringify({
+            test,
+            node: process.version,
+            platform: process.platform,
+            parallelism: availableParallelism(),
+            completed: assertionsCompleted && cleanupCompleted,
+            elapsedMs: performance.now() - started,
+            events,
+            total,
+            limit: 96,
+            truncated: total > 96,
+          }) +
+          "\n",
+      );
+    } catch {
+      /* 計測は診断専用。 */
+    }
+  });
+  return {
+    measure,
+    complete: () => {
+      assertionsCompleted = true;
+    },
+    cleanup: <T>(call: () => T): T => {
+      // 本体完了とは別に保持し、イベント上限の外で失敗しても完了にしない。
+      cleanupCompleted = false;
+      const value = measure("fixture.cleanup", call);
+      cleanupCompleted = true;
+      return value;
+    },
+  };
+}
+const cleanupTimings = new Map<string, ReturnType<typeof testTiming>>();
 
 const roots: string[] = [];
 function fixture() {
@@ -39,7 +104,18 @@ function fixture() {
     });
   return { root, call };
 }
-afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
+afterEach(() =>
+  roots.splice(0).forEach((root) => {
+    const cleanup = () => rmSync(root, { recursive: true, force: true });
+    try {
+      const timing = cleanupTimings.get(root);
+      if (timing) timing.cleanup(cleanup);
+      else cleanup();
+    } finally {
+      cleanupTimings.delete(root);
+    }
+  }),
+);
 
 it("runs the full CLI with Node alone and keeps JSON stdout clean", () => {
   const { root, call } = fixture();
@@ -139,7 +215,11 @@ it.each([
 ])(
   "keeps check compact and exposes safe guidance for $scenario",
   ({ scenario, code, guidance }) => {
-    const { root, call } = fixture();
+    const timing = testTiming(`compact guidance: ${scenario}`);
+    const { root, call: originalCall } = timing.measure("fixture.copy-and-write", fixture);
+    cleanupTimings.set(root, timing);
+    const call = (...args: string[]) =>
+      timing.measure(`spawn ${args.join(" ")}`, () => originalCall(...args));
     call("create", "要確認", "a", "b", "--reason", "理由を保持する");
     const groupFile = join(root, ".crosslink/要確認.json");
     const review = join(root, "review.json");
@@ -190,6 +270,7 @@ it.each([
     expect(call("confirm", "--all", "--snapshot", review).status).toBe(2);
     expect(readFileSync(groupFile, "utf8")).toBe(before);
     expect(readFileSync(join(root, "a"), "utf8")).toBe("a");
+    timing.complete();
   },
 );
 
