@@ -34,7 +34,7 @@ CLIの一覧だけで読み取りにくい、グループの理由・確認状�
 8. 既定/明示設定の構造不正・破損JSON・明示読取失敗でも、元の`INVALID_CONFIG`/`IO_ERROR`を保持し、設定不明の`.json`出力を描画/保存0で拒否する。カスタム管理名・子階層・native alias・明示選択でもファイル未作成とし、元の有効設定によるcheck0、入力・記録・snapshotのbytesを保持する。安全な`errors.data`等は検査未完了の診断HTMLを保存する。有効設定で管理外への任意拡張子出力は引き続き許容する。
 
 受入条件7は`refuses new management JSON output before rendering or writing: %s`、`allows non-management HTML output with an arbitrary extension: %s`（application/report.test.ts）、`refuses new report JSON inputs and keeps the next confirmed check successful`（cli.test.ts）で検証する。設定/検査エラーの保存は`honors --config and retains configuration failures in an HTML report`、`keeps drawable inspection errors in HTML and returns 2`（interfaces/cli/commands.test.ts）を維持する。変更の起点は[Issue #35](https://github.com/tanaka-takuto/crosslink/issues/35)。
-受入条件8は`refuses JSON output when configuration safety is unknown: %s`（application/report.test.ts）と`refuses JSON report writes after configuration failure without worsening the next check`（cli.test.ts）で確認する。終了2だけで保護成功とせず、保存の有無と次回検査を検証する。
+受入条件8は`refuses JSON output when configuration safety is unknown: %s`（application/report.test.ts）と`refuses JSON report writes after configuration failure without worsening the next check: $config`（cli.test.ts）で確認する。後者は不正template・破損JSON・明示不存在・読取不能directoryでも設定診断の対象と案内を保持し、JSON出力拒否時と安全な診断HTML保存時の元診断一致を検証する。終了2だけで保護成功とせず、保存の有無と次回検査を検証する。
 
 関連：[HTML仕様](../specifications/html-report.md)、[CLI仕様](../specifications/cli.md)、[変更影響の出力](impact-output.md)、[非破壊的動作](non-destructive.md)。
 

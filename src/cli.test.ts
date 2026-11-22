@@ -184,60 +184,233 @@ it("refuses new report JSON inputs and keeps the next confirmed check successful
   expect(inputs.map((path) => readFileSync(path))).toEqual(before);
 });
 
-it("refuses JSON report writes after configuration failure without worsening the next check", () => {
-  const { root, call } = fixture();
-  expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
-  const snapshot = join(root, "review.json");
-  writeFileSync(snapshot, call("check", "--json").stdout);
-  expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
-  const checked = call("check", "--json");
-  expect(checked.status).toBe(0);
-  writeFileSync(join(root, "bad-config.json"), '{"fileNameTemplate":"invalid.json"}');
-  const inputs = ["a", "b", ".crosslink/api.json", "review.json", "bad-config.json"].map((path) =>
-    join(root, path),
-  );
-  const before = inputs.map((path) => readFileSync(path));
-  const output = join(root, ".crosslink/report.json");
-  const result = call(
-    "report",
-    "--format",
-    "html",
-    "--output",
-    output,
-    "--config",
-    "bad-config.json",
-    "--json",
-  );
-  const next = call("check", "--json");
-  expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
-    report: 2,
-    nextCheck: 0,
-    created: false,
-  });
-  expect(JSON.parse(result.stdout).errors.map((error: { code: string }) => error.code)).toEqual([
-    "INVALID_CONFIG",
-    "REPORT_INPUT_COLLISION",
-  ]);
-  expect(result.stderr).toBe("");
-  expect(next.stdout).toBe(checked.stdout);
-  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
-  const safe = call(
-    "report",
-    "--format",
-    "html",
-    "--output",
-    "errors.data",
-    "--config",
-    "bad-config.json",
-    "--json",
-  );
-  expect(safe.status).toBe(2);
-  expect(JSON.parse(safe.stdout).errors.map((error: { code: string }) => error.code)).toEqual([
-    "INVALID_CONFIG",
-  ]);
-  expect(readFileSync(join(root, "errors.data"), "utf8")).toContain("Inspection incomplete");
-  expect(call("check", "--json").stdout).toBe(checked.stdout);
-  expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+it.each([
+  { config: "bad-config.json", raw: '{"fileNameTemplate":"invalid.json"}', code: "INVALID_CONFIG" },
+  { config: "malformed-config.json", raw: "{", code: "IO_ERROR" },
+  { config: "missing-config.json", raw: null, code: "IO_ERROR" },
+  { config: "config-directory", raw: null, code: "IO_ERROR" },
+])(
+  "refuses JSON report writes after configuration failure without worsening the next check: $config",
+  ({ config, raw, code }) => {
+    const { root, call } = fixture();
+    expect(call("create", "api", "a", "b", "--reason", "確認理由").status).toBe(0);
+    const snapshot = join(root, "review.json");
+    writeFileSync(snapshot, call("check", "--json").stdout);
+    expect(call("confirm", "--all", "--snapshot", snapshot).status).toBe(0);
+    const checked = call("check", "--json");
+    expect(checked.status).toBe(0);
+    if (raw !== null) writeFileSync(join(root, config), raw);
+    if (config === "config-directory") mkdirSync(join(root, config));
+    const inputs = [
+      "a",
+      "b",
+      ".crosslink/api.json",
+      "review.json",
+      ...(raw === null ? [] : [config]),
+    ].map((path) => join(root, path));
+    const before = inputs.map((path) => readFileSync(path));
+    const original = call("check", "--config", config, "--json");
+    expect(original.status).toBe(2);
+    const diagnostic = JSON.parse(original.stdout).errors[0];
+    expect(diagnostic.code).toBe(code);
+    expect(diagnostic.message).toContain(resolve(realpathSync(root), config));
+    expect(diagnostic.message).toContain("configuration JSON");
+    expect(diagnostic.message).toContain("then run check again.");
+    const output = join(root, ".crosslink/report.json");
+    const result = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      output,
+      "--config",
+      config,
+      "--json",
+    );
+    const next = call("check", "--json");
+    expect({ report: result.status, nextCheck: next.status, created: existsSync(output) }).toEqual({
+      report: 2,
+      nextCheck: 0,
+      created: false,
+    });
+    const errors = JSON.parse(result.stdout).errors;
+    expect(errors[0]).toEqual(diagnostic);
+    expect(errors.map((error: { code: string }) => error.code)).toEqual([
+      code,
+      "REPORT_INPUT_COLLISION",
+    ]);
+    expect(result.stderr).toBe("");
+    expect(next.stdout).toBe(checked.stdout);
+    expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+    const safe = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      "errors.data",
+      "--config",
+      config,
+      "--json",
+    );
+    expect(safe.status).toBe(2);
+    expect(JSON.parse(safe.stdout).errors).toEqual([diagnostic]);
+    expect(readFileSync(join(root, "errors.data"), "utf8")).toContain("Inspection incomplete");
+    expect(call("check", "--json").stdout).toBe(checked.stdout);
+    expect(inputs.map((path) => readFileSync(path))).toEqual(before);
+  },
+);
+
+it.each([
+  { config: undefined, raw: "{", code: "IO_ERROR", cause: null },
+  { config: "settings/../設定 ' $().json", raw: "{", code: "IO_ERROR", cause: null },
+  {
+    config: undefined,
+    raw: "[]",
+    code: "INVALID_CONFIG",
+    cause: "Configuration must be a JSON object.",
+  },
+  {
+    config: undefined,
+    raw: '{"unknown":true}',
+    code: "INVALID_CONFIG",
+    cause: "Unsupported configuration fields.",
+  },
+  {
+    config: undefined,
+    raw: '{"directoryName":"bad/path"}',
+    code: "INVALID_CONFIG",
+    cause: "directoryName must be a single directory name.",
+  },
+  {
+    config: undefined,
+    raw: '{"fileNameTemplate":"../{name}.json"}',
+    code: "INVALID_CONFIG",
+    cause: "fileNameTemplate must be a JSON filename containing exactly one {name}.",
+  },
+])(
+  "reports configuration JSON context in text, JSON and incomplete HTML without writes: $raw / $config",
+  ({ config, raw, code, cause }) => {
+    const { root: fixtureRoot, call } = fixture();
+    const root = realpathSync(fixtureRoot);
+    expect(call("create", "診断", "a", "b", "--reason", "入力を保持").status).toBe(0);
+    const record = join(root, ".crosslink/診断.json"),
+      review = join(root, "review.json");
+    writeFileSync(review, call("check", "--json").stdout);
+    expect(call("confirm", record, "--snapshot", review).status).toBe(0);
+    mkdirSync(join(root, "settings"));
+    const file = resolve(root, config ?? "crosslink.config.json");
+    writeFileSync(file, raw);
+    const protectedFiles = [file, record, review, join(root, "a"), join(root, "b")];
+    const before = protectedFiles.map((path) => readFileSync(path));
+    const options = config ? ["--config", config] : [];
+    let actualCause = cause;
+    if (actualCause === null) {
+      try {
+        JSON.parse(raw);
+      } catch (error) {
+        actualCause = (error as Error).message;
+      }
+    }
+    const checked = call("check", ...options, "--json");
+    expect(checked.status).toBe(2);
+    expect(checked.stderr).toBe("");
+    const json = JSON.parse(checked.stdout);
+    expect(Object.keys(json).sort()).toEqual([
+      "errors",
+      "groups",
+      "messages",
+      "operation",
+      "result",
+      "version",
+    ]);
+    expect(json).toMatchObject({
+      version: 1,
+      operation: "check",
+      result: "error",
+      groups: [],
+      messages: [],
+    });
+    expect(json.errors).toHaveLength(1);
+    expect(Object.keys(json.errors[0]).sort()).toEqual(["code", "message"]);
+    const error = json.errors[0];
+    expect(error.code).toBe(code);
+    expect(error.message).toContain(`Invalid configuration JSON: ${file}. ${actualCause}`);
+    expect(error.message).toContain(
+      "Repair the configuration JSON or restore a valid copy, then run check again.",
+    );
+    const text = call("check", ...options);
+    expect(text.status).toBe(2);
+    expect(text.stderr).toContain(`${code}: ${error.message}`);
+    expect(text.stdout).not.toContain("No registered groups.");
+    expect(call("confirm", record, "--snapshot", review, ...options, "--json").status).toBe(2);
+    mkdirSync(join(root, "output"));
+    const report = call(
+      "report",
+      "--format",
+      "html",
+      "--output",
+      "output/error.html",
+      ...options,
+      "--json",
+    );
+    expect(report.status).toBe(2);
+    expect(report.stderr).toBe("");
+    expect(JSON.parse(report.stdout)).toMatchObject({ result: "error", errors: [error] });
+    const html = readFileSync(join(root, "output/error.html"), "utf8");
+    expect(html).toContain("Inspection incomplete");
+    expect(html).toContain("Invalid configuration JSON");
+    expect(html).toContain(file.replaceAll("'", "&#39;"));
+    expect(html).toContain(
+      "Repair the configuration JSON or restore a valid copy, then run check again.",
+    );
+    expect(html).toContain("total member file count is unknown");
+    expect(protectedFiles.map((path) => readFileSync(path))).toEqual(before);
+  },
+);
+
+it.each(["missing.json", "settings-directory"])(
+  "reports configuration read failures separately from malformed JSON: %s",
+  (config) => {
+    const { root: fixtureRoot, call } = fixture();
+    const root = realpathSync(fixtureRoot);
+    mkdirSync(join(root, "settings-directory"));
+    const file = join(root, config);
+    let cause = "";
+    try {
+      readFileSync(file, "utf8");
+    } catch (error) {
+      cause = (error as Error).message;
+    }
+    const result = call("check", "--config", config, "--json");
+    expect(result.status).toBe(2);
+    const error = JSON.parse(result.stdout).errors[0];
+    expect(error.code).toBe("IO_ERROR");
+    expect(error.message).toContain(`Cannot read configuration JSON: ${file}. ${cause}`);
+    expect(error.message).toContain(
+      "Check that the configuration file exists and is readable, then run check again.",
+    );
+    expect(error.message).not.toContain("Repair the configuration JSON");
+    expect(call("check", "--config", config).stderr).toContain(error.message);
+  },
+);
+
+it("uses defaults without settings and keeps help and version independent of broken settings", () => {
+  const { root: fixtureRoot, call } = fixture();
+  const root = realpathSync(fixtureRoot);
+  const defaults = call("check", "--json");
+  expect(defaults.status).toBe(0);
+  expect(JSON.parse(defaults.stdout)).toMatchObject({ result: "ok", groups: [] });
+  const expected = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
+  const file = join(root, "crosslink.config.json");
+  writeFileSync(file, "{");
+  for (const args of [["--help"], ["check", "--help"], ["--version"], ["--version", "--json"]]) {
+    const result = call(...args);
+    expect(result.status, result.stdout + result.stderr).toBe(0);
+    expect(result.stderr).toBe("");
+    if (args[0] === "--version") expect(result.stdout).toContain(expected);
+    else expect(result.stdout).toContain("crosslink check");
+  }
+  expect(readFileSync(file, "utf8")).toBe("{");
 });
 
 it.each([

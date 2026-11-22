@@ -1,7 +1,7 @@
 import type { Settings } from "../../application/ports.js";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
-import { CrosslinkError } from "../../domain/errors.js";
+import { CrosslinkError, problem } from "../../domain/errors.js";
 
 export const defaults: Settings = { directoryName: ".crosslink", fileNameTemplate: "{name}.json" };
 
@@ -20,26 +20,42 @@ function safeName(name: string): boolean {
 export function loadSettings(cwd: string, config?: string): Settings {
   const file = resolve(cwd, config ?? "crosslink.config.json");
   if (!config && !existsSync(file)) return { ...defaults };
-  const value: unknown = JSON.parse(readFileSync(file, "utf8"));
+  const invalidConfig = (message: string, code = "INVALID_CONFIG") =>
+    new CrosslinkError(
+      code,
+      `Invalid configuration JSON: ${file}. ${message} Repair the configuration JSON or restore a valid copy, then run check again.`,
+    );
+  let text: string;
+  try {
+    text = readFileSync(file, "utf8");
+  } catch (error) {
+    throw new CrosslinkError(
+      "IO_ERROR",
+      `Cannot read configuration JSON: ${file}. ${problem(error).message} Check that the configuration file exists and is readable, then run check again.`,
+    );
+  }
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch (error) {
+    throw invalidConfig(problem(error).message, "IO_ERROR");
+  }
   if (!value || typeof value !== "object" || Array.isArray(value))
-    throw new CrosslinkError("INVALID_CONFIG", "Configuration must be a JSON object.");
+    throw invalidConfig("Configuration must be a JSON object.");
   const data = value as Record<string, unknown>;
   if (Object.keys(data).some((key) => !["directoryName", "fileNameTemplate"].includes(key)))
-    throw new CrosslinkError("INVALID_CONFIG", "Unsupported configuration fields.");
+    throw invalidConfig("Unsupported configuration fields.");
   const directoryName = data.directoryName ?? defaults.directoryName;
   const fileNameTemplate = data.fileNameTemplate ?? defaults.fileNameTemplate;
   if (typeof directoryName !== "string" || !safeName(directoryName))
-    throw new CrosslinkError("INVALID_CONFIG", "directoryName must be a single directory name.");
+    throw invalidConfig("directoryName must be a single directory name.");
   if (
     typeof fileNameTemplate !== "string" ||
     fileNameTemplate.split("{name}").length !== 2 ||
     !fileNameTemplate.endsWith(".json") ||
     !safeName(fileNameTemplate.replace("{name}", "group"))
   )
-    throw new CrosslinkError(
-      "INVALID_CONFIG",
-      "fileNameTemplate must be a JSON filename containing exactly one {name}.",
-    );
+    throw invalidConfig("fileNameTemplate must be a JSON filename containing exactly one {name}.");
   return { directoryName, fileNameTemplate };
 }
 
